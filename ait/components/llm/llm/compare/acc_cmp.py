@@ -227,11 +227,21 @@ def match_layers(gathered_golden_data, gathered_my_data, golden_hierarchy, my_hi
 
 
 def match_pair(matched_layer):
-    golden = matched_layer['golden']
-    my = matched_layer['my']
-    print(golden)
-    print(my)
-    matched_path_pair = []    
+    matched_path_pair = []
+    try:
+        _golden_path = glob.glob(matched_layer['golden']['golden_path'])[0]
+        golden_out_path = [x for x in os.listdir(_golden_path) if x.startswith('out')]
+        golden_out_path.sort(key=lambda x: int(x.split('output_exec')[-1].split('.')[0]))
+        golden_out_path = [os.path.join(_golden_path, x) for x in golden_out_path]
+        _my_path = glob.glob(matched_layer['my']['my_path'])[0]
+        my_out_path = [x for x in os.listdir(_my_path) if x.startswith('out')]
+        my_out_path.sort(key=lambda x: int(x.split('outtensor')[-1].split('.')[0]))
+        my_out_path = [os.path.join(_my_path, x) for x in my_out_path]
+        for _golden_tensor_path, _my_tenser_path in zip(golden_out_path, my_out_path):
+            matched_path_pair.append({'golden': _golden_tensor_path, 'my': _my_tenser_path})
+    except IndexError as e:
+        msg = f"Cannot find path! golden: {matched_layer['golden']['golden_path']}, my: {matched_layer['my']['my_path']}"
+        logger.debug(msg)
     return matched_path_pair
 
 
