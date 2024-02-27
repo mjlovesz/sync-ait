@@ -493,9 +493,6 @@ def search_mapping_relationships(gathered_golden_data, gathered_my_data):
             my_out_path.sort(key=lambda x: int(x.split('outtensor')[1].split('.')[0]))
             my_out_path = [os.path.join(_my_path, x) for x in my_out_path]
             for _golden_tensor_path, _my_tensor_path in zip(golden_out_path, my_out_path):
-                print(_golden_tensor_path, _my_tensor_path)
-                res = compare_file(_golden_tensor_path, _my_tensor_path)
-                logger.info(f"Compared results: {res}")
                 matched_path_pair.append({'golden': _golden_tensor_path, 'my': _my_tensor_path})
         except IndexError as e:
             msg = f"Cannot find path! golden: {match['golden']['my_path']}, my: {match['my']['my_path']}"
