@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 import json
 import torch
+import queue
 from tqdm import tqdm
 
 from llm.common.log import logger
@@ -63,7 +64,7 @@ def acc_compare(golden_path, my_path, output_path="."):
         elif os.path.exists(model_tree_path):
             # 存在model_tree_path路径，走torch模型和加速库模型比对逻辑
             logger.info("Automatic mapping comparison starts! Comparing torch tensors and ATB tensors...")
-            compare_metadata_auto(golden_path, my_path, output_path)
+            compare_metadata_auto(golden_path, my_path, model_tree_path, output_path)
         elif golden_topo_flag and my_topo_flag:
             # 存在模型的拓扑信息，走加速库模型间的比对逻辑
             if compare_topo_json(golden_topo_json_path, my_topo_json_path):
@@ -169,68 +170,6 @@ def save_compare_dataframe_to_csv(data_frame, output_path="."):
 
 
 # 自动映射比对能力
-def compare_metadata_auto(golden_path, my_path, output_path="."):
-    golden_meta_path = os.path.join(os.path.dirname(os.path.abspath(golden_path)), "model_tree.json")
-    cur_my_path = os.path.dirname(os.path.abspath(my_path))
-    token_id = os.path.basename(cur_my_path).split('_')[1]
-    my_meta_path = glob.glob(os.path.join(os.path.dirname(os.path.dirname(cur_my_path)), "model", token_id, "*.json"))[0]
-
-    with open(golden_meta_path, "r") as file:
-        golden_meta = json.load(file)
-    with open(my_meta_path, "r") as file:
-        my_meta = json.load(file)
-
-    map_dic = {
-        'BloomMLP':'MlpGateLayerV2'
-    }
-
-    gathered_golden_data = []
-    gathered_golden_data.extend(traverse_tree(golden_meta, golden_path, 'torch'))
-    gathered_my_data = []
-    gathered_my_data.extend(traverse_tree(my_meta, my_path, 'atb'))
-
-    matches = []
-    j = 0
-    for x in gathered_golden_data:
-        golden_type = x['type']
-        if golden_type in map_dic.keys():
-            while j < len(gathered_my_data):
-                if 'opType' in gathered_my_data[j].keys() and gathered_my_data[j]['opType'] == map_dic[golden_type]:
-                    matches.append({'golden': x, 'my': gathered_my_data[j]})
-                    j += 1
-                    break
-                else:
-                    j += 1
-    
-    matched_path_pair = []
-    for match in matches:
-        try:
-            golden_out_path = [x for x in os.listdir(match['golden']['golden_path']) if x.startswith('out')]
-            golden_out_path.sort(key=lambda x: int(x.split('output_exec')[1].split('.')[0]))
-            golden_out_path = [os.path.join(match['golden']['golden_path'], x) for x in golden_out_path]
-            _my_path = glob.glob(match['my']['my_path'])[0]
-            my_out_path = [x for x in os.listdir(_my_path) if x.startswith('out')]
-            my_out_path.sort(key=lambda x: int(x.split('outtensor')[1].split('.')[0]))
-            my_out_path = [os.path.join(_my_path, x) for x in my_out_path]
-            for _golden_tensor_path, _my_tensor_path in zip(golden_out_path, my_out_path):
-                print(_golden_tensor_path, _my_tensor_path)  
-                res = compare_file(_golden_tensor_path, _my_tensor_path)
-                logger.info(f"Compared results: {res}")
-                matched_path_pair.append({'golden': _golden_tensor_path, 'my': _my_tensor_path})
-        except IndexError as e:
-            msg = f"Cannot find path! golden: {match['golden']['golden_path']}, my: {match['my']['my_path']}"
-            logger.debug(msg)
-    
-    gathered_row_data = []
-    for data_id, match in enumerate(matched_path_pair):
-        _golden_tensor_path = match['golden']
-        _my_tensor_path = match['my']
-        row_data = fill_row_data(token_id, data_id, _golden_tensor_path, _my_tensor_path)
-        gathered_row_data.append(row_data)
-    data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
-    return save_compare_dataframe_to_csv(data_frame, output_path)
-
-
 def enumerate_children(children, path, traverse_type='torch', node_id=''):
     res = []
     for idx, children_node in enumerate(children):
@@ -246,15 +185,86 @@ def traverse_tree(node, path, traverse_type='torch', node_id=''):
     node['id'] = node_id
     if traverse_type == 'torch':
         node['golden_path'] = os.path.join(os.path.abspath(path), node['name'])
-        res.append({k:v for k, v in node.items() if k != 'children'})
+        res.append(node)
         if len(node['children']) > 0:
             res.extend(enumerate_children(node['children'], path, traverse_type, node_id))
     else:
         node['my_path'] = os.path.join(os.path.abspath(path), '_*/'.join(node_id.split('_')) + '_*', 'after')
-        res.append({k:v for k, v in node.items() if k != 'nodes'})
+        res.append(node)
         if 'nodes' in node.keys() and len(node['nodes']) > 0:
             res.extend(enumerate_children(node['nodes'], path, traverse_type, node_id))
     return res
+
+
+def match_first_layer(gathered_golden_data, gathered_my_data, op_mapping):
+    golden_first_layer = op_mapping['golden'].split('/')[0]
+    my_first_layer = op_mapping['my'].split('/')[0]
+    matched_layer = []
+    j = 0
+    for x in gathered_golden_data:
+        golden_type = x['type']
+        if golden_type == golden_first_layer:
+            while j < len(gathered_my_data):
+                if 'opType' in gathered_my_data[j].keys() and gathered_my_data[j]['opType'] == my_first_layer:
+                    matched_layer.append({'golden': x, 'my': gathered_my_data[j]})
+                    j += 1
+                    break
+                else:
+                    j += 1
+    return matched_layer
+
+
+def match_pair(matched_layer, op_mapping):
+    print(matched_layer)
+    print(op_mapping)
+    matched_path_pair = []    
+    return matched_path_pair
+
+
+def compare_metadata_auto(golden_path, my_path, model_tree_path, output_path="."):
+    # 读取torch侧模型文件
+    with open(model_tree_path, "r") as file:
+        golden_meta = json.load(file)
+    
+    # 读取atb侧模型文件
+    my_meta_flag, my_meta_path = if_dumped_model_topo(my_path)
+    if my_meta_flag:
+        with open(my_meta_path, "r") as file:
+            my_meta = json.load(file)
+    else:
+        msg = f"Cannot find ATB model! model path: {my_meta_path}"
+        logger.error(msg)
+        return
+    
+    # 解析模型文件
+    gathered_golden_data = []
+    gathered_golden_data.extend(traverse_tree(golden_meta, golden_path, 'torch'))
+    gathered_my_data = []
+    gathered_my_data.extend(traverse_tree(my_meta, my_path, 'atb'))
+    
+    # 读取自定义算子映射文件
+    op_mapping_dic = {
+        {
+            'golden': 'BloomBlock/BloomMLP',
+            'my':'Bloom7bCommonLayer/MlpGateLayerV2'
+        },
+    }
+    
+    # 获取对比路径对
+    matched_path_pair = []
+    for op_mapping in op_mapping_dic.items():
+        matched_first_layer = match_first_layer(gathered_golden_data, gathered_my_data, op_mapping)
+        for matched_layer in matched_first_layer:
+            matched_path_pair.extend(match_pair(matched_layer, op_mapping))
+    
+    # 输出csv文件
+    token_id = os.path.basename(os.path.dirname(os.path.abspath(my_path))).split('_')[1]
+    gathered_row_data = []
+    for data_id, match in enumerate(matched_path_pair):
+        row_data = fill_row_data(token_id, data_id, match['golden'], match['my'])
+        gathered_row_data.append(row_data)
+    data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
+    return save_compare_dataframe_to_csv(data_frame, output_path)
 
 
 # torchair 比对相关
