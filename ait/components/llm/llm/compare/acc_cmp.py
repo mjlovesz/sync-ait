@@ -271,9 +271,16 @@ def compare_metadata_auto(golden_path, my_path, model_tree_path, output_path, ma
     gathered_my_data.extend(traverse_tree(my_meta, my_path, 'atb'))
     
     # 读取自定义算子映射文件
-    with open(os.path.join(mapping_file_path, "op_mapping_file.json"), "r") as file:
-        op_mapping_dic = json.load(file)
-    
+    mapping_path1 = os.path.join(mapping_file_path, "op_mapping_file.json")
+    if os.path.exists(mapping_path1):
+        with open(mapping_path1) as file:
+            op_mapping_dic = json.load(file)
+    else:
+        import llm.compare
+        mapping_path2 = os.path.join(llm.compare.__file__, "op_mapping_file.json")
+        with open(mapping_path2) as file:
+            op_mapping_dic = json.load(file)
+
     # 获取对比路径对
     matched_path_pair = []
     for golden_hierarchy, my_hierarchy in op_mapping_dic.items():
