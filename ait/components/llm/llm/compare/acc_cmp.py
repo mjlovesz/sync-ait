@@ -196,9 +196,7 @@ def traverse_tree(node, path, traverse_type='torch', node_id=''):
     return res
 
 
-def match_first_layer(gathered_golden_data, gathered_my_data, golden_hierarchy, my_hierarchy):
-    golden_first_layer = golden_hierarchy.split('/')[0]
-    my_first_layer = my_hierarchy.split('/')[0]
+def match_first_layer(gathered_golden_data, gathered_my_data, golden_first_layer, my_first_layer):
     matched_layer = []
     j = 0
     for x in gathered_golden_data:
@@ -214,10 +212,24 @@ def match_first_layer(gathered_golden_data, gathered_my_data, golden_hierarchy, 
     return matched_layer
 
 
-def match_pair(matched_layer, golden_hierarchy, my_hierarchy):
-    print(matched_layer)
-    print(golden_hierarchy)
-    print(my_hierarchy)
+def match_layers(gathered_golden_data, gathered_my_data, golden_hierarchy, my_hierarchy):
+    matched_layers = []
+    golden_layers = golden_hierarchy.split('/')
+    my_layers = my_hierarchy.split('/')
+    matched_first_layers = match_first_layer(gathered_golden_data, gathered_my_data, golden_layers[0], my_layers[0])
+    if len(golden_layers) > 1 and len(my_layers) > 1:
+        for first_layer in matched_first_layers:
+            matched_layers.extend(match_layers(first_layer['golden']['children'], first_layer['my']['nodes'], '/'.join(golden_layers[1:]), '/'.join(my_layers[1:])))
+    else:
+        matched_layers.extend(matched_first_layers)
+    return matched_layers
+
+
+def match_pair(matched_layer):
+    golden = matched_layer['golden']
+    my = matched_layer['my']
+    print(golden)
+    print(my)
     matched_path_pair = []    
     return matched_path_pair
 
@@ -252,9 +264,9 @@ def compare_metadata_auto(golden_path, my_path, model_tree_path, output_path="."
     # 获取对比路径对
     matched_path_pair = []
     for golden_hierarchy, my_hierarchy in op_mapping_dic.items():
-        matched_first_layer = match_first_layer(gathered_golden_data, gathered_my_data, golden_hierarchy, my_hierarchy)
-        for matched_layer in matched_first_layer:
-            matched_path_pair.extend(match_pair(matched_layer, golden_hierarchy, my_hierarchy))
+        matched_layers = match_layers(gathered_golden_data, gathered_my_data, golden_hierarchy, my_hierarchy)
+        for matched_layer in matched_layers:
+            matched_path_pair.extend(match_pair(matched_layer))
     
     # 输出csv文件
     token_id = os.path.basename(os.path.dirname(os.path.abspath(my_path))).split('_')[1]
