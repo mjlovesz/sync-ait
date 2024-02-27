@@ -226,7 +226,8 @@ def match_layers(gathered_golden_data, gathered_my_data, golden_hierarchy, my_hi
         matched_layers.extend(matched_first_layers)
     return matched_layers
 
-def get_paths(path_dir, split_pattern='output_exec'):
+
+def get_paths(path_dir, split_pattern):
     out_paths = [x for x in os.listdir(path_dir) if x.startswith('out')]
     out_paths.sort(key=lambda x: int(x.split(split_pattern)[-1].split('.')[0]))
     out_paths = [os.path.join(path_dir, x) for x in out_paths]
@@ -237,15 +238,13 @@ def match_pair(matched_layer):
     matched_path_pair = []
     try:
         _golden_dir = glob.glob(matched_layer['golden']['golden_path'])[0]
-
+        golden_out_paths = get_paths(_golden_dir, split_pattern='output_exec')
         _my_dir = glob.glob(matched_layer['my']['my_path'])[0]
-        my_out_path = [x for x in os.listdir(_my_dir) if x.startswith('out')]
-        my_out_path.sort(key=lambda x: int(x.split('outtensor')[-1].split('.')[0]))
-        my_out_path = [os.path.join(_my_dir, x) for x in my_out_path]
-        for _golden_tensor_path, _my_tenser_path in zip(golden_out_path, my_out_path):
+        my_out_paths = get_paths(_my_dir, split_pattern='outtensor')
+        for _golden_tensor_path, _my_tenser_path in zip(golden_out_paths, my_out_paths):
             matched_path_pair.append({'golden': _golden_tensor_path, 'my': _my_tenser_path})
     except IndexError as e:
-        msg = f"Cannot find path! golden: {matched_layer['golden']['golden_path']}, my: {matched_layer['my']['my_path']}"
+        msg = f"Cannot find dir! golden: {matched_layer['golden']['golden_path']}, my: {matched_layer['my']['my_path']}"
         logger.debug(msg)
     return matched_path_pair
 
