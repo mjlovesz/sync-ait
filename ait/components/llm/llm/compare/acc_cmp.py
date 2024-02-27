@@ -14,11 +14,11 @@
 
 import os
 import glob
+import json
+import queue
+import torch
 import numpy as np
 import pandas as pd
-import json
-import torch
-import queue
 from tqdm import tqdm
 
 from llm.common.log import logger
@@ -48,6 +48,7 @@ from llm.compare import torchair_utils
 NCHW_DIMS = 4
 NC1HWC0_DIMS = 5
 
+
 def acc_compare(golden_path, my_path, output_path="."):
     torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
     if torchair_ge_graph_path is not None:
@@ -69,11 +70,11 @@ def acc_compare(golden_path, my_path, output_path="."):
             # 存在模型的拓扑信息，走加速库模型间的比对逻辑
             if compare_topo_json(golden_topo_json_path, my_topo_json_path):
                 # topo信息一致，走dtype和bs比对逻辑：
-                logger.info("Automatic mapping comparison starts! Comparing ATB tensors, the topos of tensors are same...")
+                logger.info("Automatic mapping comparison starts! Comparing ATB tensors, the topos are same...")
                 compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_topo_json_path, output_path)
             else:
                 # topo信息不一致，走量化比对逻辑，待补充
-                logger.info('Automatic mapping comparison starts! Comparing ATB tensors, the topos of tensors are different...')
+                logger.info('Automatic mapping comparison starts! Comparing ATB tensors, the topos are different...')
 
     elif os.path.isfile(golden_path) and os.path.isfile(my_path):
         res = compare_file(golden_path, my_path)
@@ -198,17 +199,16 @@ def traverse_tree(node, path, traverse_type='torch', node_id=''):
 
 def match_first_layer(gathered_golden_data, gathered_my_data, golden_first_layer, my_first_layer):
     matched_layer = []
+    matched_golden_layer = [x for x in gathered_golden_data if x['type'] == golden_first_layer]
     j = 0
-    for x in gathered_golden_data:
-        golden_type = x['type']
-        if golden_type == golden_first_layer:
-            while j < len(gathered_my_data):
-                if 'opType' in gathered_my_data[j].keys() and gathered_my_data[j]['opType'] == my_first_layer:
-                    matched_layer.append({'golden': x, 'my': gathered_my_data[j]})
-                    j += 1
-                    break
-                else:
-                    j += 1
+    for x in matched_golden_layer:
+        while j < len(gathered_my_data):
+            if 'opType' in gathered_my_data[j].keys() and gathered_my_data[j]['opType'] == my_first_layer:
+                matched_layer.append({'golden': x, 'my': gathered_my_data[j]})
+                j += 1
+                break
+            else:
+                j += 1
     return matched_layer
 
 
@@ -220,23 +220,28 @@ def match_layers(gathered_golden_data, gathered_my_data, golden_hierarchy, my_hi
     if len(golden_layers) > 1 and len(my_layers) > 1:
         for first_layer in matched_first_layers:
             if 'children' in first_layer['golden'].keys() and 'nodes' in first_layer['my'].keys():
-                matched_layers.extend(match_layers(first_layer['golden']['children'], first_layer['my']['nodes'], '/'.join(golden_layers[1:]), '/'.join(my_layers[1:])))
+                matched_layers.extend(match_layers(first_layer['golden']['children'], first_layer['my']['nodes'], 
+                                                    '/'.join(golden_layers[1:]), '/'.join(my_layers[1:])))
     else:
         matched_layers.extend(matched_first_layers)
     return matched_layers
+
+def get_paths(path_dir, split_pattern='output_exec'):
+    out_paths = [x for x in os.listdir(path_dir) if x.startswith('out')]
+    out_paths.sort(key=lambda x: int(x.split(split_pattern)[-1].split('.')[0]))
+    out_paths = [os.path.join(path_dir, x) for x in out_paths]
+    return out_paths
 
 
 def match_pair(matched_layer):
     matched_path_pair = []
     try:
-        _golden_path = glob.glob(matched_layer['golden']['golden_path'])[0]
-        golden_out_path = [x for x in os.listdir(_golden_path) if x.startswith('out')]
-        golden_out_path.sort(key=lambda x: int(x.split('output_exec')[-1].split('.')[0]))
-        golden_out_path = [os.path.join(_golden_path, x) for x in golden_out_path]
-        _my_path = glob.glob(matched_layer['my']['my_path'])[0]
-        my_out_path = [x for x in os.listdir(_my_path) if x.startswith('out')]
+        _golden_dir = glob.glob(matched_layer['golden']['golden_path'])[0]
+
+        _my_dir = glob.glob(matched_layer['my']['my_path'])[0]
+        my_out_path = [x for x in os.listdir(_my_dir) if x.startswith('out')]
         my_out_path.sort(key=lambda x: int(x.split('outtensor')[-1].split('.')[0]))
-        my_out_path = [os.path.join(_my_path, x) for x in my_out_path]
+        my_out_path = [os.path.join(_my_dir, x) for x in my_out_path]
         for _golden_tensor_path, _my_tenser_path in zip(golden_out_path, my_out_path):
             matched_path_pair.append({'golden': _golden_tensor_path, 'my': _my_tenser_path})
     except IndexError as e:
