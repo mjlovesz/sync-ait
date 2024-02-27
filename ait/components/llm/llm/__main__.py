@@ -176,10 +176,19 @@ class CompareCommand(BaseCommand):
             type=check_output_path_legality,
             default='./',
             help='Data output directory.E.g:--output /xx/xxxx/xx')
+        
+        parser.add_argument(
+            '--op-mapping-file',
+            '-mf',
+            dest="mapping_file",
+            required=False,
+            type=check_input_path_legality,
+            default='./op_mapping_file.json',
+            help='Path of mapping file.E.g:--op-mapping-file /xx/xxxx/op_mapping_file.json')    
 
     def handle(self, args, **kwargs):
         set_log_level(args.log_level)
-        acc_compare(args.golden_path, args.my_path, args.output)
+        acc_compare(args.golden_path, args.my_path, args.output, args.mapping_file)
 
 
 class OpcheckCommand(BaseCommand):
