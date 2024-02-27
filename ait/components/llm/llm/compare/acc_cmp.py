@@ -49,17 +49,30 @@ NC1HWC0_DIMS = 5
 
 def acc_compare(golden_path, my_path, output_path="."):
     torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
-    golden_tensor_path = os.path.join(golden_path, "golden_tensor")
-    golden_topo_flag, golden_topo_json_path = if_dumped_model_topo(golden_path)
-    my_topo_flag, my_topo_json_path = if_dumped_model_topo(my_path)
     if torchair_ge_graph_path is not None:
         compare_torchair(golden_path, my_path, torchair_ge_graph_path, output_path=output_path)
-    elif os.path.isdir(golden_path) and os.path.isdir(golden_tensor_path):
-        # 存在golden_tensor路径，走手动映射比对逻辑
-        compare_metadata(golden_tensor_path, output_path)
-    elif 
-            # logger.error("Can not find 'golden_tensor'.")
+    elif os.path.isdir(golden_path):
+        golden_tensor_path = os.path.join(golden_path, "golden_tensor")
+        golden_topo_flag, golden_topo_json_path = if_dumped_model_topo(golden_path)
+        my_topo_flag, my_topo_json_path = if_dumped_model_topo(my_path)
+        model_tree_path = os.path.join(os.path.dirname(os.path.abspath(golden_path)), "model_tree.json")
+        if os.path.isdir(golden_tensor_path):
+            # 存在golden_tensor路径，走手动映射比对逻辑
+            logger.info("Manual mapping comparing starts! Comparing manual dump tensors and ATB tensors...")
+            compare_metadata(golden_tensor_path, output_path)
+        elif os.path.exists(model_tree_path):
+            # 存在model_tree_path路径，走torch模型和加速库模型比对逻辑
+            logger.info("Automatic mapping comparison starts! Comparing torch tensors and ATB tensors...")
             compare_metadata_auto(golden_path, my_path, output_path)
+        elif golden_topo_flag and my_topo_flag:
+            # 存在模型的拓扑信息，走加速库模型间的比对逻辑
+            if compare_topo_json(golden_topo_json_path, my_topo_json_path):
+                # topo信息一致，走dtype和bs比对逻辑：
+                logger.info("Automatic mapping comparison starts! Comparing ATB tensors, the topos of tensors are same...")
+            else:
+                # topo信息不一致，走量化比对逻辑，待补充
+                logger.info('Automatic mapping comparison starts! Comparing ATB tensors, the topos of tensors are different...')
+                
     elif os.path.isfile(golden_path) and os.path.isfile(my_path):
         res = compare_file(golden_path, my_path)
         logger.info("Compared results: %s", res)
@@ -156,16 +169,10 @@ def save_compare_dataframe_to_csv(data_frame, output_path="."):
 
 # 自动映射比对能力
 def compare_metadata_auto(golden_path, my_path, output_path="."):
-    golden_meta_path = os.path.join(golden_path, "model_tree.json")
-
-    # my_model_path = "/home/wgw/xuchuan/model/bloom/ait_dump/model/5204"
-
-    parent_dir = os.path.dirname(my_path)
-    pid = my_path.split("/")[-1].split("_")[0]
-    my_model_path = os.path.join(parent_dir, "model", pid)
-    print(my_model_path)
-
-    my_meta_path = os.path.join(my_model_path, os.listdir(my_model_path)[0])
+    golden_meta_path = os.path.join(os.path.dirname(os.path.abspath(golden_path)), "model_tree.json")
+    cur_my_path = os.path.dirname(os.path.abspath(my_path))
+    token_id = os.path.basename(cur_my_path).split('_')[1]
+    my_meta_path = glob.glob(os.path.join(os.path.dirname(os.path.dirname(cur_my_path)), "model", token_id, "*.json"))[0]
 
     with open(golden_meta_path, "r") as file:
         golden_meta = json.load(file)
@@ -177,9 +184,9 @@ def compare_metadata_auto(golden_path, my_path, output_path="."):
     }
 
     gathered_golden_data = []
-    gathered_golden_data.extend(traverse_tree(golden_meta, golden_path, 'golden'))
+    gathered_golden_data.extend(traverse_tree(golden_meta, golden_path, 'torch'))
     gathered_my_data = []
-    gathered_my_data.extend(traverse_tree(my_meta, my_path, 'my'))
+    gathered_my_data.extend(traverse_tree(my_meta, my_path, 'atb'))
 
     matches = []
     j = 0
@@ -194,7 +201,8 @@ def compare_metadata_auto(golden_path, my_path, output_path="."):
                 else:
                     j += 1
     
-    for match in matches:
+    matched_path_pair = []
+    for match in enumerate(matches):
         try:
             golden_out_path = [x for x in os.listdir(match['golden']['golden_path']) if x.startswith('out')]
             golden_out_path.sort(key=lambda x: int(x.split('output_exec')[1].split('.')[0]))
@@ -207,12 +215,22 @@ def compare_metadata_auto(golden_path, my_path, output_path="."):
                 print(_golden_tensor_path, _my_tensor_path)  
                 res = compare_file(_golden_tensor_path, _my_tensor_path)
                 logger.info(f"Compared results: {res}")
+                matched_path_pair.append({'golden': _golden_tensor_path, 'my': _my_tensor_path})
         except IndexError as e:
             msg = f"Cannot find path! golden: {match['golden']['golden_path']}, my: {match['my']['my_path']}"
             logger.debug(msg)
+    
+    gathered_row_data = []
+    for data_id, match in enumerate(matched_path_pair):
+        _golden_tensor_path = match['golden']
+        _my_tensor_path = match['my']
+        row_data = fill_row_data(token_id, data_id, _golden_tensor_path, _my_tensor_path)
+        gathered_row_data.append(row_data)
+    data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
+    return save_compare_dataframe_to_csv(data_frame, output_path)
 
 
-def enumerate_children(children, path, traverse_type='golden', node_id=''):
+def enumerate_children(children, path, traverse_type='torch', node_id=''):
     res = []
     for idx, children_node in enumerate(children):
         if node_id != '':
@@ -222,16 +240,16 @@ def enumerate_children(children, path, traverse_type='golden', node_id=''):
     return res
 
 
-def traverse_tree(node, path, traverse_type='golden', node_id=''):
+def traverse_tree(node, path, traverse_type='torch', node_id=''):
     res = []
     node['id'] = node_id
-    if traverse_type == 'golden':
-        node['golden_path'] = os.path.join(os.path.abspath(path), '0', node['name'])
+    if traverse_type == 'torch':
+        node['golden_path'] = os.path.join(os.path.abspath(path), node['name'])
         res.append({k:v for k, v in node.items() if k != 'children'})
         if len(node['children']) > 0:
             res.extend(enumerate_children(node['children'], path, traverse_type, node_id))
     else:
-        node['my_path'] = os.path.join(os.path.abspath(path), '0', '_*/'.join(node_id.split('_')) + '_*', 'after')
+        node['my_path'] = os.path.join(os.path.abspath(path), '_*/'.join(node_id.split('_')) + '_*', 'after')
         res.append({k:v for k, v in node.items() if k != 'nodes'})
         if 'nodes' in node.keys() and len(node['nodes']) > 0:
             res.extend(enumerate_children(node['nodes'], path, traverse_type, node_id))
@@ -342,3 +360,35 @@ def set_tensor_basic_info_in_row_data(golden_data, my_data):
         row_data[MY_MIN_VALUE] = my_data.min().item()
         row_data[MY_MEAN_VALUE] = my_data.mean().item()
     return row_data
+
+
+# 加速库模型间比对相关
+def compare_topo_json(golden_topo_json_path, my_topo_json_path):  
+    try: 
+        with open(golden_topo_json_path, 'r') as file1:  
+            data1 = json.load(file1)  
+        with open(my_topo_json_path, 'r') as file2:  
+            data2 = json.load(file2)  
+        if data1 == data2:  
+            return True  
+        else: 
+            return False  
+    except (IOError, json.JSONDecodeError):  
+        return False
+
+
+def if_dumped_model_topo(golden_path):
+    # 判断用户输入路径的ait_dump目录下是否包括/model路径，即是否包括模型拓扑信息
+    absolute_path = os.path.abspath(golden_path)      
+    model_dir_path = os.path.join(absolute_path, '../../../', 'model')
+    model_dir_path = os.path.normpath(model_dir_path)
+    if not os.path.isdir(model_dir_path): 
+        return False, "" 
+    # 搜索/model目录下的所有文件，查找JSON文件  
+    for root, dirs, files in os.walk(model_dir_path):  
+        for file in files:
+            if file.endswith('.json'):    
+                json_file_path = os.path.join(root, file)  
+                return True, json_file_path  
+    # 如果没有找到json文件，返回False和空字符串         
+    return False, ""  
