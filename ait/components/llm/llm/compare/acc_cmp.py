@@ -196,9 +196,9 @@ def traverse_tree(node, path, traverse_type='torch', node_id=''):
     return res
 
 
-def match_first_layer(gathered_golden_data, gathered_my_data, op_mapping):
-    golden_first_layer = op_mapping['golden'].split('/')[0]
-    my_first_layer = op_mapping['my'].split('/')[0]
+def match_first_layer(gathered_golden_data, gathered_my_data, golden_hierarchy, my_hierarchy):
+    golden_first_layer = golden_hierarchy.split('/')[0]
+    my_first_layer = my_hierarchy.split('/')[0]
     matched_layer = []
     j = 0
     for x in gathered_golden_data:
@@ -214,9 +214,10 @@ def match_first_layer(gathered_golden_data, gathered_my_data, op_mapping):
     return matched_layer
 
 
-def match_pair(matched_layer, op_mapping):
+def match_pair(matched_layer, golden_hierarchy, my_hierarchy):
     print(matched_layer)
-    print(op_mapping)
+    print(golden_hierarchy)
+    print(my_hierarchy)
     matched_path_pair = []    
     return matched_path_pair
 
@@ -244,18 +245,16 @@ def compare_metadata_auto(golden_path, my_path, model_tree_path, output_path="."
     
     # 读取自定义算子映射文件
     op_mapping_dic = {
-        {
-            'golden': 'BloomBlock/BloomMLP',
-            'my':'Bloom7bCommonLayer/MlpGateLayerV2'
-        },
+        'BloomBlock/BloomMLP':'Bloom7bCommonLayer/MlpGateLayerV2',
+        'BloomMLP':'MlpGateLayerV2',
     }
     
     # 获取对比路径对
     matched_path_pair = []
-    for op_mapping in op_mapping_dic.items():
-        matched_first_layer = match_first_layer(gathered_golden_data, gathered_my_data, op_mapping)
+    for golden_hierarchy, my_hierarchy in op_mapping_dic.items():
+        matched_first_layer = match_first_layer(gathered_golden_data, gathered_my_data, golden_hierarchy, my_hierarchy)
         for matched_layer in matched_first_layer:
-            matched_path_pair.extend(match_pair(matched_layer, op_mapping))
+            matched_path_pair.extend(match_pair(matched_layer, golden_hierarchy, my_hierarchy))
     
     # 输出csv文件
     token_id = os.path.basename(os.path.dirname(os.path.abspath(my_path))).split('_')[1]
