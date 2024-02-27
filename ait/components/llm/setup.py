@@ -26,6 +26,7 @@ for root, dirs, files in os.walk('./llm/opcheck/test_framework/'):
     opchecker_lib_src.append((os.path.join("/", root), [os.path.join(root, f) for f in files]))
 
 compare_json_src = [('/./llm/compare/', ["./llm/compare/op_mapping_file.json"])]
+
 setup(
     name='ait-llm',
     version='0.2.1',
