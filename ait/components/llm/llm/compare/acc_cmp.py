@@ -159,8 +159,8 @@ def save_compare_dataframe_to_csv(data_frame, output_path="."):
 def compare_metadata_auto(golden_path, my_path, output_path="."):
     golden_meta_path = os.path.join(os.path.dirname(os.path.abspath(golden_path)), "model_tree.json")
     cur_my_path = os.path.dirname(os.path.abspath(my_path))
-    pid = os.path.basename(cur_my_path).split('_')[1]
-    my_meta_path = glob.glob(os.path.join(os.path.dirname(os.path.dirname(cur_my_path)), "model", pid, "*.json"))[0]
+    token_id = os.path.basename(cur_my_path).split('_')[1]
+    my_meta_path = glob.glob(os.path.join(os.path.dirname(os.path.dirname(cur_my_path)), "model", token_id, "*.json"))[0]
 
     with open(golden_meta_path, "r") as file:
         golden_meta = json.load(file)
@@ -189,7 +189,8 @@ def compare_metadata_auto(golden_path, my_path, output_path="."):
                 else:
                     j += 1
     
-    for match in matches:
+    matched_path_pair = []
+    for match in enumerate(matches):
         try:
             golden_out_path = [x for x in os.listdir(match['golden']['golden_path']) if x.startswith('out')]
             golden_out_path.sort(key=lambda x: int(x.split('output_exec')[1].split('.')[0]))
@@ -202,9 +203,19 @@ def compare_metadata_auto(golden_path, my_path, output_path="."):
                 print(_golden_tensor_path, _my_tensor_path)  
                 res = compare_file(_golden_tensor_path, _my_tensor_path)
                 logger.info(f"Compared results: {res}")
+                matched_path_pair.append({'golden': _golden_tensor_path, 'my': _my_tensor_path})
         except IndexError as e:
             msg = f"Cannot find path! golden: {match['golden']['golden_path']}, my: {match['my']['my_path']}"
             logger.debug(msg)
+    
+    gathered_row_data = []
+    for data_id, match in enumerate(matched_path_pair):
+        _golden_tensor_path = match['golden']
+        _my_tensor_path = match['my']
+        row_data = fill_row_data(token_id, data_id, _golden_tensor_path, _my_tensor_path)
+        gathered_row_data.append(row_data)
+    data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
+    return save_compare_dataframe_to_csv(data_frame, output_path)
 
 
 def enumerate_children(children, path, traverse_type='torch', node_id=''):
