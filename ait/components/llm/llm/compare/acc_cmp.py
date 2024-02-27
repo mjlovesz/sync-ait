@@ -276,8 +276,8 @@ def compare_metadata_auto(golden_path, my_path, model_tree_path, output_path, ma
         with open(mapping_path1) as file:
             op_mapping_dic = json.load(file)
     else:
-        import llm.compare
-        mapping_path2 = os.path.join(os.path.dirname(llm.compare.__file__), "op_mapping_file.json")
+        import llm.llm.compare
+        mapping_path2 = os.path.join(os.path.dirname(llm.llm.compare.__file__), "op_mapping_file.json")
         with open(mapping_path2) as file:
             op_mapping_dic = json.load(file)
 
