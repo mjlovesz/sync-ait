@@ -219,7 +219,8 @@ def match_layers(gathered_golden_data, gathered_my_data, golden_hierarchy, my_hi
     matched_first_layers = match_first_layer(gathered_golden_data, gathered_my_data, golden_layers[0], my_layers[0])
     if len(golden_layers) > 1 and len(my_layers) > 1:
         for first_layer in matched_first_layers:
-            matched_layers.extend(match_layers(first_layer['golden']['children'], first_layer['my']['nodes'], '/'.join(golden_layers[1:]), '/'.join(my_layers[1:])))
+            if 'children' in first_layer['golden'].keys() and 'nodes' in first_layer['my'].keys():
+                matched_layers.extend(match_layers(first_layer['golden']['children'], first_layer['my']['nodes'], '/'.join(golden_layers[1:]), '/'.join(my_layers[1:])))
     else:
         matched_layers.extend(matched_first_layers)
     return matched_layers
