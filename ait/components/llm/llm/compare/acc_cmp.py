@@ -69,10 +69,11 @@ def acc_compare(golden_path, my_path, output_path="."):
             if compare_topo_json(golden_topo_json_path, my_topo_json_path):
                 # topo信息一致，走dtype和bs比对逻辑：
                 logger.info("Automatic mapping comparison starts! Comparing ATB tensors, the topos of tensors are same...")
+                compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_topo_json_path, output_path)
             else:
                 # topo信息不一致，走量化比对逻辑，待补充
                 logger.info('Automatic mapping comparison starts! Comparing ATB tensors, the topos of tensors are different...')
-                
+
     elif os.path.isfile(golden_path) and os.path.isfile(my_path):
         res = compare_file(golden_path, my_path)
         logger.info("Compared results: %s", res)
@@ -363,6 +364,67 @@ def set_tensor_basic_info_in_row_data(golden_data, my_data):
 
 
 # 加速库模型间比对相关
+def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_topo_json_path, output_path="."):
+    cur_my_path = os.path.dirname(os.path.abspath(my_path))
+    token_id = os.path.basename(cur_my_path).split('_')[1]
+
+    with open(golden_topo_json_path, "r") as file:
+        golden_topo = json.load(file)
+    with open(my_topo_json_path, "r") as file:
+        my_topo = json.load(file)
+
+
+    gathered_golden_data = []
+    gathered_golden_data.extend(traverse_tree(golden_topo, golden_path, 'atb'))
+    gathered_my_data = []
+    gathered_my_data.extend(traverse_tree(my_topo, my_path, 'atb'))
+
+    print("&" * 99)
+    print(f"token_id: {token_id}")
+    print(f"gathered_golden_data:{gathered_golden_data}")
+
+    # matches = []
+    # j = 0
+    # for x in gathered_golden_data:
+    #     golden_type = x['type']
+    #     if golden_type in map_dic.keys():
+    #         while j < len(gathered_my_data):
+    #             if 'opType' in gathered_my_data[j].keys() and gathered_my_data[j]['opType'] == map_dic[golden_type]:
+    #                 matches.append({'golden': x, 'my': gathered_my_data[j]})
+    #                 j += 1
+    #                 break
+    #             else:
+    #                 j += 1
+    
+    # matched_path_pair = []
+    # for match in matches:
+    #     try:
+    #         golden_out_path = [x for x in os.listdir(match['golden']['golden_path']) if x.startswith('out')]
+    #         golden_out_path.sort(key=lambda x: int(x.split('output_exec')[1].split('.')[0]))
+    #         golden_out_path = [os.path.join(match['golden']['golden_path'], x) for x in golden_out_path]
+    #         _my_path = glob.glob(match['my']['my_path'])[0]
+    #         my_out_path = [x for x in os.listdir(_my_path) if x.startswith('out')]
+    #         my_out_path.sort(key=lambda x: int(x.split('outtensor')[1].split('.')[0]))
+    #         my_out_path = [os.path.join(_my_path, x) for x in my_out_path]
+    #         for _golden_tensor_path, _my_tensor_path in zip(golden_out_path, my_out_path):
+    #             print(_golden_tensor_path, _my_tensor_path)  
+    #             res = compare_file(_golden_tensor_path, _my_tensor_path)
+    #             logger.info(f"Compared results: {res}")
+    #             matched_path_pair.append({'golden': _golden_tensor_path, 'my': _my_tensor_path})
+    #     except IndexError as e:
+    #         msg = f"Cannot find path! golden: {match['golden']['golden_path']}, my: {match['my']['my_path']}"
+    #         logger.debug(msg)
+    
+    # gathered_row_data = []
+    # for data_id, match in enumerate(matched_path_pair):
+    #     _golden_tensor_path = match['golden']
+    #     _my_tensor_path = match['my']
+    #     row_data = fill_row_data(token_id, data_id, _golden_tensor_path, _my_tensor_path)
+    #     gathered_row_data.append(row_data)
+    # data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
+    # return save_compare_dataframe_to_csv(data_frame, output_path)
+
+
 def compare_topo_json(golden_topo_json_path, my_topo_json_path):  
     try: 
         with open(golden_topo_json_path, 'r') as file1:  
