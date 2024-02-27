@@ -485,13 +485,9 @@ def search_mapping_relationships(gathered_golden_data, gathered_my_data):
     for match in matches:
         try:
             _golden_path = glob.glob(match['golden']['my_path'])[0]
-            golden_out_path = [x for x in os.listdir(_golden_path) if x.startswith('out')]
-            golden_out_path.sort(key=lambda x: int(x.split('outtensor')[1].split('.')[0]))
-            golden_out_path = [os.path.join(_golden_path, x) for x in golden_out_path]
+            golden_out_path = get_paths(_golden_path, split_pattern='outtensor')
             _my_path = glob.glob(match['my']['my_path'])[0]
-            my_out_path = [x for x in os.listdir(_my_path) if x.startswith('out')]
-            my_out_path.sort(key=lambda x: int(x.split('outtensor')[1].split('.')[0]))
-            my_out_path = [os.path.join(_my_path, x) for x in my_out_path]
+            my_out_path = get_paths(_my_path, split_pattern='outtensor')
             for _golden_tensor_path, _my_tensor_path in zip(golden_out_path, my_out_path):
                 matched_path_pair.append({'golden': _golden_tensor_path, 'my': _my_tensor_path})
         except IndexError as e:
