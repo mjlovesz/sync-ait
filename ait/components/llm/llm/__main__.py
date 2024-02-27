@@ -183,8 +183,8 @@ class CompareCommand(BaseCommand):
             dest="mapping_file",
             required=False,
             type=check_input_path_legality,
-            default='./op_mapping_file.json',
-            help='Path of mapping file.E.g:--op-mapping-file /xx/xxxx/op_mapping_file.json')    
+            default='./',
+            help='Path of mapping file.E.g:--op-mapping-file /xx/xxxx/xx')    
 
     def handle(self, args, **kwargs):
         set_log_level(args.log_level)

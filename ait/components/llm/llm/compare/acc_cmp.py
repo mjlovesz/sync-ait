@@ -49,7 +49,7 @@ NCHW_DIMS = 4
 NC1HWC0_DIMS = 5
 
 
-def acc_compare(golden_path, my_path, output_path=".", mapping_file="./op_mapping_file.json"):
+def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
     torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
     if torchair_ge_graph_path is not None:
         compare_torchair(golden_path, my_path, torchair_ge_graph_path, output_path=output_path)
@@ -65,7 +65,7 @@ def acc_compare(golden_path, my_path, output_path=".", mapping_file="./op_mappin
         elif os.path.exists(model_tree_path):
             # 存在model_tree_path路径，走torch模型和加速库模型比对逻辑
             logger.info("Automatic mapping comparison starts! Comparing torch tensors and ATB tensors...")
-            compare_metadata_auto(golden_path, my_path, model_tree_path, output_path, mapping_file)
+            compare_metadata_auto(golden_path, my_path, model_tree_path, output_path, mapping_file_path)
         elif golden_topo_flag and my_topo_flag:
             # 存在模型的拓扑信息，走加速库模型间的比对逻辑
             if compare_topo_json(golden_topo_json_path, my_topo_json_path):
@@ -249,7 +249,7 @@ def match_pair(matched_layer):
     return matched_path_pair
 
 
-def compare_metadata_auto(golden_path, my_path, model_tree_path, output_path, mapping_file):
+def compare_metadata_auto(golden_path, my_path, model_tree_path, output_path, mapping_file_path):
     # 读取torch侧模型文件
     with open(model_tree_path, "r") as file:
         golden_meta = json.load(file)
@@ -271,7 +271,7 @@ def compare_metadata_auto(golden_path, my_path, model_tree_path, output_path, ma
     gathered_my_data.extend(traverse_tree(my_meta, my_path, 'atb'))
     
     # 读取自定义算子映射文件
-    with open(mapping_file, "r") as file:
+    with open(os.path.join(mapping_file_path, "op_mapping_file.json"), "r") as file:
         op_mapping_dic = json.load(file)
     
     # 获取对比路径对
