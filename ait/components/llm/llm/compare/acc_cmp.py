@@ -361,7 +361,8 @@ def is_converting_nc1hwc0_to_nchw(golden_data, my_data):
     return True
 
 
-def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=None):
+def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=None, if_broadcast_tensor=False):
+    # 第四个参数“if_broadcast_tensor”用于两个模型dtype不一致时将低纬的tensor广播到高维进行比较
     # 创建一条比较数据
     logger.debug(f"[fill_row_data], golden_data_path: {golden_data_path}, my_path: {my_path}")
     row_data = {TOKEN_ID: str(token_id), DATA_ID: data_id, GOLDEN_DATA_PATH: golden_data_path, MY_DATA_PATH: my_path}
@@ -377,6 +378,9 @@ def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=N
     if is_converting_nc1hwc0_to_nchw(golden_data, my_data):
         logger.debug(f"[fill_row_data] NC1HWC0 -> NCHW, my_data: {my_data.shape}, golden_data: {golden_data.shape}")
         my_data.permute([0, 4, 1, 2, 3]).reshape(golden_data.shape)
+
+    if if_broadcast_tensor:
+        golden_data, my_data = torch.broadcast_tensors(golden_data, my_data)
 
     # 比较数据
     row_data.update(compare_data(golden_data, my_data))
@@ -424,7 +428,7 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
     for data_id, match in enumerate(matched_path_pair):
         _golden_tensor_path = match['golden']
         _my_tensor_path = match['my']
-        row_data = fill_row_data(token_id, data_id, _golden_tensor_path, _my_tensor_path)
+        row_data = fill_row_data(token_id, data_id, _golden_tensor_path, _my_tensor_path, None, True)
         gathered_row_data.append(row_data)
     data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
     return save_compare_dataframe_to_csv(data_frame, output_path)
@@ -491,6 +495,7 @@ def search_mapping_relationships(gathered_golden_data, gathered_my_data):
             for _golden_tensor_path, _my_tensor_path in zip(golden_out_path, my_out_path):
                 print(_golden_tensor_path, _my_tensor_path)
                 res = compare_file(_golden_tensor_path, _my_tensor_path)
+                logger.info(f"Compared results: {res}")
                 matched_path_pair.append({'golden': _golden_tensor_path, 'my': _my_tensor_path})
         except IndexError as e:
             msg = f"Cannot find path! golden: {match['golden']['my_path']}, my: {match['my']['my_path']}"
