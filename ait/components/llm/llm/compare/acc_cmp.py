@@ -442,7 +442,7 @@ def search_mapping_relationships(gathered_golden_data, gathered_my_data):
             _golden_path = glob.glob(match['golden']['my_path'])[0]
             golden_out_path = [x for x in os.listdir(_golden_path) if x.startswith('out')]
             golden_out_path.sort(key=lambda x: int(x.split('outtensor')[1].split('.')[0]))
-            golden_out_path = [os.path.join(_my_path, x) for x in my_out_path]
+            golden_out_path = [os.path.join(_golden_path, x) for x in golden_out_path]
             _my_path = glob.glob(match['my']['my_path'])[0]
             my_out_path = [x for x in os.listdir(_my_path) if x.startswith('out')]
             my_out_path.sort(key=lambda x: int(x.split('outtensor')[1].split('.')[0]))
