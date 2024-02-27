@@ -383,71 +383,20 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
     with open(my_topo_json_path, "r") as file:
         my_topo = json.load(file)
 
-
     gathered_golden_data = []
     gathered_golden_data.extend(traverse_tree(golden_topo, golden_path, 'atb'))
     gathered_my_data = []
     gathered_my_data.extend(traverse_tree(my_topo, my_path, 'atb'))
 
-    print("&" * 99)
-    print(f"token_id: {token_id}")
-    print(f"gathered_golden_data:{gathered_golden_data}")
-
-    json_data = json.dumps(gathered_golden_data)  
-    
-    # 指定要保存JSON文件的目录和文件名  
-    directory = "/home/wgw/xiao/out_test/"  
-    filename = "my_list.json"  
-    filepath = directory + filename  
-    
-    # 将JSON数据写入文件  
-    with open(filepath, "w") as file:  
-        file.write(json_data)
-
-
-
-
-
-#     matches = []
-#     j = 0
-#     for x in gathered_golden_data:
-#         golden_type = x['type']
-#         if golden_type in map_dic.keys():
-#             while j < len(gathered_my_data):
-#                 if 'opType' in gathered_my_data[j].keys() and gathered_my_data[j]['opType'] == map_dic[golden_type]:
-#                     matches.append({'golden': x, 'my': gathered_my_data[j]})
-#                     j += 1
-#                     break
-#                 else:
-#                     j += 1
-    
-#     matched_path_pair = []
-#     for match in matches:
-#         try:
-#             golden_out_path = [x for x in os.listdir(match['golden']['golden_path']) if x.startswith('out')]
-#             golden_out_path.sort(key=lambda x: int(x.split('output_exec')[1].split('.')[0]))
-#             golden_out_path = [os.path.join(match['golden']['golden_path'], x) for x in golden_out_path]
-#             _my_path = glob.glob(match['my']['my_path'])[0]
-#             my_out_path = [x for x in os.listdir(_my_path) if x.startswith('out')]
-#             my_out_path.sort(key=lambda x: int(x.split('outtensor')[1].split('.')[0]))
-#             my_out_path = [os.path.join(_my_path, x) for x in my_out_path]
-#             for _golden_tensor_path, _my_tensor_path in zip(golden_out_path, my_out_path):
-#                 print(_golden_tensor_path, _my_tensor_path)  
-#                 res = compare_file(_golden_tensor_path, _my_tensor_path)
-#                 logger.info(f"Compared results: {res}")
-#                 matched_path_pair.append({'golden': _golden_tensor_path, 'my': _my_tensor_path})
-#         except IndexError as e:
-#             msg = f"Cannot find path! golden: {match['golden']['golden_path']}, my: {match['my']['my_path']}"
-#             logger.debug(msg)
-    
-#     gathered_row_data = []
-#     for data_id, match in enumerate(matched_path_pair):
-#         _golden_tensor_path = match['golden']
-#         _my_tensor_path = match['my']
-#         row_data = fill_row_data(token_id, data_id, _golden_tensor_path, _my_tensor_path)
-#         gathered_row_data.append(row_data)
-#     data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
-#     return save_compare_dataframe_to_csv(data_frame, output_path)
+    matched_path_pair = search_mapping_relationships(gathered_golden_data, gathered_my_data)
+    gathered_row_data = []
+    for data_id, match in enumerate(matched_path_pair):
+        _golden_tensor_path = match['golden']
+        _my_tensor_path = match['my']
+        row_data = fill_row_data(token_id, data_id, _golden_tensor_path, _my_tensor_path)
+        gathered_row_data.append(row_data)
+    data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
+    return save_compare_dataframe_to_csv(data_frame, output_path)
 
 
 def compare_topo_json(golden_topo_json_path, my_topo_json_path):  
@@ -478,4 +427,43 @@ def if_dumped_model_topo(golden_path):
                 json_file_path = os.path.join(root, file)  
                 return True, json_file_path  
     # 如果没有找到json文件，返回False和空字符串         
-    return False, ""  
+    return False, ""
+
+
+def search_mapping_relationships(gathered_golden_data, gathered_my_data):
+    matches = []
+    matched_path_pair = []  # 初始化匹配路径对的空列表  
+  
+    # 获取两个列表的最小长度，避免索引越界  
+    min_length = min(len(gathered_golden_data), len(gathered_my_data))  
+  
+    # 遍历两个列表  
+    for i in range(min_length):  
+        golden_item = gathered_golden_data[i]  
+        my_item = gathered_my_data[i]  
+  
+        # 检查两个元素是否都包含"opType"属性  
+        if "opType" in golden_item and "opType" in my_item:  
+            # 如果都包含，则将"my_path"属性以对象的形式添加到matched_path_pair列表中  
+            matches.append({'golden': golden_item, 'my': my_item})
+ 
+    for match in matches:
+        try:
+            _golden_path = glob.glob(match['golden']['my_path'])[0]
+            golden_out_path = [x for x in os.listdir(_golden_path) if x.startswith('out')]
+            golden_out_path.sort(key=lambda x: int(x.split('outtensor')[1].split('.')[0]))
+            golden_out_path = [os.path.join(_golden_path, x) for x in golden_out_path]
+            _my_path = glob.glob(match['my']['my_path'])[0]
+            my_out_path = [x for x in os.listdir(_my_path) if x.startswith('out')]
+            my_out_path.sort(key=lambda x: int(x.split('outtensor')[1].split('.')[0]))
+            my_out_path = [os.path.join(_my_path, x) for x in my_out_path]
+            for _golden_tensor_path, _my_tensor_path in zip(golden_out_path, my_out_path):
+                print(_golden_tensor_path, _my_tensor_path)
+                res = compare_file(_golden_tensor_path, _my_tensor_path)
+                logger.info(f"Compared results: {res}")
+                matched_path_pair.append({'golden': _golden_tensor_path, 'my': _my_tensor_path})
+        except IndexError as e:
+            msg = f"Cannot find path! golden: {match['golden']['my_path']}, my: {match['my']['my_path']}"
+            logger.debug(msg)
+
+    return matched_path_pair  
