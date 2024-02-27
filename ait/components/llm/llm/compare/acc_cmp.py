@@ -190,7 +190,7 @@ def compare_metadata_auto(golden_path, my_path, output_path="."):
                     j += 1
     
     matched_path_pair = []
-    for match in enumerate(matches):
+    for match in matches:
         try:
             golden_out_path = [x for x in os.listdir(match['golden']['golden_path']) if x.startswith('out')]
             golden_out_path.sort(key=lambda x: int(x.split('output_exec')[1].split('.')[0]))
