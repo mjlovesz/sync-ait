@@ -383,74 +383,89 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
     print(f"token_id: {token_id}")
     print(f"gathered_golden_data:{gathered_golden_data}")
 
-    # matches = []
-    # j = 0
-    # for x in gathered_golden_data:
-    #     golden_type = x['type']
-    #     if golden_type in map_dic.keys():
-    #         while j < len(gathered_my_data):
-    #             if 'opType' in gathered_my_data[j].keys() and gathered_my_data[j]['opType'] == map_dic[golden_type]:
-    #                 matches.append({'golden': x, 'my': gathered_my_data[j]})
-    #                 j += 1
-    #                 break
-    #             else:
-    #                 j += 1
+    json_data = json.dumps(gathered_golden_data)  
     
-    # matched_path_pair = []
-    # for match in matches:
-    #     try:
-    #         golden_out_path = [x for x in os.listdir(match['golden']['golden_path']) if x.startswith('out')]
-    #         golden_out_path.sort(key=lambda x: int(x.split('output_exec')[1].split('.')[0]))
-    #         golden_out_path = [os.path.join(match['golden']['golden_path'], x) for x in golden_out_path]
-    #         _my_path = glob.glob(match['my']['my_path'])[0]
-    #         my_out_path = [x for x in os.listdir(_my_path) if x.startswith('out')]
-    #         my_out_path.sort(key=lambda x: int(x.split('outtensor')[1].split('.')[0]))
-    #         my_out_path = [os.path.join(_my_path, x) for x in my_out_path]
-    #         for _golden_tensor_path, _my_tensor_path in zip(golden_out_path, my_out_path):
-    #             print(_golden_tensor_path, _my_tensor_path)  
-    #             res = compare_file(_golden_tensor_path, _my_tensor_path)
-    #             logger.info(f"Compared results: {res}")
-    #             matched_path_pair.append({'golden': _golden_tensor_path, 'my': _my_tensor_path})
-    #     except IndexError as e:
-    #         msg = f"Cannot find path! golden: {match['golden']['golden_path']}, my: {match['my']['my_path']}"
-    #         logger.debug(msg)
+    # 指定要保存JSON文件的目录和文件名  
+    directory = "/home/wgw/xiao/out_test/"  
+    filename = "my_list.json"  
+    filepath = directory + filename  
     
-    # gathered_row_data = []
-    # for data_id, match in enumerate(matched_path_pair):
-    #     _golden_tensor_path = match['golden']
-    #     _my_tensor_path = match['my']
-    #     row_data = fill_row_data(token_id, data_id, _golden_tensor_path, _my_tensor_path)
-    #     gathered_row_data.append(row_data)
-    # data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
-    # return save_compare_dataframe_to_csv(data_frame, output_path)
+    # 将JSON数据写入文件  
+    with open(filepath, "w") as file:  
+        file.write(json_data)
 
 
-def compare_topo_json(golden_topo_json_path, my_topo_json_path):  
-    try: 
-        with open(golden_topo_json_path, 'r') as file1:  
-            data1 = json.load(file1)  
-        with open(my_topo_json_path, 'r') as file2:  
-            data2 = json.load(file2)  
-        if data1 == data2:  
-            return True  
-        else: 
-            return False  
-    except (IOError, json.JSONDecodeError):  
-        return False
 
 
-def if_dumped_model_topo(golden_path):
-    # 判断用户输入路径的ait_dump目录下是否包括/model路径，即是否包括模型拓扑信息
-    absolute_path = os.path.abspath(golden_path)      
-    model_dir_path = os.path.join(absolute_path, '../../../', 'model')
-    model_dir_path = os.path.normpath(model_dir_path)
-    if not os.path.isdir(model_dir_path): 
-        return False, "" 
-    # 搜索/model目录下的所有文件，查找JSON文件  
-    for root, dirs, files in os.walk(model_dir_path):  
-        for file in files:
-            if file.endswith('.json'):    
-                json_file_path = os.path.join(root, file)  
-                return True, json_file_path  
-    # 如果没有找到json文件，返回False和空字符串         
-    return False, ""  
+
+#     matches = []
+#     j = 0
+#     for x in gathered_golden_data:
+#         golden_type = x['type']
+#         if golden_type in map_dic.keys():
+#             while j < len(gathered_my_data):
+#                 if 'opType' in gathered_my_data[j].keys() and gathered_my_data[j]['opType'] == map_dic[golden_type]:
+#                     matches.append({'golden': x, 'my': gathered_my_data[j]})
+#                     j += 1
+#                     break
+#                 else:
+#                     j += 1
+    
+#     matched_path_pair = []
+#     for match in matches:
+#         try:
+#             golden_out_path = [x for x in os.listdir(match['golden']['golden_path']) if x.startswith('out')]
+#             golden_out_path.sort(key=lambda x: int(x.split('output_exec')[1].split('.')[0]))
+#             golden_out_path = [os.path.join(match['golden']['golden_path'], x) for x in golden_out_path]
+#             _my_path = glob.glob(match['my']['my_path'])[0]
+#             my_out_path = [x for x in os.listdir(_my_path) if x.startswith('out')]
+#             my_out_path.sort(key=lambda x: int(x.split('outtensor')[1].split('.')[0]))
+#             my_out_path = [os.path.join(_my_path, x) for x in my_out_path]
+#             for _golden_tensor_path, _my_tensor_path in zip(golden_out_path, my_out_path):
+#                 print(_golden_tensor_path, _my_tensor_path)  
+#                 res = compare_file(_golden_tensor_path, _my_tensor_path)
+#                 logger.info(f"Compared results: {res}")
+#                 matched_path_pair.append({'golden': _golden_tensor_path, 'my': _my_tensor_path})
+#         except IndexError as e:
+#             msg = f"Cannot find path! golden: {match['golden']['golden_path']}, my: {match['my']['my_path']}"
+#             logger.debug(msg)
+    
+#     gathered_row_data = []
+#     for data_id, match in enumerate(matched_path_pair):
+#         _golden_tensor_path = match['golden']
+#         _my_tensor_path = match['my']
+#         row_data = fill_row_data(token_id, data_id, _golden_tensor_path, _my_tensor_path)
+#         gathered_row_data.append(row_data)
+#     data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
+#     return save_compare_dataframe_to_csv(data_frame, output_path)
+
+
+# def compare_topo_json(golden_topo_json_path, my_topo_json_path):  
+#     try: 
+#         with open(golden_topo_json_path, 'r') as file1:  
+#             data1 = json.load(file1)  
+#         with open(my_topo_json_path, 'r') as file2:  
+#             data2 = json.load(file2)  
+#         if data1 == data2:  
+#             return True  
+#         else: 
+#             return False  
+#     except (IOError, json.JSONDecodeError):  
+#         return False
+
+
+# def if_dumped_model_topo(golden_path):
+#     # 判断用户输入路径的ait_dump目录下是否包括/model路径，即是否包括模型拓扑信息
+#     absolute_path = os.path.abspath(golden_path)      
+#     model_dir_path = os.path.join(absolute_path, '../../../', 'model')
+#     model_dir_path = os.path.normpath(model_dir_path)
+#     if not os.path.isdir(model_dir_path): 
+#         return False, "" 
+#     # 搜索/model目录下的所有文件，查找JSON文件  
+#     for root, dirs, files in os.walk(model_dir_path):  
+#         for file in files:
+#             if file.endswith('.json'):    
+#                 json_file_path = os.path.join(root, file)  
+#                 return True, json_file_path  
+#     # 如果没有找到json文件，返回False和空字符串         
+#     return False, ""  
