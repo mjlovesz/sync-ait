@@ -49,13 +49,15 @@ NC1HWC0_DIMS = 5
 
 def acc_compare(golden_path, my_path, output_path="."):
     torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
+    golden_tensor_path = os.path.join(golden_path, "golden_tensor")
+    golden_topo_flag, golden_topo_json_path = if_dumped_model_topo(golden_path)
+    my_topo_flag, my_topo_json_path = if_dumped_model_topo(my_path)
     if torchair_ge_graph_path is not None:
         compare_torchair(golden_path, my_path, torchair_ge_graph_path, output_path=output_path)
-    elif os.path.isdir(golden_path):
-        golden_tensor_path = os.path.join(golden_path, "golden_tensor")
-        if os.path.isdir(golden_tensor_path):
-            compare_metadata(golden_tensor_path, output_path)
-        else:
+    elif os.path.isdir(golden_path) and os.path.isdir(golden_tensor_path):
+        # 存在golden_tensor路径，走手动映射比对逻辑
+        compare_metadata(golden_tensor_path, output_path)
+    elif 
             # logger.error("Can not find 'golden_tensor'.")
             compare_metadata_auto(golden_path, my_path, output_path)
     elif os.path.isfile(golden_path) and os.path.isfile(my_path):
