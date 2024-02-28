@@ -67,7 +67,7 @@ def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
             logger.info("Automatic mapping comparison starts! Comparing torch tensors and ATB tensors...")
             compare_metadata_auto(golden_path, my_path, model_tree_path, output_path, mapping_file_path)
         elif golden_topo_flag and my_topo_flag:
-            # 存在模型的拓扑信息，走加速库模型间的比对逻辑
+            # 存在模型的拓扑信息，走加速库模型间的比对逻辑  
             if compare_topo_json(golden_topo_json_path, my_topo_json_path):
                 # topo信息一致，走dtype和bs比对逻辑：
                 logger.info("Automatic mapping comparison starts! Comparing ATB tensors, the topos are same...")
@@ -262,7 +262,7 @@ def compare_metadata_auto(golden_path, my_path, model_tree_path, output_path, ma
     else:
         msg = f"Cannot find ATB model! model path: {my_meta_path}"
         logger.error(msg)
-        return
+        return save_compare_dataframe_to_csv(pd.DataFrame())
     
     # 解析模型文件
     gathered_golden_data = []
