@@ -292,7 +292,8 @@ def compare_metadata_auto(golden_path, my_path, model_tree_path, output_path, ma
     token_id = os.path.basename(os.path.dirname(os.path.abspath(my_path))).split('_')[1]
     gathered_row_data = []
     for data_id, match in enumerate(matched_path_pair):
-        row_data = fill_row_data(token_id, data_id, match['golden'], match['my'])
+        data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: match['golden'], MY_DATA_PATH: match['my']}
+        row_data = fill_row_data(data_info)
         gathered_row_data.append(row_data)
     data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
     return save_compare_dataframe_to_csv(data_frame, output_path)
@@ -322,7 +323,8 @@ def fill_in_data(golden_meta):
                 sub_gathered_row_data = fill_row_data_torchair(token_id, data_id, golden_data_path, my_path)
                 gathered_row_data.extend(sub_gathered_row_data)
             else:
-                row_data = fill_row_data(token_id, data_id, golden_data_path, my_path)
+                data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: golden_data_path, MY_DATA_PATH: my_path}
+                row_data = fill_row_data(data_info)
                 gathered_row_data.append(row_data)
     return pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
 
@@ -340,11 +342,13 @@ def fill_row_data_torchair(token_id, data_id, golden_data_path, my_path):
 
     for cur_id, (golden_input, my_input) in enumerate(zip(golden_data_path["inputs"], my_inputs)):
         sub_my_path = "{},{},{}".format(my_path, "inputs", cur_id)
-        row_data = fill_row_data(token_id, data_id, golden_input, sub_my_path, loaded_my_data=my_input)
+        data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: golden_input, MY_DATA_PATH: sub_my_path}
+        row_data = fill_row_data(data_info, loaded_my_data=my_input)
         sub_gathered_row_data.append(row_data)
     for cur_id, (golden_output, my_output) in enumerate(zip(golden_data_path["outputs"], my_outputs)):
         sub_my_path = "{},{},{}".format(my_path, "outputs", cur_id)
-        row_data = fill_row_data(token_id, data_id, golden_output, sub_my_path, loaded_my_data=my_output)
+        data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: golden_output, MY_DATA_PATH: sub_my_path}
+        row_data = fill_row_data(data_info, loaded_my_data=my_output)
         sub_gathered_row_data.append(row_data)
     return sub_gathered_row_data
 
@@ -361,9 +365,13 @@ def is_converting_nc1hwc0_to_nchw(golden_data, my_data):
     return True
 
 
-def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=None, if_broadcast_tensor=False):
-    # 第四个参数“if_broadcast_tensor”用于两个模型dtype不一致时将低纬的tensor广播到高维进行比较
+def fill_row_data(data_info, loaded_my_data=None, if_broadcast_tensor=False):
+    # 第三个参数“if_broadcast_tensor”用于两个模型dtype不一致时将维的tensor广播到高维进行比较
     # 创建一条比较数据
+    token_id = data_info.get(TOKEN_ID)  
+    data_id = data_info.get(DATA_ID)  
+    golden_data_path = data_info.get(GOLDEN_DATA_PATH)  
+    my_path = data_info.get(MY_DATA_PATH)  
     logger.debug(f"[fill_row_data], golden_data_path: {golden_data_path}, my_path: {my_path}")
     row_data = {TOKEN_ID: str(token_id), DATA_ID: data_id, GOLDEN_DATA_PATH: golden_data_path, MY_DATA_PATH: my_path}
     if not os.path.isfile(golden_data_path):
@@ -428,7 +436,8 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
     for data_id, match in enumerate(matched_path_pair):
         _golden_tensor_path = match['golden']
         _my_tensor_path = match['my']
-        row_data = fill_row_data(token_id, data_id, _golden_tensor_path, _my_tensor_path, None, True)
+        data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: _golden_tensor_path, MY_DATA_PATH: _my_tensor_path}
+        row_data = fill_row_data(data_info, None, True)
         gathered_row_data.append(row_data)
     data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
     return save_compare_dataframe_to_csv(data_frame, output_path)
