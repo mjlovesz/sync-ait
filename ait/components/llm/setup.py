@@ -25,6 +25,8 @@ opchecker_lib_src = []
 for root, dirs, files in os.walk('./llm/opcheck/test_framework/'):
     opchecker_lib_src.append((os.path.join("/", root), [os.path.join(root, f) for f in files]))
 
+compare_json_src = [('/./llm/compare/', ["./llm/compare/op_mapping_file.json"])]
+
 setup(
     name='ait-llm',
     version='0.2.1',
@@ -46,7 +48,7 @@ setup(
         'Topic :: Software Development'
     ],
     data_dir=f"{site.getsitepackages()[0]}",
-    data_files=opchecker_lib_src,
+    data_files=opchecker_lib_src + compare_json_src,
     include_package_data=True,
     python_requires='>=3.7',
     entry_points={
