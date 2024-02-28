@@ -3,5 +3,5 @@
     "BloomBlock/BloomAttention":"Bloom7bCommonLayer/SelfAttentionOperation",
     "GLMBlock/MLP":"CommonLayerFa/MlpGateLayerV2",
     "GLMBlock/RMSNorm":"CommonLayerFa/RmsNormOperation",
-    "GLMBlock/SelfAttention/CoreAttention":"CommonLayerFa/RmsNormOperation/SelfAttentionOperation"
+    "GLMBlock/SelfAttention/CoreAttention":"CommonLayerFa/FAWithPositionEmbedding/SelfAttentionOperation"
 }
