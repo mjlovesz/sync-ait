@@ -46,6 +46,7 @@ from llm.compare import torchair_utils
 NCHW_DIMS = 4
 NC1HWC0_DIMS = 5
 
+
 def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
     torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
     if torchair_ge_graph_path is not None:
@@ -356,7 +357,6 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
     gathered_golden_data.extend(traverse_tree(golden_topo, golden_path, 'atb'))
     gathered_my_data = []
     gathered_my_data.extend(traverse_tree(my_topo, my_path, 'atb'))
-
     matched_path_pair = search_mapping_relationships(gathered_golden_data, gathered_my_data)
     gathered_row_data = []
     for data_id, match in enumerate(matched_path_pair):
@@ -372,20 +372,17 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
 def search_mapping_relationships(gathered_golden_data, gathered_my_data):
     matches = []
     matched_path_pair = []  # 初始化匹配路径对的空列表  
-  
     # 获取两个列表的最小长度，避免索引越界  
     min_length = min(len(gathered_golden_data), len(gathered_my_data))  
-  
     # 遍历两个列表  
     for i in range(min_length):  
         golden_item = gathered_golden_data[i]  
         my_item = gathered_my_data[i]  
-  
         # 检查两个元素是否都包含"opType"属性  
         if "opType" in golden_item and "opType" in my_item:  
             # 如果都包含，则将"my_path"属性以对象的形式添加到matched_path_pair列表中  
             matches.append({'golden': golden_item, 'my': my_item})
- 
+
     for match in matches:
         try:
             _golden_path = glob.glob(match['golden']['my_path'])[0]
