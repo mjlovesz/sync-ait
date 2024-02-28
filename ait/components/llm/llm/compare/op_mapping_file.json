@@ -1,4 +1,4 @@
 {
     "BloomBlock/BloomMLP":"Bloom7bCommonLayer/MlpGateLayerV2",
-    "BloomMLP":"MlpGateLayerV2"
+    "GLMBlock/MLP":"CommonLayerFa/MlpGateLayerV2"
 }
