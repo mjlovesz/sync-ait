@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import os
-
+import glob
 import numpy as np
 import pandas as pd
 import json
@@ -46,29 +46,32 @@ from llm.compare import torchair_utils
 NCHW_DIMS = 4
 NC1HWC0_DIMS = 5
 
-def acc_compare(golden_path, my_path, output_path="."):
+def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
     torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
     if torchair_ge_graph_path is not None:
         compare_torchair(golden_path, my_path, torchair_ge_graph_path, output_path=output_path)
-    elif os.path.isdir(golden_path):       
+    elif os.path.isdir(golden_path):
         golden_tensor_path = os.path.join(golden_path, "golden_tensor")
+        golden_topo_flag, golden_topo_json_path = if_dumped_model_topo(golden_path)
+        my_topo_flag, my_topo_json_path = if_dumped_model_topo(my_path)
+        model_tree_path = os.path.join(os.path.dirname(os.path.abspath(golden_path)), "model_tree.json")
         if os.path.isdir(golden_tensor_path):
-            # 如果路径中包含"golden_tensor"，就走手动映射比对的逻辑
+            # 存在golden_tensor路径，走手动映射比对逻辑
+            logger.info("Manual mapping comparing starts! Comparing manual dump tensors and ATB tensors...")
             compare_metadata(golden_tensor_path, output_path)
-        else:
-            golden_topo_flag, golden_topo_json_path = if_dumped_model_topo(golden_path)
-            my_topo_flag, my_topo_json_path = if_dumped_model_topo(my_path)
-            # 如果路径往上回退两层有“model”路径，说明用户开启了模型拓扑信息dump，对比golden path和my path的模型拓扑信息是否一致
-            if golden_topo_flag and my_topo_flag:
-                # 对比golden path和my path的模型拓扑信息是否一致，走不同分支
-                if compare_topo_json(golden_topo_json_path, my_topo_json_path):
-                    # topo信息一致，走dtype和bs比对逻辑：
-                    logger.info('topo信息一致')
-                else:
-                    # topo信息不一致，走量化比对逻辑，待补充
-                    logger.info('topo information is different')
+        elif os.path.exists(model_tree_path):
+            # 存在model_tree_path路径，走torch模型和加速库模型比对逻辑，待补充
+            logger.info("Automatic mapping comparison starts! Comparing torch tensors and ATB tensors...")
+        elif golden_topo_flag and my_topo_flag:
+            # 存在模型的拓扑信息，走加速库模型间的比对逻辑  
+            if compare_topo_json(golden_topo_json_path, my_topo_json_path):
+                # topo信息一致，走dtype和bs比对逻辑：
+                logger.info("Automatic mapping comparison starts! Comparing ATB tensors, the topos are same...")
+                compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_topo_json_path, output_path)
             else:
-                logger.error("Can not find '/golden_tensor' or model topo, please use ait llm dump.")
+                # topo信息不一致，走量化比对逻辑，待补充
+                logger.info('Automatic mapping comparison starts! Comparing ATB tensors, the topos are different...')
+
     elif os.path.isfile(golden_path) and os.path.isfile(my_path):
         res = compare_file(golden_path, my_path)
         logger.info("Compared results: %s", res)
@@ -220,7 +223,8 @@ def fill_in_data(golden_meta):
                 sub_gathered_row_data = fill_row_data_torchair(token_id, data_id, golden_data_path, my_path)
                 gathered_row_data.extend(sub_gathered_row_data)
             else:
-                row_data = fill_row_data(token_id, data_id, golden_data_path, my_path)
+                data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: golden_data_path, MY_DATA_PATH: my_path}
+                row_data = fill_row_data(data_info)
                 gathered_row_data.append(row_data)
     return pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
 
@@ -238,11 +242,13 @@ def fill_row_data_torchair(token_id, data_id, golden_data_path, my_path):
 
     for cur_id, (golden_input, my_input) in enumerate(zip(golden_data_path["inputs"], my_inputs)):
         sub_my_path = "{},{},{}".format(my_path, "inputs", cur_id)
-        row_data = fill_row_data(token_id, data_id, golden_input, sub_my_path, loaded_my_data=my_input)
+        data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: golden_input, MY_DATA_PATH: sub_my_path}
+        row_data = fill_row_data(data_info, loaded_my_data=my_input)
         sub_gathered_row_data.append(row_data)
     for cur_id, (golden_output, my_output) in enumerate(zip(golden_data_path["outputs"], my_outputs)):
         sub_my_path = "{},{},{}".format(my_path, "outputs", cur_id)
-        row_data = fill_row_data(token_id, data_id, golden_output, sub_my_path, loaded_my_data=my_output)
+        data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: golden_output, MY_DATA_PATH: sub_my_path}
+        row_data = fill_row_data(data_info, loaded_my_data=my_output)
         sub_gathered_row_data.append(row_data)
     return sub_gathered_row_data
 
@@ -259,8 +265,13 @@ def is_converting_nc1hwc0_to_nchw(golden_data, my_data):
     return True
 
 
-def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=None):
+def fill_row_data(data_info, loaded_my_data=None, if_broadcast_tensor=False):
+    # 第三个参数“if_broadcast_tensor”用于两个模型dtype不一致时将维的tensor广播到高维进行比较
     # 创建一条比较数据
+    token_id = data_info.get(TOKEN_ID)  
+    data_id = data_info.get(DATA_ID)  
+    golden_data_path = data_info.get(GOLDEN_DATA_PATH)  
+    my_path = data_info.get(MY_DATA_PATH)  
     logger.debug(f"[fill_row_data], golden_data_path: {golden_data_path}, my_path: {my_path}")
     row_data = {TOKEN_ID: str(token_id), DATA_ID: data_id, GOLDEN_DATA_PATH: golden_data_path, MY_DATA_PATH: my_path}
     if not os.path.isfile(golden_data_path):
@@ -275,6 +286,9 @@ def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=N
     if is_converting_nc1hwc0_to_nchw(golden_data, my_data):
         logger.debug(f"[fill_row_data] NC1HWC0 -> NCHW, my_data: {my_data.shape}, golden_data: {golden_data.shape}")
         my_data.permute([0, 4, 1, 2, 3]).reshape(golden_data.shape)
+
+    if if_broadcast_tensor:
+        golden_data, my_data = torch.broadcast_tensors(golden_data, my_data)
 
     # 比较数据
     row_data.update(compare_data(golden_data, my_data))
@@ -300,3 +314,95 @@ def set_tensor_basic_info_in_row_data(golden_data, my_data):
         row_data[MY_MIN_VALUE] = my_data.min().item()
         row_data[MY_MEAN_VALUE] = my_data.mean().item()
     return row_data
+
+
+def enumerate_children(children, path, traverse_type='torch_model', node_id=''):
+    res = []
+    for idx, children_node in enumerate(children):
+        if node_id != '':
+            res.extend(traverse_tree(children_node, path, traverse_type, node_id + f'_{idx}'))
+        else:
+            res.extend(traverse_tree(children_node, path, traverse_type, str(idx)))
+    return res
+
+
+def traverse_tree(node, path, traverse_type='torch', node_id=''):
+    res = []
+    node['id'] = node_id
+    if traverse_type == 'torch':
+        node['golden_path'] = os.path.join(os.path.abspath(path), node['name'])
+        res.append(node)
+        if len(node['children']) > 0:
+            res.extend(enumerate_children(node['children'], path, traverse_type, node_id))
+    else:
+        node['my_path'] = os.path.join(os.path.abspath(path), '_*/'.join(node_id.split('_')) + '_*', 'after')
+        res.append(node)
+        if 'nodes' in node.keys() and len(node['nodes']) > 0:
+            res.extend(enumerate_children(node['nodes'], path, traverse_type, node_id))
+    return res
+
+
+# 加速库模型间比对相关
+def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_topo_json_path, output_path="."):
+    cur_my_path = os.path.dirname(os.path.abspath(my_path))
+    token_id = os.path.basename(cur_my_path).split('_')[1]
+
+    with open(golden_topo_json_path, "r") as file:
+        golden_topo = json.load(file)
+    with open(my_topo_json_path, "r") as file:
+        my_topo = json.load(file)
+
+    gathered_golden_data = []
+    gathered_golden_data.extend(traverse_tree(golden_topo, golden_path, 'atb'))
+    gathered_my_data = []
+    gathered_my_data.extend(traverse_tree(my_topo, my_path, 'atb'))
+
+    matched_path_pair = search_mapping_relationships(gathered_golden_data, gathered_my_data)
+    gathered_row_data = []
+    for data_id, match in enumerate(matched_path_pair):
+        _golden_tensor_path = match['golden']
+        _my_tensor_path = match['my']
+        data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: _golden_tensor_path, MY_DATA_PATH: _my_tensor_path}
+        row_data = fill_row_data(data_info, None, True)
+        gathered_row_data.append(row_data)
+    data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
+    return save_compare_dataframe_to_csv(data_frame, output_path)
+
+
+def search_mapping_relationships(gathered_golden_data, gathered_my_data):
+    matches = []
+    matched_path_pair = []  # 初始化匹配路径对的空列表  
+  
+    # 获取两个列表的最小长度，避免索引越界  
+    min_length = min(len(gathered_golden_data), len(gathered_my_data))  
+  
+    # 遍历两个列表  
+    for i in range(min_length):  
+        golden_item = gathered_golden_data[i]  
+        my_item = gathered_my_data[i]  
+  
+        # 检查两个元素是否都包含"opType"属性  
+        if "opType" in golden_item and "opType" in my_item:  
+            # 如果都包含，则将"my_path"属性以对象的形式添加到matched_path_pair列表中  
+            matches.append({'golden': golden_item, 'my': my_item})
+ 
+    for match in matches:
+        try:
+            _golden_path = glob.glob(match['golden']['my_path'])[0]
+            golden_out_path = get_paths(_golden_path, split_pattern='outtensor')
+            _my_path = glob.glob(match['my']['my_path'])[0]
+            my_out_path = get_paths(_my_path, split_pattern='outtensor')
+            for _golden_tensor_path, _my_tensor_path in zip(golden_out_path, my_out_path):
+                matched_path_pair.append({'golden': _golden_tensor_path, 'my': _my_tensor_path})
+        except IndexError as e:
+            msg = f"Cannot find path! golden: {match['golden']['my_path']}, my: {match['my']['my_path']}"
+            logger.debug(msg)
+
+    return matched_path_pair
+
+
+def get_paths(path_dir, split_pattern):
+    out_paths = [x for x in os.listdir(path_dir) if x.startswith('out')]
+    out_paths.sort(key=lambda x: int(x.split(split_pattern)[-1].split('.')[0]))
+    out_paths = [os.path.join(path_dir, x) for x in out_paths]
+    return out_paths
