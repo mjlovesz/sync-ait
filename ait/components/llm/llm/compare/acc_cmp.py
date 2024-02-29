@@ -318,7 +318,7 @@ def set_tensor_basic_info_in_row_data(golden_data, my_data):
     return row_data
 
 
-def traverse_tree(node, path, traverse_type='torch', node_id=''):
+def traverse_tree(node: dict, path, traverse_type='torch', node_id=''):
     def enumerate_children(children, path, traverse_type='torch_model', node_id=''):
         res = []
         for idx, children_node in enumerate(children):
