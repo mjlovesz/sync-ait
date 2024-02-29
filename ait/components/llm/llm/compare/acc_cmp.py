@@ -42,7 +42,9 @@ from llm.common.constant import (
     CSV_GOLDEN_HEADER,
 )
 from llm.compare import torchair_utils
-from llm.compare.cmp_torch_atb import cmp_torch_atb_model
+from llm.compare.cmp_utils import search_layer_node, get_layer_node, get_leaf_nodes
+from llm.compare.op_mapping import ATB_TORCH_BUILT_IN_OP_MAPPING
+from llm.dump.torch_dump.topo import ModelTree
 
 NCHW_DIMS = 4
 NC1HWC0_DIMS = 5
@@ -268,3 +270,43 @@ def set_tensor_basic_info_in_row_data(golden_data, my_data):
         row_data[MY_MIN_VALUE] = my_data.min().item()
         row_data[MY_MEAN_VALUE] = my_data.mean().item()
     return row_data
+
+
+def cmp_torch_atb_model(golden_json, my_json, output_path):
+    compared_result = []
+    golden_root_node = ModelTree.json_to_tree(golden_json)
+    golden_layer_type = search_layer_node(golden_root_node)
+    golden_layer_nodes = []
+    get_layer_node(golden_root_node, golden_layer_type, golden_layer_nodes)
+
+    my_root_node = ModelTree.json_to_tree(my_json)
+    my_layer_type = search_layer_node(my_root_node)
+    my_layer_nodes = []
+    get_layer_node(my_root_node, my_layer_type, my_layer_nodes)
+
+    for golden_layer, my_layer in zip(golden_layer_nodes, my_layer_nodes):
+        g_layer_leaf_nodes = []
+        get_leaf_nodes(golden_layer, g_layer_leaf_nodes)
+        m_layer_leaf_nodes = []
+        get_leaf_nodes(my_layer, m_layer_leaf_nodes)
+        for atb_op_type, torch_op_type in ATB_TORCH_BUILT_IN_OP_MAPPING.items():
+            atb_nodes = []
+            torch_nodes = []
+            for m_leaf_node in m_layer_leaf_nodes:
+                if m_leaf_node.op_type == atb_op_type:
+                    atb_nodes.append(m_leaf_node)
+            for g_leaf_node in g_layer_leaf_nodes:
+                if g_leaf_node.op_type == torch_op_type:
+                    torch_nodes.append(g_leaf_node)
+            if len(atb_nodes) != len(torch_nodes):
+                logger.warning("The number of %s node in atb is not equal to %s node in torch",
+                               atb_op_type, torch_op_type)
+                continue
+            for atb_node, torch_node in zip(atb_nodes, torch_nodes):
+                my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
+                golden_tensor_path = os.path.join(atb_node.tensor_path, "output_exec1.pth")
+                row_data = fill_row_data(0, 0, golden_tensor_path, my_tensor_path)
+                compared_result.append(row_data)
+
+    data_frame = pd.DataFrame(compared_result, columns=CSV_GOLDEN_HEADER)
+    save_compare_dataframe_to_csv(data_frame, output_path)
