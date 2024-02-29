@@ -353,10 +353,8 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
     with open(my_topo_json_path, "r") as file:
         my_topo = json.load(file)
 
-    gathered_golden_data = []
-    gathered_golden_data.extend(traverse_tree(golden_topo, golden_path, 'atb'))
-    gathered_my_data = []
-    gathered_my_data.extend(traverse_tree(my_topo, my_path, 'atb'))
+    gathered_golden_data = traverse_tree(golden_topo, golden_path, 'atb')
+    gathered_my_data = traverse_tree(my_topo, my_path, 'atb')
     matched_path_pair = search_mapping_relationships(gathered_golden_data, gathered_my_data)
     gathered_row_data = []
     for data_id, match in enumerate(matched_path_pair):
