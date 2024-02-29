@@ -50,6 +50,10 @@ NCHW_DIMS = 4
 NC1HWC0_DIMS = 5
 
 
+
+import pydevd_pycharm
+pydevd_pycharm.settrace('90.253.71.235', port=9990, stdoutToServer=True, stderrToServer=True)
+
 def acc_compare(golden_path, my_path, output_path="."):
     torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
     if torchair_ge_graph_path is not None:
@@ -62,13 +66,17 @@ def acc_compare(golden_path, my_path, output_path="."):
             logger.error("Can not find 'golden_tensor'.")
             torch_model_topo_file = os.path.join(golden_path, "..", "model_tree.json")
             pid = str(my_path.split("/")[-2].split("_")[1])
-            atb_model_topo_file_path = os.path.join(my_path, "../..", "model", pid)
+            atb_model_topo_file_path = os.path.join(my_path, "../../..", "model", pid)
+            logger.info("atb model file: %s", atb_model_topo_file_path)
+            logger.info("torch_model_topo_file: %s", torch_model_topo_file)
             if os.path.exists(torch_model_topo_file) and os.path.exists(atb_model_topo_file_path):
                 logger.info("start to compare atb model with torch model.")
                 atb_model_topo_name = os.listdir(atb_model_topo_file_path)[0]
                 atb_model_topo_file = os.path.join(atb_model_topo_file_path, atb_model_topo_name)
+                logger.info("atb_model_topo_file: %s", atb_model_topo_file)
                 if os.path.exists(atb_model_topo_file):
-                    cmp_torch_atb_model(torch_model_topo_file, atb_model_topo_file, output_path)
+                    cmp_torch_atb_model(torch_model_topo_file, atb_model_topo_file, golden_path,
+                                        my_path, output_path)
                 else:
                     logger.error("atb model file %s is not exist.", atb_model_topo_file)
 
@@ -272,31 +280,29 @@ def set_tensor_basic_info_in_row_data(golden_data, my_data):
     return row_data
 
 
-def cmp_torch_atb_model(golden_json, my_json, output_path):
+def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path, output_path):
     compared_result = []
-    golden_root_node = ModelTree.json_to_tree(golden_json)
+    golden_root_node = ModelTree.json_to_tree(golden_json, torch_tensor_path)
     golden_layer_type = search_layer_node(golden_root_node)
-    golden_layer_nodes = []
-    get_layer_node(golden_root_node, golden_layer_type, golden_layer_nodes)
+    logger.info("golden_layer_type: %s", golden_layer_type)
+    golden_layer_nodes = get_layer_node(golden_root_node, golden_layer_type)
 
-    my_root_node = ModelTree.json_to_tree(my_json)
+    my_root_node = ModelTree.atb_json_to_tree(my_json, atb_tensor_path)
     my_layer_type = search_layer_node(my_root_node)
-    my_layer_nodes = []
-    get_layer_node(my_root_node, my_layer_type, my_layer_nodes)
+    logger.info("my_layer_type: %s", my_layer_type)
+    my_layer_nodes = get_layer_node(my_root_node, my_layer_type)
 
     for golden_layer, my_layer in zip(golden_layer_nodes, my_layer_nodes):
-        g_layer_leaf_nodes = []
-        get_leaf_nodes(golden_layer, g_layer_leaf_nodes)
-        m_layer_leaf_nodes = []
-        get_leaf_nodes(my_layer, m_layer_leaf_nodes)
+        g_layer_leaf_nodes = get_leaf_nodes(golden_layer)
+        m_layer_leaf_nodes = get_leaf_nodes(my_layer)
         for atb_op_type, torch_op_type in ATB_TORCH_BUILT_IN_OP_MAPPING.items():
             atb_nodes = []
             torch_nodes = []
             for m_leaf_node in m_layer_leaf_nodes:
-                if m_leaf_node.op_type == atb_op_type:
+                if m_leaf_node.node_type == atb_op_type:
                     atb_nodes.append(m_leaf_node)
             for g_leaf_node in g_layer_leaf_nodes:
-                if g_leaf_node.op_type == torch_op_type:
+                if g_leaf_node.node_type == torch_op_type:
                     torch_nodes.append(g_leaf_node)
             if len(atb_nodes) != len(torch_nodes):
                 logger.warning("The number of %s node in atb is not equal to %s node in torch",
@@ -304,8 +310,14 @@ def cmp_torch_atb_model(golden_json, my_json, output_path):
                 continue
             for atb_node, torch_node in zip(atb_nodes, torch_nodes):
                 my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
-                golden_tensor_path = os.path.join(atb_node.tensor_path, "output_exec1.pth")
-                row_data = fill_row_data(0, 0, golden_tensor_path, my_tensor_path)
+                golden_tensor_path = os.path.join(torch_node.tensor_path, "output_exec1.pth")
+                logger.info("my_tensor_path: %s", my_tensor_path)
+                logger.info("golden_tensor_path: %s", golden_tensor_path)
+                if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
+                    row_data = fill_row_data(0, 0, golden_tensor_path, my_tensor_path)
+                else:
+                    logger.debug("golden tensor path: %s or my_tensor_path: %s is not exist.",
+                                 golden_tensor_path, my_tensor_path)
                 compared_result.append(row_data)
 
     data_frame = pd.DataFrame(compared_result, columns=CSV_GOLDEN_HEADER)
