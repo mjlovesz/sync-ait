@@ -369,16 +369,9 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
 
 def search_mapping_relationships(gathered_golden_data, gathered_my_data):
     matches = []
-    matched_path_pair = []  # 初始化匹配路径对的空列表  
-    # 获取两个列表的最小长度，避免索引越界  
-    min_length = min(len(gathered_golden_data), len(gathered_my_data))  
-    # 遍历两个列表  
-    for i in range(min_length):  
-        golden_item = gathered_golden_data[i]  
-        my_item = gathered_my_data[i]  
-        # 检查两个元素是否都包含"opType"属性  
-        if "opType" in golden_item and "opType" in my_item:  
-            # 如果都包含，则将"my_path"属性以对象的形式添加到matched_path_pair列表中  
+    matched_path_pair = []  
+    for golden_item, my_item in zip(gathered_golden_data, gathered_my_data):  
+        if "opType" in golden_item and "opType" in my_item:   
             matches.append({'golden': golden_item, 'my': my_item})
 
     for match in matches:
