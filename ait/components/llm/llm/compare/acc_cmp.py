@@ -50,10 +50,6 @@ NCHW_DIMS = 4
 NC1HWC0_DIMS = 5
 
 
-
-import pydevd_pycharm
-pydevd_pycharm.settrace('90.253.71.235', port=9990, stdoutToServer=True, stderrToServer=True)
-
 def acc_compare(golden_path, my_path, output_path="."):
     torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
     if torchair_ge_graph_path is not None:
