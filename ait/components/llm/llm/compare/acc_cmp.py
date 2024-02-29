@@ -53,8 +53,8 @@ def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
         compare_torchair(golden_path, my_path, torchair_ge_graph_path, output_path=output_path)
     elif os.path.isdir(golden_path):
         golden_tensor_path = os.path.join(golden_path, "golden_tensor")
-        golden_topo_flag, golden_topo_json_path = if_dumped_model_topo(golden_path)
-        my_topo_flag, my_topo_json_path = if_dumped_model_topo(my_path)
+        golden_topo_flag, golden_topo_json_path = is_model_topo_exist(golden_path)
+        my_topo_flag, my_topo_json_path = is_model_topo_exist(my_path)
         model_tree_path = os.path.join(os.path.dirname(os.path.abspath(golden_path)), "model_tree.json")
         if os.path.isdir(golden_tensor_path):
             # 存在golden_tensor路径，走手动映射比对逻辑
@@ -81,7 +81,7 @@ def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
         exit(1)
 
 
-def if_dumped_model_topo(golden_path):
+def is_model_topo_exist(golden_path):
     # 判断用户输入路径的ait_dump目录下是否包括/model路径，即是否包括模型拓扑信息
     absolute_path = os.path.abspath(golden_path)      
     model_dir_path = os.path.join(absolute_path, '../../../', 'model')
@@ -102,11 +102,11 @@ def if_dumped_model_topo(golden_path):
 
 def compare_topo_json(golden_topo_json_path, my_topo_json_path):  
     try: 
-        with open(golden_topo_json_path, 'r') as file1:  
-            data1 = json.load(file1)  
-        with open(my_topo_json_path, 'r') as file2:  
-            data2 = json.load(file2)  
-        if data1 == data2:  
+        with open(golden_topo_json_path, 'r') as golden_file:  
+            golden_data = json.load(golden_file)  
+        with open(my_topo_json_path, 'r') as my_file:  
+            my_data = json.load(my_file)  
+        if golden_data == my_data:  
             return True  
         else: 
             return False  
@@ -266,8 +266,8 @@ def is_converting_nc1hwc0_to_nchw(golden_data, my_data):
     return True
 
 
-def fill_row_data(data_info, loaded_my_data=None, if_broadcast_tensor=False):
-    # 第三个参数“if_broadcast_tensor”用于两个模型dtype不一致时将维的tensor广播到高维进行比较
+def fill_row_data(data_info, loaded_my_data=None, is_broadcast_tensor=False):
+    # 第三个参数“is_broadcast_tensor”用于两个模型batch size不一致时将低维的tensor广播到高维进行比较
     # 创建一条比较数据
     token_id = data_info.get(TOKEN_ID)  
     data_id = data_info.get(DATA_ID)  
@@ -288,7 +288,7 @@ def fill_row_data(data_info, loaded_my_data=None, if_broadcast_tensor=False):
         logger.debug(f"[fill_row_data] NC1HWC0 -> NCHW, my_data: {my_data.shape}, golden_data: {golden_data.shape}")
         my_data.permute([0, 4, 1, 2, 3]).reshape(golden_data.shape)
 
-    if if_broadcast_tensor:
+    if is_broadcast_tensor:
         broadcast_golden_data, broadcast_my_data = torch.broadcast_tensors(golden_data, my_data)
         row_data.update(compare_data(broadcast_golden_data, broadcast_my_data))
     else:
@@ -364,7 +364,7 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
         _golden_tensor_path = match['golden']
         _my_tensor_path = match['my']
         data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: _golden_tensor_path, MY_DATA_PATH: _my_tensor_path}
-        row_data = fill_row_data(data_info, loaded_my_data=None, if_broadcast_tensor=True)
+        row_data = fill_row_data(data_info, loaded_my_data=None, is_broadcast_tensor=True)
         gathered_row_data.append(row_data)
     data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
     return save_compare_dataframe_to_csv(data_frame, output_path)
