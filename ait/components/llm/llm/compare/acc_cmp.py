@@ -363,7 +363,7 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
         _golden_tensor_path = match['golden']
         _my_tensor_path = match['my']
         data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: _golden_tensor_path, MY_DATA_PATH: _my_tensor_path}
-        row_data = fill_row_data(data_info, None, True)
+        row_data = fill_row_data(data_info, loaded_my_data=None, if_broadcast_tensor=True)
         gathered_row_data.append(row_data)
     data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
     return save_compare_dataframe_to_csv(data_frame, output_path)
