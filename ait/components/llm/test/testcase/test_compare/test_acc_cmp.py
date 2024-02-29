@@ -23,6 +23,12 @@ import pandas as pd
 
 from llm.compare import acc_cmp
 from llm.compare import torchair_utils
+from llm.common.constant import (
+    TOKEN_ID,
+    DATA_ID,
+    MY_DATA_PATH,
+    GOLDEN_DATA_PATH,
+)
 
 
 FILE_PERMISSION = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP
@@ -92,7 +98,8 @@ def test_check_tensor_given_golden_data_when_nan_then_false():
 
 
 def test_fill_row_data_given_my_path_when_valid_then_pass(golden_data_file, test_data_file):
-    row_data = acc_cmp.fill_row_data(0, 0, golden_data_file, test_data_file)
+    data_info = {TOKEN_ID: 0, DATA_ID: 0, GOLDEN_DATA_PATH: golden_data_file, MY_DATA_PATH: test_data_file}
+    row_data = acc_cmp.fill_row_data(data_info)
     assert isinstance(row_data, dict) and len(row_data) == 19
     assert row_data["cosine_similarity"] == '1.000000'
     assert len(row_data["cmp_fail_reason"]) == 0
@@ -101,20 +108,23 @@ def test_fill_row_data_given_my_path_when_valid_then_pass(golden_data_file, test
 def test_fill_row_data_given_loaded_my_data_when_valid_then_pass(golden_data_file):
     golden_data = np.load(golden_data_file)
     loaded_my_data = np.zeros_like(golden_data)
-    row_data = acc_cmp.fill_row_data(0, 0, golden_data_file, my_path="test", loaded_my_data=loaded_my_data)
+    data_info = {TOKEN_ID: 0, DATA_ID: 0, GOLDEN_DATA_PATH: golden_data_file, MY_DATA_PATH: "test"}
+    row_data = acc_cmp.fill_row_data(data_info, loaded_my_data=loaded_my_data)
     assert isinstance(row_data, dict) and len(row_data) == 19
     assert row_data["cosine_similarity"] == 'NaN'
     assert len(row_data["cmp_fail_reason"]) > 0
 
 
 def test_fill_row_data_given_my_path_when_dir_then_error(golden_data_file):
-    row_data = acc_cmp.fill_row_data(0, 0, golden_data_file, my_path="/")
+    data_info = {TOKEN_ID: 0, DATA_ID: 0, GOLDEN_DATA_PATH: golden_data_file, MY_DATA_PATH: "/"}
+    row_data = acc_cmp.fill_row_data(data_info)
     assert isinstance(row_data, dict) and len(row_data) == 5
     assert len(row_data["cmp_fail_reason"]) > 0
 
 
 def test_fill_row_data_given_golden_data_path_when_empty_then_error(test_data_file):
-    row_data = acc_cmp.fill_row_data(0, 0, golden_data_path="", my_path=test_data_file)
+    data_info = {TOKEN_ID: 0, DATA_ID: 0, GOLDEN_DATA_PATH: "", MY_DATA_PATH: test_data_file}
+    row_data = acc_cmp.fill_row_data(data_info)
     assert isinstance(row_data, dict) and len(row_data) == 5
     assert len(row_data["cmp_fail_reason"]) > 0
 
@@ -122,7 +132,8 @@ def test_fill_row_data_given_golden_data_path_when_empty_then_error(test_data_fi
 def test_fill_row_data_given_my_path_when_nan_then_error(golden_data_file):
     golden_data = np.load(golden_data_file)
     loaded_my_data = np.zeros_like(golden_data) + np.nan
-    row_data = acc_cmp.fill_row_data(0, 0, golden_data_file, my_path="test", loaded_my_data=loaded_my_data)
+    data_info = {TOKEN_ID: 0, DATA_ID: 0, GOLDEN_DATA_PATH: golden_data_file, MY_DATA_PATH: "test"}
+    row_data = acc_cmp.fill_row_data(data_info, loaded_my_data=loaded_my_data)
     assert isinstance(row_data, dict) and len(row_data) == 15
     assert len(row_data["cmp_fail_reason"]) > 0
 
@@ -130,7 +141,8 @@ def test_fill_row_data_given_my_path_when_nan_then_error(golden_data_file):
 def test_fill_row_data_given_my_path_when_shape_not_match_then_error(golden_data_file):
     golden_data = np.load(golden_data_file)
     loaded_my_data = np.zeros([])
-    row_data = acc_cmp.fill_row_data(0, 0, golden_data_file, my_path="test", loaded_my_data=loaded_my_data)
+    data_info = {TOKEN_ID: 0, DATA_ID: 0, GOLDEN_DATA_PATH: golden_data_file, MY_DATA_PATH: "test"}
+    row_data = acc_cmp.fill_row_data(data_info, loaded_my_data=loaded_my_data)
     assert isinstance(row_data, dict) and len(row_data) == 15
     assert len(row_data["cmp_fail_reason"]) > 0
 
