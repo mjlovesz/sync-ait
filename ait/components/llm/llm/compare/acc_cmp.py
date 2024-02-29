@@ -289,11 +289,12 @@ def fill_row_data(data_info, loaded_my_data=None, if_broadcast_tensor=False):
         my_data.permute([0, 4, 1, 2, 3]).reshape(golden_data.shape)
 
     if if_broadcast_tensor:
-        golden_data, my_data = torch.broadcast_tensors(golden_data, my_data)
-
-    # 比较数据
-    row_data.update(compare_data(golden_data, my_data))
+        broadcast_golden_data, broadcast_my_data = torch.broadcast_tensors(golden_data, my_data)
+        row_data.update(compare_data(broadcast_golden_data, broadcast_my_data))
+    else:
+        row_data.update(compare_data(golden_data, my_data))    
     row_data.update(set_tensor_basic_info_in_row_data(golden_data, my_data))
+
     return row_data
 
 
