@@ -49,13 +49,17 @@ class ModelTree:
             node_dict = json.loads(file.read(), parse_constant=lambda x: None)
 
         def _dict_to_tree(node_dict, level, order, tensor_path):
-            op_name = node_dict["name"]
+            try:
+                op_name = node_dict["name"]
+            except Exception as e:
+                print(node_dict)
+                raise e
             node_tensor_path = os.path.join(tensor_path, op_name)
             node = TreeNode(op_name, node_dict["type"], level, order, tensor_path=node_tensor_path)
             sub_level = level + 1
             sub_order = 0
             for child_dict in node_dict["children"]:
-                child_node = _dict_to_tree(child_dict, sub_level, sub_order, node_tensor_path)
+                child_node = _dict_to_tree(child_dict, sub_level, sub_order, tensor_path)
                 node.add_child(child_node)
                 sub_order = sub_order + 1
             return node
@@ -71,9 +75,9 @@ class ModelTree:
             if level == 0:
                 node = TreeNode("root", node_dict["modelName"], tensor_path=tensor_path)
             else:
-                rel_path = order + "_" + node_dict["opType"]
-                child_tensor_path = os.path.join(tensor_path, rel_path)
-                node = TreeNode(node_dict["opName"], node_dict["opType"], level, order, child_tensor_path)
+                rel_path = str(order) + "_" + node_dict["opType"]
+                tensor_path = os.path.join(tensor_path, rel_path)
+                node = TreeNode(node_dict["opName"], node_dict["opType"], level, order, tensor_path)
 
             if "nodes" in node_dict:
                 reorder = 0
