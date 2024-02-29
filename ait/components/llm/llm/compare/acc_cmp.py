@@ -318,18 +318,17 @@ def set_tensor_basic_info_in_row_data(golden_data, my_data):
     return row_data
 
 
-def enumerate_children(children, path, traverse_type='torch_model', node_id=''):
-    res = []
-    for idx, children_node in enumerate(children):
-        if node_id != '':
-            res.extend(traverse_tree(children_node, path, traverse_type, node_id + f'_{idx}'))
-        else:
-            res.extend(traverse_tree(children_node, path, traverse_type, str(idx)))
-    return res
-
-
 def traverse_tree(node, path, traverse_type='torch', node_id=''):
-    res = []
+    def enumerate_children(children, path, traverse_type='torch_model', node_id=''):
+        res = []
+        for idx, children_node in enumerate(children):
+            if node_id != '':
+                res.extend(traverse_tree(children_node, path, traverse_type, node_id + f'_{idx}'))
+            else:
+                res.extend(traverse_tree(children_node, path, traverse_type, str(idx)))
+        return res
+    
+    res = []  # 用于保存遍历模型topo结构后得到的节点列表
     node['id'] = node_id
     if traverse_type == 'torch':
         node['golden_path'] = os.path.join(os.path.abspath(path), node['name'])
