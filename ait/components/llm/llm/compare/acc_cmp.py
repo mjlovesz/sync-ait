@@ -42,10 +42,11 @@ from llm.common.constant import (
     CSV_GOLDEN_HEADER,
 )
 from llm.compare import torchair_utils
-
+from llm.compare.cmp_torch_atb import cmp_torch_atb_model
 
 NCHW_DIMS = 4
 NC1HWC0_DIMS = 5
+
 
 def acc_compare(golden_path, my_path, output_path="."):
     torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
@@ -57,6 +58,18 @@ def acc_compare(golden_path, my_path, output_path="."):
             compare_metadata(golden_tensor_path, output_path)
         else:
             logger.error("Can not find 'golden_tensor'.")
+            torch_model_topo_file = os.path.join(golden_path, "..", "model_tree.json")
+            pid = str(my_path.split("/")[-2].split("_")[1])
+            atb_model_topo_file_path = os.path.join(my_path, "../..", "model", pid)
+            if os.path.exists(torch_model_topo_file) and os.path.exists(atb_model_topo_file_path):
+                logger.info("start to compare atb model with torch model.")
+                atb_model_topo_name = os.listdir(atb_model_topo_file_path)[0]
+                atb_model_topo_file = os.path.join(atb_model_topo_file_path, atb_model_topo_name)
+                if os.path.exists(atb_model_topo_file):
+                    cmp_torch_atb_model(torch_model_topo_file, atb_model_topo_file, output_path)
+                else:
+                    logger.error("atb model file %s is not exist.", atb_model_topo_file)
+
     elif os.path.isfile(golden_path) and os.path.isfile(my_path):
         res = compare_file(golden_path, my_path)
         logger.info("Compared results: %s", res)

@@ -56,7 +56,7 @@ def get_leaf_nodes(root_node, nodes):
             nodes.append(child_node)
 
 
-def cmp_model_tree(golden_json, my_json):
+def cmp_torch_atb_model(golden_json, my_json, output_path):
     compared_result = []
     golden_root_node = ModelTree.json_to_tree(golden_json)
     golden_layer_type = search_layer_node(golden_root_node)
@@ -93,4 +93,4 @@ def cmp_model_tree(golden_json, my_json):
                 compared_result.append(row_data)
 
     data_frame = pd.DataFrame(compared_result, columns=CSV_GOLDEN_HEADER)
-    save_compare_dataframe_to_csv(data_frame, "./")
+    save_compare_dataframe_to_csv(data_frame, output_path)
