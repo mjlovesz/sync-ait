@@ -475,7 +475,7 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
                                             ATB_TORCH_CUSTOMIZED_OP_MAPPING, ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING))
 
     data_frame = pd.DataFrame(compared_result, columns=CSV_GOLDEN_HEADER)
-    return save_compare_dataframe_to_csv(data_frame, output_path)
+    save_compare_dataframe_to_csv(data_frame, output_path)
 
 
 def load_mapping(mapping_file_path):
@@ -507,7 +507,7 @@ def cmp_torch_atb_model_init(torch_model_topo_file, golden_path, my_path, output
         atb_model_topo_file = os.path.join(atb_model_topo_file_path, atb_model_topo_name)
         if os.path.exists(atb_model_topo_file):
             load_mapping(mapping_file_path)
-            path = cmp_torch_atb_model(torch_model_topo_file, atb_model_topo_file, golden_path, my_path, output_path)
+            cmp_torch_atb_model(torch_model_topo_file, atb_model_topo_file, golden_path, my_path, output_path)
         else:
             msg = f"Cannot find atb model file: {atb_model_topo_file}"
             logger.error(msg)
