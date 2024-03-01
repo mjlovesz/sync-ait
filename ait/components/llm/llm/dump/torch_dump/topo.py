@@ -103,7 +103,6 @@ def _tree_to_dict(node):
     return {
         "name": node.node_name,
         "type": node.node_type,
-        "level": node.level,
         "children": [_tree_to_dict(child) for child in node.children],
     }
 
