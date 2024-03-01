@@ -492,7 +492,6 @@ def load_mapping(mapping_file_path):
         logger.info(msg)
     else:
         logger.debug("Using built-in op_mapping")
-    return
 
 
 def cmp_torch_atb_model_init(torch_model_topo_file, golden_path, my_path, output_path, mapping_file_path):
@@ -508,11 +507,10 @@ def cmp_torch_atb_model_init(torch_model_topo_file, golden_path, my_path, output
         atb_model_topo_file = os.path.join(atb_model_topo_file_path, atb_model_topo_name)
         if os.path.exists(atb_model_topo_file):
             load_mapping(mapping_file_path)
-            cmp_torch_atb_model(torch_model_topo_file, atb_model_topo_file, golden_path, my_path, output_path)
+            path = cmp_torch_atb_model(torch_model_topo_file, atb_model_topo_file, golden_path, my_path, output_path)
         else:
             msg = f"Cannot find atb model file: {atb_model_topo_file}"
             logger.error(msg)
     else:
         msg = f"Cannot find atb model file path: {atb_model_topo_file_path}"
         logger.error(msg)
-    return
