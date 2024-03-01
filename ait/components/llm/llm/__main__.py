@@ -179,7 +179,7 @@ class CompareCommand(BaseCommand):
 
     def handle(self, args, **kwargs):
         set_log_level(args.log_level)
-        acc_compare(args.golden_path, args.my_path, args.output)
+        acc_compare(os.path.abspath(args.golden_path), os.path.abspath(args.my_path), args.output)
 
 
 class OpcheckCommand(BaseCommand):
