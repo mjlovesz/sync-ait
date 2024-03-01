@@ -42,7 +42,7 @@ from llm.common.constant import (
     CSV_GOLDEN_HEADER,
 )
 from llm.compare import torchair_utils
-from llm.compare.cmp_utils import search_layer_node, get_layer_node, get_leaf_nodes
+from llm.compare.cmp_utils import search_layer_node, get_layer_node, get_leaf_nodes, get_all_nodes
 from llm.compare.op_mapping import ATB_TORCH_BUILT_IN_OP_MAPPING
 from llm.dump.torch_dump.topo import ModelTree
 
@@ -287,7 +287,8 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
     my_layer_type = search_layer_node(my_root_node)
     logger.info("my_layer_type: %s", my_layer_type)
     my_layer_nodes = get_layer_node(my_root_node, my_layer_type)
-
+    
+    # 原生算子比对
     for golden_layer, my_layer in zip(golden_layer_nodes, my_layer_nodes):
         g_layer_leaf_nodes = get_leaf_nodes(golden_layer)
         m_layer_leaf_nodes = get_leaf_nodes(my_layer)
@@ -315,6 +316,65 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
                     logger.debug("golden tensor path: %s or my_tensor_path: %s is not exist.",
                                  golden_tensor_path, my_tensor_path)
                 compared_result.append(row_data)
+    
+    op_mapping = {
+        "CommonLayer": ["GLMBlock", "BloomBlock"],
+        "MlpGateLayerV2":["BloomMLP", "MLP"],
+        "RmsNormOperation":["RMSNorm"],
+        "SelfAttentionOperation":["CoreAttention"],
+    }
+
+    op_tensor_mapping = {
+        "CommonLayer_GLMBlock": [(0, 0)],
+        "CommonLayer_BloomBlock": [(0, 0)],
+    }
+
+    # 自定义算子比对
+    for golden_layer, my_layer in zip(golden_layer_nodes, my_layer_nodes):
+        g_layer_all_nodes = get_all_nodes(golden_layer)
+        m_layer_all_nodes = get_all_nodes(my_layer)
+        for atb_op_type, torch_op_type_list in op_mapping.items():
+            for torch_op_type in torch_op_type_list:
+                atb_nodes = []
+                torch_nodes = []
+                for m_node in m_layer_all_nodes:
+                    if atb_op_type in m_node.node_type:
+                        atb_nodes.append(m_node)
+                for g_node in g_layer_all_nodes:
+                    if torch_op_type in g_node.node_type:
+                        torch_nodes.append(g_node)
+                if len(atb_nodes) != len(torch_nodes):
+                    logger.warning("The number of %s node in atb is not equal to %s node in torch",
+                                atb_op_type, torch_op_type)
+                    continue
+                for atb_node, torch_node in zip(atb_nodes, torch_nodes):
+                    tensor_mapping_key = atb_op_type + '_' + torch_op_type
+                    if tensor_mapping_key in op_tensor_mapping.keys():
+                        mapping_idx_list = op_tensor_mapping[tensor_mapping_key]
+                        for atb_idx, torch_idx in mapping_idx_list:
+                            my_tensor_path = os.path.join(atb_node.tensor_path, "after", f"outtensor{atb_idx}.bin")
+                            golden_tensor_path = os.path.join(torch_node.tensor_path, f"output_exec1_{torch_idx}.pth")
+                            logger.info("my_tensor_path: %s", my_tensor_path)
+                            logger.info("golden_tensor_path: %s", golden_tensor_path)
+                            if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
+                                row_data = fill_row_data(0, 0, golden_tensor_path, my_tensor_path)
+                            else:
+                                logger.debug("golden tensor path: %s or my_tensor_path: %s is not exist.",
+                                            golden_tensor_path, my_tensor_path)
+                            compared_result.append(row_data)                             
+
+                    else:
+                        my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
+                        golden_tensor_path = os.path.join(torch_node.tensor_path, "output_exec1.pth")
+                        logger.info("my_tensor_path: %s", my_tensor_path)
+                        logger.info("golden_tensor_path: %s", golden_tensor_path)
+                        if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
+                            row_data = fill_row_data(0, 0, golden_tensor_path, my_tensor_path)
+                        else:
+                            logger.debug("golden tensor path: %s or my_tensor_path: %s is not exist.",
+                                        golden_tensor_path, my_tensor_path)
+                        compared_result.append(row_data) 
+
 
     data_frame = pd.DataFrame(compared_result, columns=CSV_GOLDEN_HEADER)
     save_compare_dataframe_to_csv(data_frame, output_path)
