@@ -78,6 +78,19 @@ def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
                 atb_model_topo_name = os.listdir(atb_model_topo_file_path)[0]
                 atb_model_topo_file = os.path.join(atb_model_topo_file_path, atb_model_topo_name)
                 if os.path.exists(atb_model_topo_file):
+                    mapping_file = os.path.join(mapping_file_path, "op_mapping_file.json")
+                    if os.path.exists(mapping_file):
+                        with open(mapping_file, "r") as file:
+                            file_content = json.load(file)
+                            global ATB_TORCH_BUILT_IN_OP_MAPPING
+                            global ATB_TORCH_CUSTOMIZED_OP_MAPPING
+                            global ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING
+                            ATB_TORCH_BUILT_IN_OP_MAPPING, ATB_TORCH_CUSTOMIZED_OP_MAPPING, \
+                                ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING = json.loads(file_content)
+                        msg = f"Using customized op_mapping from file: {mapping_file}"
+                        logger.info(msg)
+                    else:
+                        logger.debug("Using built-in op_mapping")
                     cmp_torch_atb_model(torch_model_topo_file, atb_model_topo_file, golden_path, my_path, output_path)
                 else:
                     msg = f"atb model file {atb_model_topo_file} does not exist."
@@ -85,6 +98,7 @@ def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
             else:
                 msg = f"atb model file path {atb_model_topo_file_path} does not exist."
                 logger.error(msg)
+            exit(1)
         elif golden_topo_flag and my_topo_flag:
             # 存在模型的拓扑信息，走加速库模型间的比对逻辑  
             if compare_topo_json(golden_topo_json_path, my_topo_json_path):
@@ -453,7 +467,8 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
                 logger.info("my_tensor_path: %s", my_tensor_path)
                 logger.info("golden_tensor_path: %s", golden_tensor_path)
                 if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
-                    row_data = fill_row_data(0, 0, golden_tensor_path, my_tensor_path)
+                    data_info = {TOKEN_ID: 0, DATA_ID: 0, GOLDEN_DATA_PATH: golden_tensor_path, MY_DATA_PATH: my_tensor_path}
+                    row_data = fill_row_data(data_info)
                     compared_result.append(row_data)
                 else:
                     logger.debug("golden tensor path: %s or my_tensor_path: %s is not exist.",
@@ -489,7 +504,8 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
                             logger.info("my_tensor_path: %s", my_tensor_path)
                             logger.info("golden_tensor_path: %s", golden_tensor_path)
                             if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
-                                row_data = fill_row_data(0, 0, golden_tensor_path, my_tensor_path)
+                                data_info = {TOKEN_ID: 0, DATA_ID: 0, GOLDEN_DATA_PATH: golden_tensor_path, MY_DATA_PATH: my_tensor_path}
+                                row_data = fill_row_data(data_info)
                                 compared_result.append(row_data)     
                             else:
                                 logger.debug("golden tensor path: %s or my_tensor_path: %s is not exist.",
@@ -500,7 +516,8 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
                         logger.info("my_tensor_path: %s", my_tensor_path)
                         logger.info("golden_tensor_path: %s", golden_tensor_path)
                         if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
-                            row_data = fill_row_data(0, 0, golden_tensor_path, my_tensor_path)
+                            data_info = {TOKEN_ID: 0, DATA_ID: 0, GOLDEN_DATA_PATH: golden_tensor_path, MY_DATA_PATH: my_tensor_path}
+                            row_data = fill_row_data(data_info)
                             compared_result.append(row_data)
                         else:
                             logger.debug("golden tensor path: %s or my_tensor_path: %s is not exist.",
