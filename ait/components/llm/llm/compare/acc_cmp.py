@@ -436,7 +436,7 @@ def pair_torch_atb_nodes(g_nodes, m_nodes, op_mapping, op_tensor_mapping=None):
     for atb_op_type, torch_op_type in op_mapping.items():
         if op_tensor_mapping is not None:
             atb_nodes = [m_node for m_node in m_nodes if atb_op_type in m_node.node_type]
-            torch_nodes = [g_node for g_node in g_nodes if torch_op_type in g_node.node_type]
+            torch_nodes = [g_node for g_node in g_nodes if any(x in g_node.node_type for x in torch_op_type)]
         else:
             atb_nodes = [m_node for m_node in m_nodes if m_node.node_type == atb_op_type]
             torch_nodes = [g_node for g_node in g_nodes if g_node.node_type == torch_op_type]
