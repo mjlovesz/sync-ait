@@ -123,7 +123,7 @@ def is_model_topo_exist(golden_path):
     model_dir_path = os.path.join(absolute_path, '../../../', 'model')
     model_dir_path = os.path.normpath(model_dir_path)
     if not os.path.isdir(model_dir_path):
-        msg = f"Can not find {model_dir_path}, please check! Use ait llm dump if needed."
+        msg = f"Cannot find {model_dir_path}, please check! Use ait llm dump if needed."
         logger.info(msg)
         return False, "" 
     # 搜索/model目录下的所有文件，查找JSON文件  
@@ -133,7 +133,7 @@ def is_model_topo_exist(golden_path):
                 json_file_path = os.path.join(root, file)  
                 return True, json_file_path  
     # 如果没有找到json文件，返回False和空字符串 
-    msg = f"Can not find model topo json in {model_dir_path}, please check! Use ait llm dump if needed."
+    msg = f"Cannot find model topo json in {model_dir_path}, please check! Use ait llm dump if needed."
     logger.info(msg)        
     return False, ""      
 
@@ -466,8 +466,6 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
             for atb_node, torch_node in zip(atb_nodes, torch_nodes):
                 my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
                 golden_tensor_path = os.path.join(torch_node.tensor_path, "output.pth")
-                logger.info("my_tensor_path: %s", my_tensor_path)
-                logger.info("golden_tensor_path: %s", golden_tensor_path)
                 if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
                     data_info = {TOKEN_ID: 0, DATA_ID: 0, GOLDEN_DATA_PATH: golden_tensor_path, MY_DATA_PATH: my_tensor_path}
                     row_data = fill_row_data(data_info)
@@ -503,8 +501,6 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
                         for atb_idx, torch_idx in mapping_idx_list:
                             my_tensor_path = os.path.join(atb_node.tensor_path, "after", f"outtensor{atb_idx}.bin")
                             golden_tensor_path = os.path.join(torch_node.tensor_path, f"output_{torch_idx}.pth")
-                            logger.info("my_tensor_path: %s", my_tensor_path)
-                            logger.info("golden_tensor_path: %s", golden_tensor_path)
                             if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
                                 data_info = {TOKEN_ID: 0, DATA_ID: 0, GOLDEN_DATA_PATH: golden_tensor_path, MY_DATA_PATH: my_tensor_path}
                                 row_data = fill_row_data(data_info)
@@ -515,8 +511,6 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
                     else:
                         my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
                         golden_tensor_path = os.path.join(torch_node.tensor_path, "output.pth")
-                        logger.info("my_tensor_path: %s", my_tensor_path)
-                        logger.info("golden_tensor_path: %s", golden_tensor_path)
                         if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
                             data_info = {TOKEN_ID: 0, DATA_ID: 0, GOLDEN_DATA_PATH: golden_tensor_path, MY_DATA_PATH: my_tensor_path}
                             row_data = fill_row_data(data_info)
