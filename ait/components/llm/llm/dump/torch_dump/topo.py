@@ -94,6 +94,7 @@ class ModelTree:
         for sub_name, sub_module in module.named_children():
             new_name = father_node.node_name + "." + sub_name
             new_type = str(type(sub_module).__name__)
+            new_order = module_ids.get(new_name, MODULE_ID_NOT_AVAILABLE)
             sub_node = TreeNode(new_name, new_type, new_level, new_order)
             father_node.add_child(sub_node)
             self._create_sub_tree(sub_module, sub_node, module_ids)
