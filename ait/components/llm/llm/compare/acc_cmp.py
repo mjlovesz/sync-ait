@@ -43,7 +43,8 @@ from llm.common.constant import (
 )
 from llm.compare import torchair_utils
 from llm.compare.cmp_utils import search_layer_node, get_layer_node, get_leaf_nodes, get_all_nodes
-from llm.compare.op_mapping import ATB_TORCH_BUILT_IN_OP_MAPPING
+from llm.compare.op_mapping import ATB_TORCH_BUILT_IN_OP_MAPPING, ATB_TORCH_CUSTOMIZED_OP_MAPPING, \
+    ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING
 from llm.dump.torch_dump.topo import ModelTree
 
 NCHW_DIMS = 4
@@ -317,23 +318,13 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
                     logger.debug("golden tensor path: %s or my_tensor_path: %s is not exist.",
                                  golden_tensor_path, my_tensor_path)
 
-    op_mapping = {
-        "CommonLayer": ["GLMBlock", "BloomBlock"],
-        "MlpGateLayerV2":["BloomMLP", "MLP"],
-        "RmsNormOperation":["RMSNorm"],
-        "SelfAttentionOperation":["CoreAttention"],
-    }
 
-    op_tensor_mapping = {
-        "CommonLayer_GLMBlock": [(0, 0)],
-        "CommonLayer_BloomBlock": [(0, 0)],
-    }
 
     # 自定义算子比对
     for golden_layer, my_layer in zip(golden_layer_nodes, my_layer_nodes):
         g_layer_all_nodes = get_all_nodes(golden_layer)
         m_layer_all_nodes = get_all_nodes(my_layer)
-        for atb_op_type, torch_op_type_list in op_mapping.items():
+        for atb_op_type, torch_op_type_list in ATB_TORCH_CUSTOMIZED_OP_MAPPING.items():
             for torch_op_type in torch_op_type_list:
                 atb_nodes = []
                 torch_nodes = []
@@ -349,8 +340,8 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
                     continue
                 for atb_node, torch_node in zip(atb_nodes, torch_nodes):
                     tensor_mapping_key = atb_op_type + '_' + torch_op_type
-                    if tensor_mapping_key in op_tensor_mapping.keys():
-                        mapping_idx_list = op_tensor_mapping[tensor_mapping_key]
+                    if tensor_mapping_key in ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING.keys():
+                        mapping_idx_list = ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING[tensor_mapping_key]
                         for atb_idx, torch_idx in mapping_idx_list:
                             my_tensor_path = os.path.join(atb_node.tensor_path, "after", f"outtensor{atb_idx}.bin")
                             golden_tensor_path = os.path.join(torch_node.tensor_path, f"output_exec1_{torch_idx}.pth")

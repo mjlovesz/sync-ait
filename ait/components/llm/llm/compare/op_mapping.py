@@ -16,3 +16,17 @@ ATB_TORCH_BUILT_IN_OP_MAPPING = {
     "LayerNormOperation": "LayerNorm",
     "LinearOperation": "Linear"
 }
+
+
+ATB_TORCH_CUSTOMIZED_OP_MAPPING = {
+    "CommonLayer": ["GLMBlock", "BloomBlock"],
+    "MlpGateLayerV2":["BloomMLP", "MLP"],
+    "RmsNormOperation":["RMSNorm"],
+    "SelfAttentionOperation":["CoreAttention"],
+}
+
+
+ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING = {
+    "CommonLayer_GLMBlock": [(0, 0)],
+    "CommonLayer_BloomBlock": [(0, 0)],
+}
