@@ -438,19 +438,18 @@ def get_paths(path_dir, split_pattern):
     return out_paths
 
 
-def get_row_data(golden_tensor_path, my_tensor_path):
-    compared_result = []
-    if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
-        data_info = {TOKEN_ID: 0, DATA_ID: 0, GOLDEN_DATA_PATH: golden_tensor_path, MY_DATA_PATH: my_tensor_path}
-        row_data = fill_row_data(data_info)
-        compared_result.append(row_data)     
-    else:
-        logger.debug("golden tensor path: %s or my_tensor_path: %s is not exist.", golden_tensor_path, my_tensor_path)
-    return compared_result
-
-
 def pair_torch_atb_nodes(g_nodes, m_nodes, op_mapping, op_tensor_mapping=None):
     compared_result = []
+
+    def get_row_data(golden_tensor_path, my_tensor_path):
+        if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
+            data_info = {TOKEN_ID: 0, DATA_ID: 0, GOLDEN_DATA_PATH: golden_tensor_path, MY_DATA_PATH: my_tensor_path}
+            row_data = fill_row_data(data_info)
+            compared_result.append(row_data)     
+        else:
+            msg = f"golden tensor path: {golden_tensor_path} or my_tensor_path: {my_tensor_path} is not exist."
+            logger.debug(msg)
+
     for atb_op_type, torch_op_type in op_mapping.items():
         atb_nodes = []
         torch_nodes = []
@@ -471,11 +470,11 @@ def pair_torch_atb_nodes(g_nodes, m_nodes, op_mapping, op_tensor_mapping=None):
                 for atb_idx, torch_idx in mapping_idx_list:
                     my_tensor_path = os.path.join(atb_node.tensor_path, "after", f"outtensor{atb_idx}.bin")
                     golden_tensor_path = os.path.join(torch_node.tensor_path, f"output_{torch_idx}.pth")
-                    compared_result.extend(get_row_data(golden_tensor_path, my_tensor_path))
+                    get_row_data(golden_tensor_path, my_tensor_path)
             else:
                 my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
                 golden_tensor_path = os.path.join(torch_node.tensor_path, "output.pth")
-                compared_result.extend(get_row_data(golden_tensor_path, my_tensor_path))
+                get_row_data(golden_tensor_path, my_tensor_path)
         return compared_result
                     
 
