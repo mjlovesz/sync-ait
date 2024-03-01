@@ -8,7 +8,7 @@ MODULE_ID_NOT_AVAILABLE = -1
 
 
 class TreeNode:
-    def __init__(self, node_name: str, node_type: str, level: str, order=0, tensor_path=""):
+    def __init__(self, node_name: str, node_type: str, level=0, order=0, tensor_path=""):
         self.node_name = node_name
         self.node_type = node_type
         self.level = level
@@ -35,7 +35,7 @@ class TreeNode:
 
 class ModelTree:
     def __init__(self):
-        self.root_node = TreeNode("root", "root", "")
+        self.root_node = TreeNode("root", "root")
 
     def create_tree(self, module, module_ids, json_path) -> None:
         self.root_node.node_type = str(type(module).__name__)
@@ -90,14 +90,10 @@ class ModelTree:
         return _atb_dict_to_tree(node_dict, 0, 0, tensor_path)
 
     def _create_sub_tree(self, module, father_node, module_ids):
+        new_level = father_node.level + 1
         for sub_name, sub_module in module.named_children():
             new_name = father_node.node_name + "." + sub_name
             new_type = str(type(sub_module).__name__)
-            new_order = module_ids.get(new_name, MODULE_ID_NOT_AVAILABLE)
-            if father_node.level == '':
-                new_level = str(new_order)
-            else:
-                new_level = father_node.hier + "_" + str(new_order)
             sub_node = TreeNode(new_name, new_type, new_level, new_order)
             father_node.add_child(sub_node)
             self._create_sub_tree(sub_module, sub_node, module_ids)
