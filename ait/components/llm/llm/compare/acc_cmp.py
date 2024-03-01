@@ -93,10 +93,10 @@ def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
                         logger.debug("Using built-in op_mapping")
                     cmp_torch_atb_model(torch_model_topo_file, atb_model_topo_file, golden_path, my_path, output_path)
                 else:
-                    msg = f"atb model file {atb_model_topo_file} does not exist."
+                    msg = f"Cannot find atb model file: {atb_model_topo_file}"
                     logger.error(msg)
             else:
-                msg = f"atb model file path {atb_model_topo_file_path} does not exist."
+                msg = f"Cannot find atb model file path: {atb_model_topo_file_path}"
                 logger.error(msg)
             exit(1)
         elif golden_topo_flag and my_topo_flag:
