@@ -474,7 +474,7 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
                                             ATB_TORCH_CUSTOMIZED_OP_MAPPING, ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING))
 
     data_frame = pd.DataFrame(compared_result, columns=CSV_GOLDEN_HEADER)
-    return save_compare_dataframe_to_csv(data_frame, output_path)
+    save_compare_dataframe_to_csv(data_frame, output_path)
 
 
 def load_mapping(mapping_file_path):
