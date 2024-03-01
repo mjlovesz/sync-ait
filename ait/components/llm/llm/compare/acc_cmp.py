@@ -474,8 +474,6 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
                     logger.debug("golden tensor path: %s or my_tensor_path: %s is not exist.",
                                  golden_tensor_path, my_tensor_path)
 
-
-
     # 自定义算子比对
     for golden_layer, my_layer in zip(golden_layer_nodes, my_layer_nodes):
         g_layer_all_nodes = get_all_nodes(golden_layer)
