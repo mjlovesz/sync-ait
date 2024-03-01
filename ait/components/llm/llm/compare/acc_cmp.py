@@ -444,7 +444,8 @@ def pair_torch_atb_nodes(g_nodes, m_nodes, op_mapping, op_tensor_mapping=None):
                 my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
                 golden_tensor_path = os.path.join(torch_node.tensor_path, "output.pth")
                 get_row_data(golden_tensor_path, my_tensor_path)
-        return compared_result
+                
+    return compared_result
                     
 
 def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path, output_path):
