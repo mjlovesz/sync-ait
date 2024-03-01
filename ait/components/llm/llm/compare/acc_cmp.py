@@ -433,13 +433,10 @@ def pair_torch_atb_nodes(g_nodes, m_nodes, op_mapping, op_tensor_mapping=None):
                 golden_tensor_path = os.path.join(torch_node.tensor_path, "output.pth")
                 get_row_data(golden_tensor_path, my_tensor_path)
 
-    def fazzy_match(real_op_type, target_op_type):
-        return target_op_type in real_op_type
-
     for atb_op_type, torch_op_type in op_mapping.items():
         if op_tensor_mapping is not None:
-            atb_nodes = [m_node for m_node in m_nodes if fazzy_match(m_node.node_type, atb_op_type)]
-            torch_nodes = [g_node for g_node in g_nodes if fazzy_match(g_node.node_type, torch_op_type)]
+            atb_nodes = [m_node for m_node in m_nodes if atb_op_type in m_node.node_type]
+            torch_nodes = [g_node for g_node in g_nodes if torch_op_type in g_node.node_type]
         else:
             atb_nodes = [m_node for m_node in m_nodes if m_node.node_type == atb_op_type]
             torch_nodes = [g_node for g_node in g_nodes if g_node.node_type == torch_op_type]
