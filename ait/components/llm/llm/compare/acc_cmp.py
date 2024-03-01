@@ -419,7 +419,7 @@ def pair_torch_atb_nodes(g_nodes, m_nodes, op_mapping, op_tensor_mapping=None):
             msg = f"golden tensor path: {golden_tensor_path} or my_tensor_path: {my_tensor_path} is not exist."
             logger.debug(msg)
     
-    def traverse_nodes(atb_nodes, torch_nodes):
+    def traverse_nodes(atb_nodes, torch_nodes, atb_op_type, torch_op_type):
         for atb_node, torch_node in zip(atb_nodes, torch_nodes):
             tensor_mapping_key = atb_op_type + '_' + torch_op_type
             if op_tensor_mapping is not None and tensor_mapping_key in op_tensor_mapping.keys():
@@ -444,7 +444,7 @@ def pair_torch_atb_nodes(g_nodes, m_nodes, op_mapping, op_tensor_mapping=None):
             msg = f"The number of {atb_op_type} node in atb is not equal to {torch_op_type} node in torch"
             logger.warning(msg)
         else:
-            traverse_nodes(atb_nodes, torch_nodes)
+            traverse_nodes(atb_nodes, torch_nodes, atb_op_type, torch_op_type)
 
     return compared_result
                     
