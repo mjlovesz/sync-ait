@@ -67,38 +67,7 @@ def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
         elif os.path.exists(torch_model_topo_file):
             # 存在torch_model_topo_file路径，走torch模型和加速库模型比对逻辑
             logger.info("Automatic mapping comparison starts! Comparing torch tensors and ATB tensors...")
-            try:
-                pid = str(my_path.split("/")[-2].split("_")[1])
-            except IndexError as e:
-                pid = ""
-                msg = f"Cannot parse the right pid from my_path! my_path: {my_path}"
-                logger.error(msg)
-            atb_model_topo_file_path = os.path.join(my_path, "../../..", "model", pid)
-            if os.path.exists(atb_model_topo_file_path):
-                atb_model_topo_name = os.listdir(atb_model_topo_file_path)[0]
-                atb_model_topo_file = os.path.join(atb_model_topo_file_path, atb_model_topo_name)
-                if os.path.exists(atb_model_topo_file):
-                    mapping_file = os.path.join(mapping_file_path, "op_mapping_file.json")
-                    if os.path.exists(mapping_file):
-                        with open(mapping_file, "r") as file:
-                            file_content = json.load(file)
-                            global ATB_TORCH_BUILT_IN_OP_MAPPING
-                            global ATB_TORCH_CUSTOMIZED_OP_MAPPING
-                            global ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING
-                            ATB_TORCH_BUILT_IN_OP_MAPPING, ATB_TORCH_CUSTOMIZED_OP_MAPPING, \
-                                ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING = json.loads(file_content)
-                        msg = f"Using customized op_mapping from file: {mapping_file}"
-                        logger.info(msg)
-                    else:
-                        logger.debug("Using built-in op_mapping")
-                    cmp_torch_atb_model(torch_model_topo_file, atb_model_topo_file, golden_path, my_path, output_path)
-                else:
-                    msg = f"Cannot find atb model file: {atb_model_topo_file}"
-                    logger.error(msg)
-            else:
-                msg = f"Cannot find atb model file path: {atb_model_topo_file_path}"
-                logger.error(msg)
-            exit(1)
+            cmp_torch_atb_model_init(torch_model_topo_file, golden_path, my_path, output_path, mapping_file_path)
         elif golden_topo_flag and my_topo_flag:
             # 存在模型的拓扑信息，走加速库模型间的比对逻辑  
             if compare_topo_json(golden_topo_json_path, my_topo_json_path):
@@ -115,6 +84,44 @@ def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
     else:
         logger.error("The golden_path and my_path must both be directory or file.")
         exit(1)
+
+
+def load_mapping(mapping_file_path):
+    mapping_file = os.path.join(mapping_file_path, "op_mapping_file.json")
+    if os.path.exists(mapping_file):
+        with open(mapping_file, "r") as file:
+            file_content = json.load(file)
+            global ATB_TORCH_BUILT_IN_OP_MAPPING
+            global ATB_TORCH_CUSTOMIZED_OP_MAPPING
+            global ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING
+            ATB_TORCH_BUILT_IN_OP_MAPPING, ATB_TORCH_CUSTOMIZED_OP_MAPPING, \
+                ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING = json.loads(file_content)
+        msg = f"Using customized op_mapping from file: {mapping_file}"
+        logger.info(msg)
+    else:
+        logger.debug("Using built-in op_mapping")
+
+
+def cmp_torch_atb_model_init(torch_model_topo_file, golden_path, my_path, output_path, mapping_file_path):
+    try:
+        pid = str(my_path.split("/")[-2].split("_")[1])
+    except IndexError as e:
+        pid = ""
+        msg = f"Cannot parse the right pid from my_path! my_path: {my_path}"
+        logger.error(msg)
+    atb_model_topo_file_path = os.path.join(my_path, "../../..", "model", pid)
+    if os.path.exists(atb_model_topo_file_path):
+        atb_model_topo_name = os.listdir(atb_model_topo_file_path)[0]
+        atb_model_topo_file = os.path.join(atb_model_topo_file_path, atb_model_topo_name)
+        if os.path.exists(atb_model_topo_file):
+            load_mapping(mapping_file_path)
+            cmp_torch_atb_model(torch_model_topo_file, atb_model_topo_file, golden_path, my_path, output_path)
+        else:
+            msg = f"Cannot find atb model file: {atb_model_topo_file}"
+            logger.error(msg)
+    else:
+        msg = f"Cannot find atb model file path: {atb_model_topo_file_path}"
+        logger.error(msg)
 
 
 def is_model_topo_exist(golden_path):
