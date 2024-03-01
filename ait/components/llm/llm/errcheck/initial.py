@@ -26,19 +26,18 @@ def init_error_check(args) -> None:
     output_dir = args.output
     if not output_dir:
         default_dir = os.path.join(os.getcwd(), r'ait_err_check', r'overflow')
-        logger.warning("Output directory is not provided."
-                       "Results will be stored under the default directory instead."
-                       f"Please refer to the directory {default_dir}")
+        logger.warning("Output directory is not provided. "
+                       "Results will be stored under the default directory instead. ")
         os.makedirs(default_dir, exist_ok=True)
         os.environ[ATB_OUTPUT_DIR] = default_dir
     else:
         output_dir = os.path.join(output_dir, r'ait_err_check', r'overflow')
         output_dir = os.path.abspath(output_dir)
-        os.makedirs(default_dir, exist_ok=True)
+        os.makedirs(output_dir, exist_ok=True)
         os.environ[ATB_OUTPUT_DIR] = output_dir
 
     # break
     os.environ[ATB_EXIT] = '1' if args.exit else '0'
     
-    logger.info("Error check is ready. Inference processing.")
+    logger.info("Initialization finished. Inference processing.")
     

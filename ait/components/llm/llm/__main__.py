@@ -262,8 +262,9 @@ class ErrCheck(BaseCommand):
             required=True,
             type=safe_string,
             default='',
-            help='Executable command that running acl-transformer model inference.'
-                 'E.g. --exec "bash run.sh patches/models/modeling_xxx.py" ')
+            help='Executable command that running acl-transformer model inference.\n'
+                 'User is responsible for the safeness of the input command.\n'
+                 "E.g. --exec 'bash run.sh patches/models/modeling_xxx.py'.")
         
         parser.add_argument(
             '--type',
@@ -271,7 +272,9 @@ class ErrCheck(BaseCommand):
             required=True,
             nargs='+', # one or more
             choices=['overflow', 'memleak'],
-            help='Types that perform different error detection tasks')
+            help="Types that perform different error detection tasks.\n"
+                 "Multiple arguments will trigger all the supplying functionalities.\n"
+                 "At least one argument is required.")
         
         parser.add_argument(
             '--output',
@@ -280,7 +283,9 @@ class ErrCheck(BaseCommand):
             required=False,
             type=check_output_path_legality,
             default='',
-            help='Directory that stores error information; Defaults to xxx. E.g. --output /xx/xxxx/xx')
+            help="Directory that stores error information.\n"
+                 "If not provided, a default directory will be used.\n"
+                 "E.g. --output /xx/xxxx/xx")
         
         parser.add_argument(
             '--exit',
@@ -288,7 +293,8 @@ class ErrCheck(BaseCommand):
             required=False,
             action='store_true',
             default=False,
-            help='Flag determines whether to exit the program after detecting an error.'
+            help="Flag determines whether to exit the program after detecting an error.\n"
+                 "Defaults to False."
         )
         
     def handle(self, args, **kwargs) -> None:
@@ -299,6 +305,11 @@ class ErrCheck(BaseCommand):
             # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
             cmds = args.exec.split()
             subprocess.run(cmds, shell=False)
+            
+            # finished inference
+            logger.info("Inference finished.\n"
+                        "Results are stored under the directory:\n"
+                        f"\t\t{os.environ["ATB_OUTPUT_DIR"]}.")
         
         
 class LlmCommand(BaseCommand):
