@@ -122,8 +122,9 @@ def is_model_topo_exist(golden_path):
     absolute_path = os.path.abspath(golden_path)      
     model_dir_path = os.path.join(absolute_path, '../../../', 'model')
     model_dir_path = os.path.normpath(model_dir_path)
-    if not os.path.isdir(model_dir_path): 
-        logger.error("Can not find model topo infomation, please use ait llm dump.")
+    if not os.path.isdir(model_dir_path):
+        msg = f"Can not find {model_dir_path}, please check! Use ait llm dump if needed."
+        logger.info(msg)
         return False, "" 
     # 搜索/model目录下的所有文件，查找JSON文件  
     for root, dirs, files in os.walk(model_dir_path):  
@@ -131,8 +132,9 @@ def is_model_topo_exist(golden_path):
             if file.endswith('.json'):    
                 json_file_path = os.path.join(root, file)  
                 return True, json_file_path  
-    # 如果没有找到json文件，返回False和空字符串  
-    logger.error("Can not find model topo infomation, please use ait llm dump.")        
+    # 如果没有找到json文件，返回False和空字符串 
+    msg = f"Can not find model topo json in {model_dir_path}, please check! Use ait llm dump if needed."
+    logger.info(msg)        
     return False, ""      
 
 
