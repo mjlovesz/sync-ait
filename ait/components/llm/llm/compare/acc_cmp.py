@@ -449,7 +449,7 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
                 continue
             for atb_node, torch_node in zip(atb_nodes, torch_nodes):
                 my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
-                golden_tensor_path = os.path.join(torch_node.tensor_path, "output_exec1.pth")
+                golden_tensor_path = os.path.join(torch_node.tensor_path, "output.pth")
                 logger.info("my_tensor_path: %s", my_tensor_path)
                 logger.info("golden_tensor_path: %s", golden_tensor_path)
                 if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
@@ -485,7 +485,7 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
                         mapping_idx_list = ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING[tensor_mapping_key]
                         for atb_idx, torch_idx in mapping_idx_list:
                             my_tensor_path = os.path.join(atb_node.tensor_path, "after", f"outtensor{atb_idx}.bin")
-                            golden_tensor_path = os.path.join(torch_node.tensor_path, f"output_exec1_{torch_idx}.pth")
+                            golden_tensor_path = os.path.join(torch_node.tensor_path, f"output_{torch_idx}.pth")
                             logger.info("my_tensor_path: %s", my_tensor_path)
                             logger.info("golden_tensor_path: %s", golden_tensor_path)
                             if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
@@ -496,7 +496,7 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
                                             golden_tensor_path, my_tensor_path)
                     else:
                         my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
-                        golden_tensor_path = os.path.join(torch_node.tensor_path, "output_exec1.pth")
+                        golden_tensor_path = os.path.join(torch_node.tensor_path, "output.pth")
                         logger.info("my_tensor_path: %s", my_tensor_path)
                         logger.info("golden_tensor_path: %s", golden_tensor_path)
                         if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
