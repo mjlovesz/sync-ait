@@ -170,6 +170,7 @@ class OpChecker:
         
         op_name_str = "OpName"
         if op_name_str in df.columns and "OutDType" in df.columns:
+            df = df.loc[~df['OutDType'].isnull()]
             try:
                 df['Ids'] = df[op_name_str].apply(lambda x:x.split("_", 1)[1])
                 df['RealOpName'] = df[op_name_str].apply(lambda x:x.split("_", 1)[0])
