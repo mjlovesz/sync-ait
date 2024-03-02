@@ -443,6 +443,8 @@ def pair_torch_atb_nodes(g_nodes, m_nodes, op_mapping, op_tensor_mapping=None):
             tensor_mapping_key = atb_op_type + '_' + torch_op_type
             if tensor_mapping_key in op_tensor_mapping.keys():
                 mapping_idx_list = op_tensor_mapping[tensor_mapping_key]
+            else:
+                mapping_idx_list = None
             atb_nodes = [m_node for m_node in m_nodes if atb_op_type in m_node.node_type]
             torch_nodes = [g_node for g_node in g_nodes if torch_op_type in g_node.node_type]
         else:
@@ -451,7 +453,7 @@ def pair_torch_atb_nodes(g_nodes, m_nodes, op_mapping, op_tensor_mapping=None):
             torch_nodes = [g_node for g_node in g_nodes if g_node.node_type == torch_op_type]
         if len(atb_nodes) != len(torch_nodes):
             msg = f"The number of {atb_op_type} node in atb is not equal to {torch_op_type} node in torch"
-            logger.warning(msg)
+            logger.debug(msg)
             continue
         traverse_nodes(atb_nodes, torch_nodes, mapping_idx_list)
 
