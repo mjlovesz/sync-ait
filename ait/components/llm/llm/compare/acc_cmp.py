@@ -428,9 +428,13 @@ def pair_torch_atb_nodes(g_nodes, m_nodes, op_mapping, op_tensor_mapping=None):
 
     for atb_op_type, torch_op_type in op_mapping_flat:
         if op_tensor_mapping is not None:
+            tensor_mapping_key = atb_op_type + '_' + torch_op_type
+            if tensor_mapping_key in op_tensor_mapping.keys():
+                mapping_idx_list = op_tensor_mapping[tensor_mapping_key]
             atb_nodes = [m_node for m_node in m_nodes if atb_op_type in m_node.node_type]
             torch_nodes = [g_node for g_node in g_nodes if torch_op_type in g_node.node_type]
         else:
+            mapping_idx_list = None
             atb_nodes = [m_node for m_node in m_nodes if m_node.node_type == atb_op_type]
             torch_nodes = [g_node for g_node in g_nodes if g_node.node_type == torch_op_type]
 
@@ -439,18 +443,12 @@ def pair_torch_atb_nodes(g_nodes, m_nodes, op_mapping, op_tensor_mapping=None):
             logger.warning(msg)
             continue
 
-        for atb_node, torch_node in zip(atb_nodes, torch_nodes):
-            tensor_mapping_key = atb_op_type + '_' + torch_op_type
-            if op_tensor_mapping is not None and tensor_mapping_key in op_tensor_mapping.keys():
-                mapping_idx_list = op_tensor_mapping[tensor_mapping_key]
-            else:
-                mapping_idx_list = None
-        
-        if mapping_idx_list is not None:
-            for atb_idx, torch_idx in mapping_idx_list:
-                my_tensor_path = os.path.join(atb_node.tensor_path, "after", f"outtensor{atb_idx}.bin")
-                golden_tensor_path = os.path.join(torch_node.tensor_path, f"output_{torch_idx}.pth")
-                get_row_data(golden_tensor_path, my_tensor_path)
+        for atb_node, torch_node in zip(atb_nodes, torch_nodes):        
+            if mapping_idx_list is not None:
+                for atb_idx, torch_idx in mapping_idx_list:
+                    my_tensor_path = os.path.join(atb_node.tensor_path, "after", f"outtensor{atb_idx}.bin")
+                    golden_tensor_path = os.path.join(torch_node.tensor_path, f"output_{torch_idx}.pth")
+                    get_row_data(golden_tensor_path, my_tensor_path)
             else:
                 my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
                 golden_tensor_path = os.path.join(torch_node.tensor_path, "output.pth")
