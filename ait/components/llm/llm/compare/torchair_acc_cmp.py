@@ -138,9 +138,9 @@ def init_ge_dump_data_from_bin_path(ge_dump_path):
 
     Return dict:
       {1: {
-            'Add.Add_2': '1/Add.Add_2.44.6.1706596912161941',
-            'Cast.Cast_9': '1/Cast.Cast_9.19.6.1706596911887829',
-            'ConcatV2D.ConcatV2': '1/ConcatV2D.ConcatV2.42.6.1706596912161117',
+            'Add_2': '1/Add.Add_2.44.6.1706596912161941',
+            'Cast_9': '1/Cast.Cast_9.19.6.1706596911887829',
+            'ConcatV2': '1/ConcatV2D.ConcatV2.42.6.1706596912161117',
       }}
     """
     gathered_files = gather_data_with_token_id(ge_dump_path)
@@ -156,7 +156,7 @@ def init_ge_dump_data_from_bin_path(ge_dump_path):
                 logger.warning(f"invalid file name: {file_name}, should contain at least 4 '.'")
                 continue
 
-            cur_op_name = ".".join(split_name[:-3])
+            cur_op_name = ".".join(split_name[1:-3])
             if cur_op_name in cur_dump_data:
                 exists_file = cur_dump_data[cur_op_name]
                 exists_file_size = os.path.getsize(exists_file)
@@ -228,7 +228,8 @@ def compare_ge_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
     gathered_row_data = []
     for cur_op in graph_map:
         op_info = cur_op.get("op", {})
-        ge_tensor_name = op_info.get("type", "") + "." + op_info.get("name", "")  # Like "ConcatV2D.ConcatV2"
+        # ge_tensor_name = op_info.get("type", "") + "." + op_info.get("name", "")  # Like "ConcatV2D.ConcatV2"
+        ge_tensor_name = op_info.get("name", "")
         if ge_tensor_name not in ge_dump_data:
             logger.warning(f"GE data missing, GE name: {ge_tensor_name}")
             continue
@@ -257,11 +258,11 @@ def compare_ge_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
 
                 for cur_id, (fx_input, ge_input) in enumerate(zip(fx_inputs, ge_inputs)):
                     info = "{},{}".format("inputs", cur_id)
-                    row_data = compare_single_data(fx_input, cur_ge_data, token_id, right_data=ge_input, info=info)
+                    row_data = compare_single_data(fx_input, cur_ge_data, token_id, my_data=ge_input, info=info)
                     gathered_row_data.append(row_data)
                 for cur_id, (fx_output, ge_output) in enumerate(zip(fx_outputs, ge_outputs)):
                     info = "{},{}".format("outputs", cur_id)
-                    row_data = compare_single_data(fx_output, cur_ge_data, token_id, right_data=ge_output, info=info)
+                    row_data = compare_single_data(fx_output, cur_ge_data, token_id, my_data=ge_output, info=info)
                     gathered_row_data.append(row_data)
     return gathered_row_data
 
