@@ -419,6 +419,18 @@ def pair_torch_atb_nodes(g_nodes, m_nodes, op_mapping, op_tensor_mapping=None):
             msg = f"golden tensor path: {golden_tensor_path} or my_tensor_path: {my_tensor_path} is not exist."
             logger.debug(msg)
 
+    def traverse_nodes(atb_nodes, torch_nodes, mapping_idx_list=None):
+        for atb_node, torch_node in zip(atb_nodes, torch_nodes):        
+            if mapping_idx_list is not None:
+                for atb_idx, torch_idx in mapping_idx_list:
+                    my_tensor_path = os.path.join(atb_node.tensor_path, "after", f"outtensor{atb_idx}.bin")
+                    golden_tensor_path = os.path.join(torch_node.tensor_path, f"output_{torch_idx}.pth")
+                    get_row_data(golden_tensor_path, my_tensor_path)
+            else:
+                my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
+                golden_tensor_path = os.path.join(torch_node.tensor_path, "output.pth")
+                get_row_data(golden_tensor_path, my_tensor_path)
+
     op_mapping_flat = []
     if op_tensor_mapping is not None:
         for atb_op_type, torch_op_type in op_mapping.items():
@@ -437,22 +449,11 @@ def pair_torch_atb_nodes(g_nodes, m_nodes, op_mapping, op_tensor_mapping=None):
             mapping_idx_list = None
             atb_nodes = [m_node for m_node in m_nodes if m_node.node_type == atb_op_type]
             torch_nodes = [g_node for g_node in g_nodes if g_node.node_type == torch_op_type]
-
         if len(atb_nodes) != len(torch_nodes):
             msg = f"The number of {atb_op_type} node in atb is not equal to {torch_op_type} node in torch"
             logger.warning(msg)
             continue
-
-        for atb_node, torch_node in zip(atb_nodes, torch_nodes):        
-            if mapping_idx_list is not None:
-                for atb_idx, torch_idx in mapping_idx_list:
-                    my_tensor_path = os.path.join(atb_node.tensor_path, "after", f"outtensor{atb_idx}.bin")
-                    golden_tensor_path = os.path.join(torch_node.tensor_path, f"output_{torch_idx}.pth")
-                    get_row_data(golden_tensor_path, my_tensor_path)
-            else:
-                my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
-                golden_tensor_path = os.path.join(torch_node.tensor_path, "output.pth")
-                get_row_data(golden_tensor_path, my_tensor_path)
+        traverse_nodes(atb_nodes, torch_nodes, mapping_idx_list)
 
     return compared_result
                     
