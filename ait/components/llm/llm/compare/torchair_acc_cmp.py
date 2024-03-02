@@ -170,7 +170,7 @@ def init_ge_dump_data_from_bin_path(ge_dump_path):
                 keep_one = file_name if cur_file_size > exists_file_size else exists_file
                 cur_dump_data[cur_op_name] = keep_one
                 logger.warning(f"duplicated op name: {cur_op_name}."
-                    f" [{os.path.basename(file_name)},\n    {os.path.basename(exists_file)}]."
+                    f" [{os.path.basename(file_name)}, {os.path.basename(exists_file)}]."
                     f" Will keep the larger one {os.path.basename(keep_one)}."
                 )
             else:
