@@ -59,7 +59,7 @@ class BasicDataInfo:
             TOKEN_ID: str(self.token_id),
             DATA_ID: str(self.data_id),
             GOLDEN_DATA_PATH: self.golden_data_path,
-            MY_DATA_PATH: self.my_data_path
+            MY_DATA_PATH: self.my_data_path,
         }
 
 
