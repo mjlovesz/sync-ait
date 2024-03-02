@@ -206,16 +206,11 @@ def init_fx_dump_data_from_path(fx_dump_path):
     return dump_data_with_token_id
 
 
-def compare_single_data(left_path, right_path, token_id=0, left_data=None, right_data=None, info=""):
-    loaded_my_data, loaded_golden_data = None, None
-    if left_data is not None:
-        left_path = "{},{}".format(left_path, info)
-        loaded_my_data = left_data
-    if right_path is not None:
-        right_path = "{},{}".format(right_path, info)
-        loaded_golden_data = right_data
-    data_info = acc_cmp.BasicDataInfo(left_path, right_path, token_id)
-    return acc_cmp.fill_row_data(data_info, loaded_my_data=loaded_my_data, loaded_golden_data=loaded_golden_data)
+def compare_single_data(golden_path, my_path, token_id=0, golden_data=None, my_data=None, info=""):
+    golden_path = golden_path if golden_data is None else "{},{}".format(golden_path, info)
+    my_path = my_path if my_data is None else "{},{}".format(my_path, info)
+    data_info = acc_cmp.BasicDataInfo(golden_path, my_path, token_id)
+    return acc_cmp.fill_row_data(data_info, loaded_my_data=my_data, loaded_golden_data=golden_data)
 
 
 def filter_valid_fx_desc_tensor_info(desc_key, desc_value):
