@@ -498,7 +498,7 @@ def load_mapping(mapping_file_path):
     if os.path.exists(mapping_file):
         with open(mapping_file, "r") as file:
             mapping_dic = json.load(file)
-        msg = f"Using  user-specified op_mapping from file: {mapping_file}"
+        msg = f"Using user-specified op_mapping from file: {mapping_file}"
         logger.info(msg)
     else:
         mapping_dic = {
