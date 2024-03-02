@@ -15,7 +15,6 @@
 import os
 import glob
 import numpy as np
-import pandas as pd
 import json
 import torch
 from tqdm import tqdm
@@ -195,17 +194,20 @@ def compare_metadata(golden_path, output_path="."):
     golden_meta_path = os.path.join(golden_path, "metadata.json")
     with open(golden_meta_path, "r") as file:
         golden_meta = json.load(file)
-    data_frame = fill_in_data(golden_meta)
-    return save_compare_dataframe_to_csv(data_frame, output_path)
+    gathered_row_data = fill_in_data(golden_meta)
+    return save_compare_reault_to_csv(gathered_row_data, output_path)
 
 
-def save_compare_dataframe_to_csv(data_frame, output_path="."):
+def save_compare_reault_to_csv(gathered_row_data, output_path="."):
+    import pandas as pd
+
     cur_pid = str(os.getpid())
     csv_data_path = os.path.join(output_path, cur_pid)
     if not os.path.exists(csv_data_path):
         os.makedirs(csv_data_path)
-
     csv_save_path = os.path.join(csv_data_path, "cmp_report.csv")
+
+    data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
     data_frame.fillna(value="", inplace=True)
     data_frame.dropna(axis=0, how="all", inplace=True)
     data_frame.to_csv(csv_save_path, index=False)
@@ -225,7 +227,7 @@ def fill_in_data(golden_meta):
             data_info = BasicDataInfo(path_list[0], path_list[1], token_id, data_id)
             row_data = fill_row_data(data_info)
             gathered_row_data.append(row_data)
-    return pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
+    return gathered_row_data
 
 
 def fill_row_data(data_info, loaded_my_data=None, loaded_golden_data=None, is_broadcast_tensor=False):
@@ -317,8 +319,7 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
         data_info = BasicDataInfo(match['golden'], match['my'], token_id, data_id)
         row_data = fill_row_data(data_info, is_broadcast_tensor=True)
         gathered_row_data.append(row_data)
-    data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
-    return save_compare_dataframe_to_csv(data_frame, output_path)
+    return save_compare_reault_to_csv(gathered_row_data, output_path)
 
 
 def search_mapping_relationships(gathered_golden_data, gathered_my_data):

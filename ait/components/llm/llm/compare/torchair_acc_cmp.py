@@ -15,25 +15,24 @@
 import os
 import sys
 import re
-import glob
-import numpy as np
-import pandas as pd
-import json
-import torch
-from tqdm import tqdm
 
-from llm.compare import acc_cmp
-from llm.common.constant import CSV_GOLDEN_HEADER
 from llm.common.log import logger
+from llm.compare.acc_cmp import BasicDataInfo, fill_row_data, save_compare_reault_to_csv
 
 GE_GRAPH_FILE_PREFIX = "dynamo_original_graph_"
 FUSION_OP_TYPE = "AutomaticBufferFusionOp"
 DUMP_FILE_FILTER_SUFIX = [".txt", ".npy", ".bin"]
 IS_MSACCUCMP_PATH_SET = False
+GLOBAL_TENSOR_CONVERTER = None
+
+
+def default_tensor_converter(tensor):
+    return tensor.data.reshape(tensor.shape)
 
 
 def set_msaccucmp_path_from_cann():
     global IS_MSACCUCMP_PATH_SET
+    global GLOBAL_TENSOR_CONVERTER
 
     # env TOOLCHAIN_HOME works for both development and product packages.
     cann_path = os.environ.get("TOOLCHAIN_HOME", os.environ.get("ASCEND_TOOLKIT_HOME", ""))
@@ -47,6 +46,17 @@ def set_msaccucmp_path_from_cann():
     if msaccucmp_path not in sys.path:
         sys.path.append(msaccucmp_path)
     IS_MSACCUCMP_PATH_SET = True
+
+    if GLOBAL_TENSOR_CONVERTER is None:
+        from conversion import tensor_conversion
+
+        if hasattr(tensor_conversion, "ConvertSingleTensorFormat"):
+            GLOBAL_TENSOR_CONVERTER = tensor_conversion.ConvertSingleTensorFormat()
+        else:
+            GLOBAL_TENSOR_CONVERTER = default_tensor_converter
+            logger.warning("ConvertSingleTensorFormat not found in msaccucmp, connot convert tensor format."
+                " Try installing the latest CANN toolkit."
+            )
 
 
 def get_torchair_ge_graph_path(my_path):
@@ -66,13 +76,8 @@ def parse_torchair_bin_dump_data(bin_dump_file):
     from cmp_utils.constant.const_manager import ConstManager
 
     bin_dump_data = parse_dump_file(bin_dump_file, dump_version=ConstManager.OLD_DUMP_TYPE)
-    inputs = []
-    for input_data in bin_dump_data.input_data:
-        inputs.append(input_data.data.reshape(input_data.shape))
-
-    outputs = []
-    for output_data in bin_dump_data.output_data:
-        outputs.append(output_data.data.reshape(output_data.shape))
+    inputs = [GLOBAL_TENSOR_CONVERTER(input_data) for input_data in bin_dump_data.input_data]
+    outputs = [GLOBAL_TENSOR_CONVERTER(output_data) for output_data in bin_dump_data.output_data]
     return inputs, outputs
 
 
@@ -210,8 +215,8 @@ def init_fx_dump_data_from_path(fx_dump_path):
 def compare_single_data(golden_path, my_path, token_id=0, golden_data=None, my_data=None, info=""):
     golden_path = golden_path if golden_data is None else "{},{}".format(golden_path, info)
     my_path = my_path if my_data is None else "{},{}".format(my_path, info)
-    data_info = acc_cmp.BasicDataInfo(golden_path, my_path, token_id)
-    return acc_cmp.fill_row_data(data_info, loaded_my_data=my_data, loaded_golden_data=golden_data)
+    data_info = BasicDataInfo(golden_path, my_path, token_id)
+    return fill_row_data(data_info, loaded_my_data=my_data, loaded_golden_data=golden_data)
 
 
 def filter_valid_fx_desc_tensor_info(desc_key, desc_value):
@@ -329,5 +334,4 @@ def acc_compare(golden_path, my_path, output_path=".", ge_graph_path=".", do_com
         else:
             row_data = compare_ge_ge(graph_map, my_dump_data[token_id], golden_dump_data[token_id], token_id)
         gathered_row_data.extend(row_data)
-    data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
-    return acc_cmp.save_compare_dataframe_to_csv(data_frame, output_path)
+    return save_compare_reault_to_csv(gathered_row_data, output_path)
