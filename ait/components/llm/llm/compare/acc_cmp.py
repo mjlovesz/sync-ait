@@ -419,11 +419,17 @@ def pair_torch_atb_nodes(g_nodes, m_nodes, op_mapping, op_tensor_mapping=None):
             msg = f"golden tensor path: {golden_tensor_path} or my_tensor_path: {my_tensor_path} is not exist."
             logger.debug(msg)
 
-    for atb_op_type, torch_op_type in op_mapping.items():
+    op_mapping_flat = []
+    if op_tensor_mapping is not None:
+        for atb_op_type, torch_op_type in op_mapping.items():
+            op_mapping_flat.extend([(atb_op_type, x) for x in torch_op_type])
+    else:
+        op_mapping_flat = op_mapping.items()
+
+    for atb_op_type, torch_op_type in op_mapping_flat:
         if op_tensor_mapping is not None:
-            for torch_op_type_item in torch_op_type:
-                atb_nodes = [m_node for m_node in m_nodes if atb_op_type in m_node.node_type]
-                torch_nodes = [g_node for g_node in g_nodes if torch_op_type_item in g_node.node_type]
+            atb_nodes = [m_node for m_node in m_nodes if atb_op_type in m_node.node_type]
+            torch_nodes = [g_node for g_node in g_nodes if torch_op_type in g_node.node_type]
         else:
             atb_nodes = [m_node for m_node in m_nodes if m_node.node_type == atb_op_type]
             torch_nodes = [g_node for g_node in g_nodes if g_node.node_type == torch_op_type]
@@ -432,15 +438,19 @@ def pair_torch_atb_nodes(g_nodes, m_nodes, op_mapping, op_tensor_mapping=None):
             msg = f"The number of {atb_op_type} node in atb is not equal to {torch_op_type} node in torch"
             logger.warning(msg)
             continue
-        
+
         for atb_node, torch_node in zip(atb_nodes, torch_nodes):
             tensor_mapping_key = atb_op_type + '_' + torch_op_type
             if op_tensor_mapping is not None and tensor_mapping_key in op_tensor_mapping.keys():
                 mapping_idx_list = op_tensor_mapping[tensor_mapping_key]
-                for atb_idx, torch_idx in mapping_idx_list:
-                    my_tensor_path = os.path.join(atb_node.tensor_path, "after", f"outtensor{atb_idx}.bin")
-                    golden_tensor_path = os.path.join(torch_node.tensor_path, f"output_{torch_idx}.pth")
-                    get_row_data(golden_tensor_path, my_tensor_path)
+            else:
+                mapping_idx_list = None
+        
+        if mapping_idx_list is not None:
+            for atb_idx, torch_idx in mapping_idx_list:
+                my_tensor_path = os.path.join(atb_node.tensor_path, "after", f"outtensor{atb_idx}.bin")
+                golden_tensor_path = os.path.join(torch_node.tensor_path, f"output_{torch_idx}.pth")
+                get_row_data(golden_tensor_path, my_tensor_path)
             else:
                 my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
                 golden_tensor_path = os.path.join(torch_node.tensor_path, "output.pth")
@@ -489,7 +499,7 @@ def load_mapping(mapping_file_path):
             global ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING
             ATB_TORCH_BUILT_IN_OP_MAPPING, ATB_TORCH_CUSTOMIZED_OP_MAPPING, \
                 ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING = json.loads(file_content)
-        msg = f"Using customized op_mapping from file: {mapping_file}"
+        msg = f"Using  user-specified op_mapping from file: {mapping_file}"
         logger.info(msg)
     else:
         logger.debug("Using built-in op_mapping")
