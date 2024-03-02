@@ -23,6 +23,7 @@ import torch
 from tqdm import tqdm
 
 from llm.compare import acc_cmp
+from llm.common.constant import CSV_GOLDEN_HEADER
 from llm.common.log import logger
 
 GE_GRAPH_FILE_PREFIX = "dynamo_original_graph_"
@@ -163,9 +164,9 @@ def init_ge_dump_data_from_bin_path(ge_dump_path):
                 cur_file_size = os.path.getsize(file_name)
                 keep_one = file_name if cur_file_size > exists_file_size else exists_file
                 cur_dump_data[cur_op_name] = keep_one
-                logger.warning(f"duplicated op name: {cur_op_name}.\n"
-                    f"    [{file_name},\n    {exists_file}].\n"
-                    f"    Will keep the larger one {keep_one}."
+                logger.warning(f"duplicated op name: {cur_op_name}."
+                    f" [{os.path.basename(file_name)},\n    {os.path.basename(exists_file)}]."
+                    f" Will keep the larger one {os.path.basename(keep_one)}."
                 )
             else:
                 cur_dump_data[cur_op_name] = file_name
@@ -283,13 +284,13 @@ def compare_ge_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
         for cur_id, (golden_input, my_input) in enumerate(zip(golden_inputs, my_inputs)):
             info = "{},{}".format("inputs", cur_id)
             row_data = compare_single_data(
-                golden_path, my_path, token_id, left_data=golden_input, right_data=my_input, info=info
+                golden_path, my_path, token_id, golden_data=golden_input, my_data=my_input, info=info
             )
             gathered_row_data.append(row_data)
         for cur_id, (golden_output, my_output) in enumerate(zip(golden_outputs, my_outputs)):
             info = "{},{}".format("outputs", cur_id)
             row_data = compare_single_data(
-                golden_path, my_path, token_id, left_data=golden_output, right_data=my_output, info=info
+                golden_path, my_path, token_id, golden_data=golden_output, my_data=my_output, info=info
             )
             gathered_row_data.append(row_data)
     return gathered_row_data
