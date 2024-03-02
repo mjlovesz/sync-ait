@@ -151,7 +151,7 @@ def init_ge_dump_data_from_bin_path(ge_dump_path):
         for file_name in sorted(file_list):
             if os.path.splitext(file_name)[-1] in DUMP_FILE_FILTER_SUFIX:
                 continue
-            split_name = file_name.split(".")
+            split_name = os.path.basename(file_name).split(".")
             if len(split_name) < 5:
                 logger.warning(f"invalid file name: {file_name}, should contain at least 4 '.'")
                 continue
@@ -258,7 +258,7 @@ def compare_ge_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
                 fx_inputs = fx_dump_data.get(fx_tensor_name, {}).get("input", [])
                 fx_outputs = fx_dump_data.get(fx_tensor_name, {}).get("output", [])
                 logger.debug(f"ge_inputs length: {len(ge_inputs)}, fx_inputs length:, {len(fx_inputs)}")
-                logger.debug(f"ge_outputs length: {len(my_outputs)}, fx_outputs length:, {len(fx_outputs)}")
+                logger.debug(f"ge_outputs length: {len(ge_outputs)}, fx_outputs length:, {len(fx_outputs)}")
 
                 for cur_id, (fx_input, ge_input) in enumerate(zip(fx_inputs, ge_inputs)):
                     info = "{},{}".format("inputs", cur_id)
