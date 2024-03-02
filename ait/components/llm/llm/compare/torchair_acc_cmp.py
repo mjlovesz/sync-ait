@@ -1,4 +1,4 @@
-# Copyright (c) 2024 Huawei Technologies Co., Ltd.
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,14 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import os
 import sys
 import re
-
+import glob
 import numpy as np
+import pandas as pd
+import json
+import torch
+from tqdm import tqdm
 
+from llm.compare import acc_cmp
 from llm.common.log import logger
-
 
 GE_GRAPH_FILE_PREFIX = "dynamo_original_graph_"
 FUSION_OP_TYPE = "AutomaticBufferFusionOp"
@@ -28,6 +33,7 @@ IS_MSACCUCMP_PATH_SET = False
 
 def set_msaccucmp_path_from_cann():
     global IS_MSACCUCMP_PATH_SET
+
     # env TOOLCHAIN_HOME works for both development and product packages.
     cann_path = os.environ.get("TOOLCHAIN_HOME", os.environ.get("ASCEND_TOOLKIT_HOME", ""))
     if not cann_path:
@@ -50,10 +56,6 @@ def get_torchair_ge_graph_path(my_path):
         if os.path.isfile(cur_file) and ff.startswith(GE_GRAPH_FILE_PREFIX) and ff.endswith(".txt"):
             return cur_file
     return None
-
-
-def is_torchair_dump_data(golden_data_path, my_path):
-    return isinstance(golden_data_path, dict) and not my_path.endswith(".npy") and not my_path.endswith(".bin")
 
 
 def parse_torchair_bin_dump_data(bin_dump_file):
@@ -204,6 +206,18 @@ def init_fx_dump_data_from_path(fx_dump_path):
     return dump_data_with_token_id
 
 
+def compare_single_data(left_path, right_path, token_id=0, left_data=None, right_data=None, info=""):
+    loaded_my_data, loaded_golden_data = None, None
+    if left_data is not None:
+        left_path = "{},{}".format(left_path, info)
+        loaded_my_data = left_data
+    if right_path is not None:
+        right_path = "{},{}".format(right_path, info)
+        loaded_golden_data = right_data
+    data_info = acc_cmp.BasicDataInfo(left_path, right_path, token_id)
+    return acc_cmp.fill_row_data(data_info, loaded_my_data=loaded_my_data, loaded_golden_data=loaded_golden_data)
+
+
 def filter_valid_fx_desc_tensor_info(desc_key, desc_value):
     """Valid one like: 'attr': {'key': '_fx_tensor_name', 'value': {'s': 'add_1-aten.add.Tensor.OUTPUT.0'}}"""
     if not (desc_key == "attr" or desc_key.startswith("attr#")) or not isinstance(desc_value, dict):
@@ -215,17 +229,8 @@ def filter_valid_fx_desc_tensor_info(desc_key, desc_value):
     return True
 
 
-def create_map_item_single(left, right, ):
-    cur_map_item = {
-        "left": {"path": fx_input},
-        "right": {"path": cur_ge_data, "type": "input", "index": idx},
-    }
-    return cur_map_item
-
-
-def build_metadata_ge_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
-    metadata = {}
-    data_id = token_id * len(graph_map)
+def compare_ge_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
+    gathered_row_data = []
     for cur_op in graph_map:
         op_info = cur_op.get("op", {})
         ge_tensor_name = op_info.get("type", "") + "." + op_info.get("name", "")  # Like "ConcatV2D.ConcatV2"
@@ -248,37 +253,50 @@ def build_metadata_ge_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
                         f"FX data missing, GE tensor name: {ge_tensor_name}, FX tensor name: {fx_tensor_name}"
                     )
                     continue
-                
-                for idx, fx_input in enumerate(fx_dump_data.get(fx_tensor_name, {}).get("input", [])):
-                    cur_map_item = {
-                        "left": {"path": fx_input},
-                        "right": {"path": cur_ge_data, "type": "input", "index": idx},
-                    }
-                    metadata[data_id] = {token_id: cur_map_item}
-                    data_id += 1
 
-                for idx, fx_output in enumerate(fx_dump_data.get(fx_tensor_name, {}).get("output", [])):
-                    cur_map_item = {
-                        "left": {"path": fx_output},
-                        "right": {"path": cur_ge_data, "type": "output", "index": idx},
-                    }
-                    metadata[data_id] = {token_id: cur_map_item}
-                    data_id += 1
-    return metadata
+                ge_inputs, ge_outputs = parse_torchair_bin_dump_data(cur_ge_data)
+                fx_inputs = fx_dump_data.get(fx_tensor_name, {}).get("input", [])
+                fx_outputs = fx_dump_data.get(fx_tensor_name, {}).get("output", [])
+                logger.debug(f"ge_inputs length: {len(ge_inputs)}, fx_inputs length:, {len(fx_inputs)}")
+                logger.debug(f"ge_outputs length: {len(my_outputs)}, fx_outputs length:, {len(fx_outputs)}")
+
+                for cur_id, (fx_input, ge_input) in enumerate(zip(fx_inputs, ge_inputs)):
+                    info = "{},{}".format("inputs", cur_id)
+                    row_data = compare_single_data(fx_input, cur_ge_data, token_id, right_data=ge_input, info=info)
+                    gathered_row_data.append(row_data)
+                for cur_id, (fx_output, ge_output) in enumerate(zip(fx_outputs, ge_outputs)):
+                    info = "{},{}".format("outputs", cur_id)
+                    row_data = compare_single_data(fx_output, cur_ge_data, token_id, right_data=ge_output, info=info)
+                    gathered_row_data.append(row_data)
+    return gathered_row_data
 
 
-def build_metadata_ge_ge(graph_map, ge_dump_data, fused_ge_dump_data, token_id=0):
-    metadata = {}
-    data_id = token_id * len(graph_map)
-    for op_name, file_name in fused_ge_dump_data.items():
+def compare_ge_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
+    gathered_row_data = []
+    for op_name, my_path in fused_ge_dump_data.items():
         if op_name not in ge_dump_data:
             logger.warning(f"Golden data missing, My tensor name: {op_name}")
             continue
         # [TODO] fused op
-        cur_map_item = {"left": {"path": ge_dump_data[op_name]}, "right": {"path": file_name}}
-        metadata[data_id] = {token_id: cur_map_item}
-        data_id += 1
-    return metadata
+        golden_path = ge_dump_data[op_name]
+        golden_inputs, golden_outputs = parse_torchair_bin_dump_data(golden_path)
+        my_inputs, my_outputs = parse_torchair_bin_dump_data(my_path)
+        logger.debug(f"golden_inputs length: {len(golden_inputs)}, my_inputs length:, {len(my_inputs)}")
+        logger.debug(f"golden_outputs length: {len(golden_outputs)}, my_outputs length:, {len(my_outputs)}")
+
+        for cur_id, (golden_input, my_input) in enumerate(zip(golden_inputs, my_inputs)):
+            info = "{},{}".format("inputs", cur_id)
+            row_data = compare_single_data(
+                golden_path, my_path, token_id, left_data=golden_input, right_data=my_input, info=info
+            )
+            gathered_row_data.append(row_data)
+        for cur_id, (golden_output, my_output) in enumerate(zip(golden_outputs, my_outputs)):
+            info = "{},{}".format("outputs", cur_id)
+            row_data = compare_single_data(
+                golden_path, my_path, token_id, left_data=golden_output, right_data=my_output, info=info
+            )
+            gathered_row_data.append(row_data)
+    return gathered_row_data
 
 
 def is_fx_dump_path(input_path):
@@ -289,7 +307,8 @@ def is_fx_dump_path(input_path):
     return False
 
 
-def build_metadata(golden_path, my_path, ge_graph_path):
+def acc_compare(golden_path, my_path, output_path=".", ge_graph_path=".", do_compare=True):
+    logger.info(f"[compare_torchair], golden_path: {golden_path}, my_path: {my_path}, ge_graph_path: {ge_graph_path}")
     set_msaccucmp_path_from_cann()
     graph_map = parse_pbtxt_to_dict(ge_graph_path)
     my_dump_data = init_ge_dump_data_from_bin_path(my_path)
@@ -302,15 +321,16 @@ def build_metadata(golden_path, my_path, ge_graph_path):
     logger.info(f"All token ids in my_dump_data: {my_dump_data.keys()}")
     logger.info(f"All token ids in golden_dump_data: {golden_dump_data.keys()}")
 
-    gathered_metadata = {}
+    gathered_row_data = []
     for token_id in my_dump_data:
         if token_id not in golden_dump_data:
             logger.warning(f"My token_id {token_id} not found in golden dump data")
             continue
         logger.info(f"Comparing token_id: {token_id}")
         if is_golden_fx:
-            metadata = build_metadata_ge_fx(graph_map, my_dump_data[token_id], golden_dump_data[token_id], token_id)
+            row_data = compare_ge_fx(graph_map, my_dump_data[token_id], golden_dump_data[token_id], token_id)
         else:
-            metadata = build_metadata_ge_ge(graph_map, my_dump_data[token_id], golden_dump_data[token_id], token_id)
-        gathered_metadata.update(metadata)
-    return gathered_metadata
+            row_data = compare_ge_ge(graph_map, my_dump_data[token_id], golden_dump_data[token_id], token_id)
+        gathered_row_data.extend(row_data)
+    data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
+    return acc_cmp.save_compare_dataframe_to_csv(data_frame, output_path)

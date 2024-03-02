@@ -41,18 +41,31 @@ from llm.common.constant import (
     GOLDEN_MEAN_VALUE,
     CSV_GOLDEN_HEADER,
 )
-from llm.compare import torchair_utils
 
 
-NCHW_DIMS = 4
-NC1HWC0_DIMS = 5
+class BasicDataInfo:
+    count_data_id = 0  # Count data_id, increment by 1 every time creating a new instance
+
+    @classmethod
+    def __count__(cls):
+        cls.count_data_id += 1
+
+    def __init__(self, golden_data_path, my_data_path, token_id=0, data_id=None):
+        self.token_id, self.my_data_path, self.golden_data_path = token_id, my_data_path, golden_data_path
+        self.data_id = self.count_data_id if data_id is None else data_id
+        self.__count__()
+
+    def to_dict(self):
+        return {
+            TOKEN_ID: str(self.token_id),
+            DATA_ID: str(self.data_id),
+            GOLDEN_DATA_PATH: self.golden_data_path,
+            MY_DATA_PATH: self.my_path
+        }
 
 
 def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
-    torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
-    if torchair_ge_graph_path is not None:
-        compare_torchair(golden_path, my_path, torchair_ge_graph_path, output_path=output_path)
-    elif os.path.isdir(golden_path):
+    if os.path.isdir(golden_path):
         golden_tensor_path = os.path.join(golden_path, "golden_tensor")
         golden_topo_flag, golden_topo_json_path = is_model_topo_exist(golden_path)
         my_topo_flag, my_topo_json_path = is_model_topo_exist(my_path)
@@ -73,7 +86,6 @@ def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
             else:
                 # topo信息不一致，走量化比对逻辑，待补充
                 logger.info('Automatic mapping comparison starts! Comparing ATB tensors, the topos are different...')
-
     elif os.path.isfile(golden_path) and os.path.isfile(my_path):
         res = compare_file(golden_path, my_path)
         logger.info("Compared results: %s", res)
@@ -201,14 +213,6 @@ def save_compare_dataframe_to_csv(data_frame, output_path="."):
     return csv_save_path
 
 
-# torchair 比对相关
-def compare_torchair(golden_path, my_path, ge_graph_path, output_path="."):
-    logger.info(f"[compare_torchair], golden_path: {golden_path}, my_path: {my_path}, ge_graph_path: {ge_graph_path}")
-    metadata = torchair_utils.build_metadata(golden_path, my_path, ge_graph_path)
-    data_frame = fill_in_data(metadata)
-    return save_compare_dataframe_to_csv(data_frame, output_path)
-
-
 def fill_in_data(golden_meta):
     gathered_row_data = []
     for data_id, golden_info in tqdm(golden_meta.items(), total=len(golden_meta)):
@@ -218,76 +222,27 @@ def fill_in_data(golden_meta):
             if not isinstance(path_list, (list, tuple)) or len(path_list) < 2:
                 logger.warning(f"Invalid data in golden metadata.json, data_id: {data_id}, token_id: {token_id}")
                 continue
-            golden_data_path = path_list[0]
-            my_path = path_list[1]
-
-            if torchair_utils.is_torchair_dump_data(golden_data_path, my_path):
-                sub_gathered_row_data = fill_row_data_torchair(token_id, data_id, golden_data_path, my_path)
-                gathered_row_data.extend(sub_gathered_row_data)
-            else:
-                data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: golden_data_path, MY_DATA_PATH: my_path}
-                row_data = fill_row_data(data_info)
-                gathered_row_data.append(row_data)
+            data_info = BasicDataInfo(path_list[0], path_list[1], token_id, data_id)
+            row_data = fill_row_data(data_info)
+            gathered_row_data.append(row_data)
     return pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
 
 
-# torchair 比对相关
-def fill_row_data_torchair(token_id, data_id, golden_data_path, my_path):
-    my_inputs, my_outputs = torchair_utils.parse_torchair_bin_dump_data(my_path)
-    sub_gathered_row_data = []
-    logger.debug(
-        f"my_inputs length: {len(my_inputs)}, golden_data_path inputs length:, {len(golden_data_path['inputs'])}"
-    )
-    logger.debug(
-        f"my_outputs length: {len(my_outputs)}, golden_data_path outputs length:, {len(golden_data_path['outputs'])}"
-    )
-
-    for cur_id, (golden_input, my_input) in enumerate(zip(golden_data_path["inputs"], my_inputs)):
-        sub_my_path = "{},{},{}".format(my_path, "inputs", cur_id)
-        data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: golden_input, MY_DATA_PATH: sub_my_path}
-        row_data = fill_row_data(data_info, loaded_my_data=my_input)
-        sub_gathered_row_data.append(row_data)
-    for cur_id, (golden_output, my_output) in enumerate(zip(golden_data_path["outputs"], my_outputs)):
-        sub_my_path = "{},{},{}".format(my_path, "outputs", cur_id)
-        data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: golden_output, MY_DATA_PATH: sub_my_path}
-        row_data = fill_row_data(data_info, loaded_my_data=my_output)
-        sub_gathered_row_data.append(row_data)
-    return sub_gathered_row_data
-
-
-def is_converting_nc1hwc0_to_nchw(golden_data, my_data):
-    if not (golden_data.dim() == NCHW_DIMS and my_data.dim() == NC1HWC0_DIMS):
-        return False
-
-    golden_shape, my_shape = golden_data.shape, my_data.shape
-    if not (golden_shape[0] == my_shape[0] and golden_shape[2] == my_shape[2] and golden_shape[3] == my_shape[3]):
-        return False
-    if np.prod(golden_shape) != np.prod(my_shape):
-        return False
-    return True
-
-
-def fill_row_data(data_info, loaded_my_data=None, is_broadcast_tensor=False):
+def fill_row_data(data_info, loaded_my_data=None, loaded_golden_data=None, is_broadcast_tensor=False):
     # 第三个参数“is_broadcast_tensor”用于两个模型batch size不一致时将低维的tensor广播到高维进行比较
     # 创建一条比较数据
-    token_id = data_info.get(TOKEN_ID)  
-    data_id = data_info.get(DATA_ID)  
-    golden_data_path = data_info.get(GOLDEN_DATA_PATH)  
-    my_path = data_info.get(MY_DATA_PATH)  
-    logger.debug(f"[fill_row_data], golden_data_path: {golden_data_path}, my_path: {my_path}")
-    row_data = {TOKEN_ID: str(token_id), DATA_ID: data_id, GOLDEN_DATA_PATH: golden_data_path, MY_DATA_PATH: my_path}
-    if not os.path.isfile(golden_data_path):
+    golden_data_path, my_data_path = data_info.golden_data_path, data_info.my_data_path
+    logger.debug(f"[fill_row_data], golden_data_path: {golden_data_path}, my_data_path: {my_data_path}")
+    row_data = data_info.to_dict()
+    if loaded_golden_data is None and not os.path.isfile(golden_data_path):
         row_data[CMP_FAIL_REASON] = f"golden_data_path: {golden_data_path} is not a file."
         return row_data
-    if loaded_my_data is None and not os.path.isfile(my_path):
-        row_data[CMP_FAIL_REASON] = f"my_path: {my_path} is not a file."
+    if loaded_my_data is None and not os.path.isfile(my_data_path):
+        row_data[CMP_FAIL_REASON] = f"my_data_path: {my_data_path} is not a file."
         return row_data
 
-    golden_data = read_data(golden_data_path)
-    my_data = read_data(my_path) if loaded_my_data is None else torch.from_numpy(loaded_my_data)
-    if is_converting_nc1hwc0_to_nchw(golden_data, my_data):
-        logger.debug(f"[fill_row_data] NC1HWC0 -> NCHW, my_data: {my_data.shape}, golden_data: {golden_data.shape}")
-        my_data.permute([0, 4, 1, 2, 3]).reshape(golden_data.shape)
+    golden_data = read_data(golden_data_path) if loaded_golden_data is None else torch.from_numpy(loaded_golden_data)
+    my_data = read_data(my_data_path) if loaded_my_data is None else torch.from_numpy(loaded_my_data)
 
     if is_broadcast_tensor:
         broadcast_golden_data, broadcast_my_data = torch.broadcast_tensors(golden_data, my_data)
@@ -359,10 +314,8 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
     matched_path_pair = search_mapping_relationships(gathered_golden_data, gathered_my_data)
     gathered_row_data = []
     for data_id, match in enumerate(matched_path_pair):
-        _golden_tensor_path = match['golden']
-        _my_tensor_path = match['my']
-        data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: _golden_tensor_path, MY_DATA_PATH: _my_tensor_path}
-        row_data = fill_row_data(data_info, loaded_my_data=None, is_broadcast_tensor=True)
+        data_info = BasicDataInfo(match['golden'], match['my'], token_id, data_id)
+        row_data = fill_row_data(data_info, is_broadcast_tensor=True)
         gathered_row_data.append(row_data)
     data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
     return save_compare_dataframe_to_csv(data_frame, output_path)
