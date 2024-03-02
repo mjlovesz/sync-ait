@@ -43,8 +43,8 @@ from llm.common.constant import (
 )
 from llm.compare import torchair_utils
 from llm.compare.cmp_utils import search_layer_node, get_layer_node, get_leaf_nodes, get_all_nodes
-from llm.compare.op_mapping import ATB_TORCH_BUILT_IN_OP_MAPPING, ATB_TORCH_CUSTOMIZED_OP_MAPPING, \
-    ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING
+from llm.compare.op_mapping import ATB_TORCH_BUILT_IN_OP_MAPPING, ATB_TORCH_CUSTOM_OP_MAPPING, \
+    ATB_TORCH_CUSTOM_OP_TENSOR_MAPPING
 from llm.dump.torch_dump.topo import ModelTree
 
 NCHW_DIMS = 4
@@ -458,8 +458,13 @@ def pair_torch_atb_nodes(g_nodes, m_nodes, op_mapping, op_tensor_mapping=None):
     return compared_result
                     
 
-def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path, output_path):
+def cmp_torch_atb_model(data_info, output_path, mapping_dic):
+    golden_json = data_info.get("golden_json")
+    my_json = data_info.get("my_json")
+    torch_tensor_path = data_info.get("torch_tensor_path")
+    atb_tensor_path = data_info.get("atb_tensor_path")
     compared_result = []
+
     golden_root_node = ModelTree.json_to_tree(golden_json, torch_tensor_path)
     golden_layer_type = search_layer_node(golden_root_node)
     logger.info("golden_layer_type: %s", golden_layer_type)
@@ -475,14 +480,14 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
         g_layer_leaf_nodes = get_leaf_nodes(golden_layer)
         m_layer_leaf_nodes = get_leaf_nodes(my_layer)
         compared_result.extend(pair_torch_atb_nodes(g_layer_leaf_nodes, m_layer_leaf_nodes, 
-                                                    ATB_TORCH_BUILT_IN_OP_MAPPING))
+                                                    mapping_dic.get("ATB_TORCH_BUILT_IN_OP_MAPPING")))
 
     # 自定义算子比对
     for golden_layer, my_layer in zip(golden_layer_nodes, my_layer_nodes):
         g_layer_all_nodes = get_all_nodes(golden_layer)
         m_layer_all_nodes = get_all_nodes(my_layer)
         compared_result.extend(pair_torch_atb_nodes(g_layer_all_nodes, m_layer_all_nodes, 
-                                            ATB_TORCH_CUSTOMIZED_OP_MAPPING, ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING))
+                mapping_dic.get("ATB_TORCH_CUSTOM_OP_MAPPING"), mapping_dic.get("ATB_TORCH_CUSTOM_OP_TENSOR_MAPPING")))
 
     data_frame = pd.DataFrame(compared_result, columns=CSV_GOLDEN_HEADER)
     save_compare_dataframe_to_csv(data_frame, output_path)
@@ -492,16 +497,17 @@ def load_mapping(mapping_file_path):
     mapping_file = os.path.join(mapping_file_path, "op_mapping_file.json")
     if os.path.exists(mapping_file):
         with open(mapping_file, "r") as file:
-            file_content = json.load(file)
-            global ATB_TORCH_BUILT_IN_OP_MAPPING
-            global ATB_TORCH_CUSTOMIZED_OP_MAPPING
-            global ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING
-            ATB_TORCH_BUILT_IN_OP_MAPPING, ATB_TORCH_CUSTOMIZED_OP_MAPPING, \
-                ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING = json.loads(file_content)
+            mapping_dic = json.load(file)
         msg = f"Using  user-specified op_mapping from file: {mapping_file}"
         logger.info(msg)
     else:
+        mapping_dic = {
+            "ATB_TORCH_BUILT_IN_OP_MAPPING": ATB_TORCH_BUILT_IN_OP_MAPPING,
+            "ATB_TORCH_CUSTOM_OP_MAPPING": ATB_TORCH_CUSTOM_OP_MAPPING,
+            "ATB_TORCH_CUSTOM_OP_TENSOR_MAPPING": ATB_TORCH_CUSTOM_OP_TENSOR_MAPPING
+        }
         logger.debug("Using built-in op_mapping")
+    return mapping_dic
 
 
 def cmp_torch_atb_model_init(torch_model_topo_file, golden_path, my_path, output_path, mapping_file_path):
@@ -516,8 +522,14 @@ def cmp_torch_atb_model_init(torch_model_topo_file, golden_path, my_path, output
         atb_model_topo_name = os.listdir(atb_model_topo_file_path)[0]
         atb_model_topo_file = os.path.join(atb_model_topo_file_path, atb_model_topo_name)
         if os.path.exists(atb_model_topo_file):
-            load_mapping(mapping_file_path)
-            cmp_torch_atb_model(torch_model_topo_file, atb_model_topo_file, golden_path, my_path, output_path)
+            mapping_dic = load_mapping(mapping_file_path)
+            data_info = {
+                "golden_json": torch_model_topo_file,
+                "my_json": atb_model_topo_file,
+                "torch_tensor_path": golden_path,
+                "atb_tensor_path": my_path,
+            }
+            cmp_torch_atb_model(data_info, output_path, mapping_dic)
         else:
             msg = f"Cannot find atb model file: {atb_model_topo_file}"
             logger.error(msg)
