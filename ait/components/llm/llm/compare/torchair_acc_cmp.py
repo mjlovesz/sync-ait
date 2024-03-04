@@ -275,10 +275,10 @@ def compare_ge_with_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
 
 def get_all_op_input_names(op_info):
     inputs = [vv for kk, vv in op_info.items() if kk == "input" or kk.startswith("input#")]
-    return [":".join(i.split(":")[:-1]) for ii in inputs]
+    return [":".join(ii.split(":")[:-1]) for ii in inputs]
 
 
-def find_longest_name(op_name, op_map, fused_ge_dump_data, ge_dmp_data):
+def find_longest_name(op_name, op_map, fused_ge_dump_data, ge_dump_data):
     if op_name in op_map:
         return op_name
     op_name_len = len(op_name)
@@ -286,43 +286,49 @@ def find_longest_name(op_name, op_map, fused_ge_dump_data, ge_dmp_data):
         cur_op_name = op_name[:-idx]
         if cur_op_name in op_map:
             return cur_op_name
-        if cur_op_name in fused_ge_dump_data or cur_op_name in ge_dmp_data:
+        if cur_op_name in fused_ge_dump_data or cur_op_name in ge_dump_data:
             return None  # op_name in dump data but not op_map, abandon
     return None
 
 
-def gather_fused_op_data(fused_op_name, op_map, fused_ge_dump_data, ge_dmp_data):
+def gather_fused_op_data(fused_op_name, op_map, fused_ge_dump_data, ge_dump_data):
     gathered_input_names, gathered_inputs, gatherd_input_pathes, gathered_ops = [], [], [], []
     output_path, op_outputs = None, []
     while len(fused_op_name) > 0:
-        cur_op_name = find_longest_name(fused_op_name, op_map, fused_ge_dump_data, ge_dmp_data)
+        cur_op_name = find_longest_name(fused_op_name, op_map, fused_ge_dump_data, ge_dump_data)
         if cur_op_name is None or not cur_op_name in op_map:
             logger.warning("Failed parsing fused op name: {}. Compare manully if required.")
             break
         cur_input_names = get_all_op_input_names(op_map[cur_op_name])
-        gathered_input_names.extend(cur_input_names)
-        gathered_ops.append(cur_op_name)
-        fused_op_name = fused_op_name[len(cur_op_name):]
 
         if cur_op_name in ge_dump_data:
-            cur_path = ge_dump_data[cur_op_name]
+            cur_path = ge_dump_data[cur_op_name
             op_inputs, op_outputs = parse_torchair_bin_dump_data(cur_path)
-            min_inputs_len = min(len(cur_input_names), min(op_inputs))
+            min_inputs_len = min(len(cur_input_names), len(op_inputs))
             cur_input_names, op_inputs = cur_input_names[:min_inputs_len], op_inputs[:min_inputs_len]
-            gatherd_input_pathes.extend([cur_path] * min_inputs_len)
+            input_pathes = [",".join([cur_path, "inputs", str(idx)]) for idx in range(min_inputs_len)
             output_path = cur_path  # Till get the last op path
         else:
-            logger.warning(f"No dump data for op: {}. Seldom should this happen. Data matching may be incorrect.")
+            logger.warning(
+                f"No dump data for op: {cur_op_name}. Seldom should this happen. Input data matching may be incorrect."
+            )
             empty_data = np.array([], dtype='float32')
             op_inputs = [empty_data] * len(cur_input_names)
-        gathered_inputs.extend(op_inputs)
+            input_pathes = [""] * len(cur_input_names)
 
-    filtered_input_names, filtered_inputs = [], []
-    for input_name, inputs in zip(gathered_input_names, gathered_inputs):
+        gathered_input_names.extend(cur_input_names)
+        gathered_ops.append(cur_op_name)
+        gathered_inputs.extend(op_inputs)
+        gatherd_input_pathes.extend(input_pathes)
+        fused_op_name = fused_op_name[len(cur_op_name):]
+
+    filtered_input_names, filtered_inputs, filtered_input_pathes = [], [], []
+    for input_name, inputs, input_path in zip(gathered_input_names, gathered_inputs, gatherd_input_pathes):
         if input_name not in filtered_input_names and input_name not in gathered_ops:
             filtered_input_names.append(input_name)
+            filtered_input_pathes.append(input_path)
             filtered_inputs.append(inputs)
-    return filtered_inputs, gatherd_input_pathes, op_outputs, output_path  # op_outputs is just the last op output
+    return filtered_inputs, filtered_input_pathes, op_outputs, output_path  # op_outputs is just the last op output
 
 
 def compare_ge_with_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
@@ -332,7 +338,7 @@ def compare_ge_with_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
         is_fused_op = os.path.basename(my_path).startswith(FUSION_OP_TYPE)
         if is_fused_op:
             golden_inputs, golden_input_pathes, golden_outputs, golden_output_path = gather_fused_op_data(
-                op_name, graph_map_dict, fused_ge_dump_data, ge_dmp_data
+                op_name, graph_map_dict, fused_ge_dump_data, ge_dump_data
             )
         elif op_name in ge_dump_data:
             golden_path = ge_dump_data[op_name]
