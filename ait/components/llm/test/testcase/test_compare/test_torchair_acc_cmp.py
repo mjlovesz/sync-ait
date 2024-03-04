@@ -56,6 +56,21 @@ def fake_pbtxt_file():
           name: "tt2"
         }
       }
+    }
+    op {
+      name: "Cast_9"
+      output_desc {
+        name: "test"
+        attr {
+          key: "_fx_tensor_name"
+          value {
+            s: "mm-aten.mm.default.OUTPUT.0"
+          }
+        }
+        attr {
+          name: "tt2"
+        }
+      }
     }"""
 
     with os.fdopen(os.open(FAKE_PBTXT_FILE_PATH, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'w') as ff:
