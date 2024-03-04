@@ -12,7 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ATB_TORCH_BUILT_IN_OP_MAPPING = {
+ATB_TORCH_BUILT_IN_OP_OUTPUT_MAPPING = {
     "LayerNormOperation": "LayerNorm",
     "LinearOperation": "Linear"
+}
+
+
+ATB_TORCH_CUSTOM_OP_OUTPUT_MAPPING = {
+    "CommonLayer_outtensor0": ["GLMBlock_output_0", "BloomBlock_output_0"],
+    "MlpGateLayerV2":["BloomMLP", "MLP"],
+    "RmsNormOperation":["RMSNorm"],
+    "SelfAttentionOperation":["CoreAttention"],
 }

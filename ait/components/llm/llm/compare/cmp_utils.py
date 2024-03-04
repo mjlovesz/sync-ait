@@ -54,3 +54,16 @@ def get_leaf_nodes(root_node):
 
     run(root_node, all_leaf_nodes)
     return all_leaf_nodes
+
+
+def get_all_nodes(root_node):
+    all_nodes = [root_node]
+
+    def run(node, children_nodes):
+        for child_node in node.children:
+            children_nodes.append(child_node)
+            if child_node.children:
+                run(child_node, children_nodes)
+
+    run(root_node, all_nodes)
+    return all_nodes
