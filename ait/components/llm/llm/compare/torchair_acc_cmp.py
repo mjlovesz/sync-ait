@@ -354,13 +354,13 @@ def compare_ge_with_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
         logger.debug(f"golden_outputs length: {len(golden_outputs)}, my_outputs length:, {len(my_outputs)}")
 
         for cur_id, (golden_input, my_input, golden_input_path) in enumerate(zip(golden_inputs, my_inputs, golden_input_pathes)):
-            info = "{},{}".format("inputs", cur_id)
+            info = "" if ",inputs," in golden_input else "{},{}".format("inputs", cur_id)
             row_data = compare_single_data(
                 golden_input_path, my_path, token_id, golden_data=golden_input, my_data=my_input, info=info
             )
             gathered_row_data.append(row_data)
         for cur_id, (golden_output, my_output) in enumerate(zip(golden_outputs, my_outputs)):
-            info = "{},{}".format("outputs", cur_id)
+            info = "" if ",outputs," in golden_output else "{},{}".format("outputs", cur_id)
             row_data = compare_single_data(
                 golden_output_path, my_path, token_id, golden_data=golden_output, my_data=my_output, info=info
             )
