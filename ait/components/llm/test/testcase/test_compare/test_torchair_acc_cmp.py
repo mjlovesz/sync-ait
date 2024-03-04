@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
-import stat
+import osimport stat
 import shutil
 
 import pytest
@@ -181,7 +180,7 @@ def test_acc_compare_given_fx_when_valid_then_pass():
     assert os.path.getsize(csv_path) > 750  # result with matched comparing data, 284 if empty
 
 
-def test_acc_compare_given_ge_when_valid_then_pass():
+def test_acc_compare_given_ge_with_fused_op_when_valid_then_pass():
     csv_path = torchair_acc_cmp.acc_compare(FAKE_GE_DUMP_DATA_NAME, FAKE_GE_DUMP_DATA_NAME)
     assert os.path.exists(csv_path)
-    assert os.path.getsize(csv_path) > 1500  # result with mostly matched comparing data, 284 if empty
+    assert os.path.getsize(csv_path) > 1900  # result with mostly matched comparing data, 284 if empty
