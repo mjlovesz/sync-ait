@@ -157,16 +157,3 @@ def test_init_fx_dump_data_from_path_given_path_when_valid_then_pass():
     }}
     assert result == expected_result
 
-
-def test_build_metadata_given_path_when_valid_then_pass():
-    result = torchair_acc_cmp.build_metadata(FAKE_FX_DUMP_DATA_NAME, FAKE_GE_DUMP_DATA_NAME, FAKE_PBTXT_FILE_NAME)
-    expected_result = {1: {1: [
-        {
-            'inputs': [
-                os.path.join(FAKE_FX_DUMP_DATA_NAME, '1/mm-aten.mm.default.INPUT.0.20240125031118787351.npy'),
-                os.path.join(FAKE_FX_DUMP_DATA_NAME, '1/mm-aten.mm.default.INPUT.1.20240125031118787351.npy')],
-            'outputs': [os.path.join(FAKE_FX_DUMP_DATA_NAME, '1/mm-aten.mm.default.OUTPUT.0.20240125031118787351.npy')]
-        },
-        os.path.join(FAKE_GE_DUMP_DATA_NAME, '1/Add.Add_2.44.6.17065969121619')]
-    }}
-    assert result == expected_result

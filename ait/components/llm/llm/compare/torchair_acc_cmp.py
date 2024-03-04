@@ -377,9 +377,12 @@ def is_fx_dump_path(input_path):
     return False
 
 
-def acc_compare(golden_path, my_path, output_path=".", ge_graph_path=".", do_compare=True):
+def acc_compare(golden_path, my_path, output_path=".", ge_graph_path=None, do_compare=True):
     logger.info(f"[compare_torchair], golden_path: {golden_path}, my_path: {my_path}, ge_graph_path: {ge_graph_path}")
     set_msaccucmp_path_from_cann()
+    if ge_graph_path is None:
+        ge_graph_path = get_torchair_ge_graph_path(my_path)
+
     graph_map = parse_pbtxt_to_dict(ge_graph_path)
     my_dump_data = init_ge_dump_data_from_bin_path(my_path)
     is_golden_fx = is_fx_dump_path(golden_path)
