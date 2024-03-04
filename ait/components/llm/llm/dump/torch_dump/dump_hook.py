@@ -102,7 +102,7 @@ def wrap_torch_func(func):
         if not os.path.exists(api_dump_path):
             os.makedirs(api_dump_path)
 
-        dump_data(args, output, api_dump_path, exec_count, dump_config.tensor_part)
+        dump_data(args, output, api_dump_path, dump_config.tensor_part)
         return output
 
     return dump_api_data
@@ -120,14 +120,14 @@ def dump_tensor(feat, feat_path):
         logger.warning("Unrecognized data type %s, cannot be saved in path %s.", type(feat), feat_path)
 
 
-def dump_data(inputs, outputs, dump_path, exec_count, tensor_part):
+def dump_data(inputs, outputs, dump_path, tensor_part):
     if tensor_part == 0:
-        dump_tensor(inputs, os.path.join(dump_path, "input_exec" + str(exec_count)))
+        dump_tensor(inputs, os.path.join(dump_path, "input"))
     elif tensor_part == 1:
-        dump_tensor(outputs, os.path.join(dump_path, "output_exec" + str(exec_count)))
+        dump_tensor(outputs, os.path.join(dump_path, "output"))
     else:
-        dump_tensor(inputs, os.path.join(dump_path, "input_exec" + str(exec_count)))
-        dump_tensor(outputs, os.path.join(dump_path, "output_exec" + str(exec_count)))
+        dump_tensor(inputs, os.path.join(dump_path, "input"))
+        dump_tensor(outputs, os.path.join(dump_path, "output"))
 
 
 def dump_module_data():
@@ -158,7 +158,7 @@ def dump_module_data():
         dump_path = os.path.join(dump_config.dump_dir, str(dump_config.token_id), module_name)
         if not os.path.exists(dump_path):
             os.makedirs(dump_path, mode=0o750)
-        dump_data(inputs, outputs, dump_path, exec_count, dump_config.tensor_part)
+        dump_data(inputs, outputs, dump_path, dump_config.tensor_part)
 
     return hook_func
 

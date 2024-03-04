@@ -13,10 +13,10 @@
 # limitations under the License.
 
 import os
-
+import glob
+import json
 import numpy as np
 import pandas as pd
-import json
 import torch
 from tqdm import tqdm
 
@@ -43,39 +43,40 @@ from llm.common.constant import (
 )
 from llm.compare import torchair_utils
 from llm.compare.cmp_utils import search_layer_node, get_layer_node, get_leaf_nodes, get_all_nodes
-from llm.compare.op_mapping import ATB_TORCH_BUILT_IN_OP_MAPPING, ATB_TORCH_CUSTOMIZED_OP_MAPPING, \
-    ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING
+from llm.compare.op_mapping import ATB_TORCH_BUILT_IN_OP_MAPPING, ATB_TORCH_CUSTOM_OP_MAPPING, \
+    ATB_TORCH_CUSTOM_OP_TENSOR_MAPPING
 from llm.dump.torch_dump.topo import ModelTree
 
 NCHW_DIMS = 4
 NC1HWC0_DIMS = 5
 
 
-def acc_compare(golden_path, my_path, output_path="."):
+def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
     torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
     if torchair_ge_graph_path is not None:
         compare_torchair(golden_path, my_path, torchair_ge_graph_path, output_path=output_path)
     elif os.path.isdir(golden_path):
         golden_tensor_path = os.path.join(golden_path, "golden_tensor")
+        golden_topo_flag, golden_topo_json_path = is_model_topo_exist(golden_path)
+        my_topo_flag, my_topo_json_path = is_model_topo_exist(my_path)
+        torch_model_topo_file = os.path.join(golden_path, "..", "model_tree.json")
         if os.path.isdir(golden_tensor_path):
+            # 存在golden_tensor路径，走手动映射比对逻辑
+            logger.info("Manual mapping comparing starts! Comparing manual dump tensors and ATB tensors...")
             compare_metadata(golden_tensor_path, output_path)
-        else:
-            logger.error("Can not find 'golden_tensor'.")
-            torch_model_topo_file = os.path.join(golden_path, "..", "model_tree.json")
-            pid = str(my_path.split("/")[-2].split("_")[1])
-            atb_model_topo_file_path = os.path.join(my_path, "../../..", "model", pid)
-            logger.info("atb model file: %s", atb_model_topo_file_path)
-            logger.info("torch_model_topo_file: %s", torch_model_topo_file)
-            if os.path.exists(torch_model_topo_file) and os.path.exists(atb_model_topo_file_path):
-                logger.info("start to compare atb model with torch model.")
-                atb_model_topo_name = os.listdir(atb_model_topo_file_path)[0]
-                atb_model_topo_file = os.path.join(atb_model_topo_file_path, atb_model_topo_name)
-                logger.info("atb_model_topo_file: %s", atb_model_topo_file)
-                if os.path.exists(atb_model_topo_file):
-                    cmp_torch_atb_model(torch_model_topo_file, atb_model_topo_file, golden_path,
-                                        my_path, output_path)
-                else:
-                    logger.error("atb model file %s is not exist.", atb_model_topo_file)
+        elif os.path.exists(torch_model_topo_file):
+            # 存在torch_model_topo_file路径，走torch模型和加速库模型比对逻辑
+            logger.info("Automatic mapping comparison starts! Comparing torch tensors and ATB tensors...")
+            cmp_torch_atb_model_init(torch_model_topo_file, golden_path, my_path, output_path, mapping_file_path)
+        elif golden_topo_flag and my_topo_flag:
+            # 存在模型的拓扑信息，走加速库模型间的比对逻辑  
+            if compare_topo_json(golden_topo_json_path, my_topo_json_path):
+                # topo信息一致，走dtype和bs比对逻辑：
+                logger.info("Automatic mapping comparison starts! Comparing ATB tensors, the topos are same...")
+                compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_topo_json_path, output_path)
+            else:
+                # topo信息不一致，走量化比对逻辑，待补充
+                logger.info('Automatic mapping comparison starts! Comparing ATB tensors, the topos are different...')
 
     elif os.path.isfile(golden_path) and os.path.isfile(my_path):
         res = compare_file(golden_path, my_path)
@@ -83,6 +84,41 @@ def acc_compare(golden_path, my_path, output_path="."):
     else:
         logger.error("The golden_path and my_path must both be directory or file.")
         exit(1)
+
+
+def is_model_topo_exist(golden_path):
+    # 判断用户输入路径的ait_dump目录下是否包括/model路径，即是否包括模型拓扑信息
+    absolute_path = os.path.abspath(golden_path)      
+    model_dir_path = os.path.join(absolute_path, '../../../', 'model')
+    model_dir_path = os.path.normpath(model_dir_path)
+    if not os.path.isdir(model_dir_path):
+        msg = f"Cannot find {model_dir_path}, please check! Use ait llm dump if needed."
+        logger.info(msg)
+        return False, "" 
+    # 搜索/model目录下的所有文件，查找JSON文件  
+    for root, _, files in os.walk(model_dir_path):  
+        for file in files:
+            if file.endswith('.json'):    
+                json_file_path = os.path.join(root, file)  
+                return True, json_file_path  
+    # 如果没有找到json文件，返回False和空字符串 
+    msg = f"Cannot find model topo json in {model_dir_path}, please check! Use ait llm dump if needed."
+    logger.info(msg)        
+    return False, ""      
+
+
+def compare_topo_json(golden_topo_json_path, my_topo_json_path):  
+    try: 
+        with open(golden_topo_json_path, 'r') as golden_file:  
+            golden_data = json.load(golden_file)  
+        with open(my_topo_json_path, 'r') as my_file:  
+            my_data = json.load(my_file)  
+        if golden_data == my_data:  
+            return True  
+        else: 
+            return False  
+    except (IOError, json.JSONDecodeError):  
+        return False 
 
 
 def read_data(data_path):
@@ -195,7 +231,10 @@ def fill_in_data(golden_meta):
                 sub_gathered_row_data = fill_row_data_torchair(token_id, data_id, golden_data_path, my_path)
                 gathered_row_data.extend(sub_gathered_row_data)
             else:
-                row_data = fill_row_data(token_id, data_id, golden_data_path, my_path)
+                data_info = {
+                    TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: golden_data_path, MY_DATA_PATH: my_path
+                }
+                row_data = fill_row_data(data_info)
                 gathered_row_data.append(row_data)
     return pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
 
@@ -213,11 +252,13 @@ def fill_row_data_torchair(token_id, data_id, golden_data_path, my_path):
 
     for cur_id, (golden_input, my_input) in enumerate(zip(golden_data_path["inputs"], my_inputs)):
         sub_my_path = "{},{},{}".format(my_path, "inputs", cur_id)
-        row_data = fill_row_data(token_id, data_id, golden_input, sub_my_path, loaded_my_data=my_input)
+        data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: golden_input, MY_DATA_PATH: sub_my_path}
+        row_data = fill_row_data(data_info, loaded_my_data=my_input)
         sub_gathered_row_data.append(row_data)
     for cur_id, (golden_output, my_output) in enumerate(zip(golden_data_path["outputs"], my_outputs)):
         sub_my_path = "{},{},{}".format(my_path, "outputs", cur_id)
-        row_data = fill_row_data(token_id, data_id, golden_output, sub_my_path, loaded_my_data=my_output)
+        data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: golden_output, MY_DATA_PATH: sub_my_path}
+        row_data = fill_row_data(data_info, loaded_my_data=my_output)
         sub_gathered_row_data.append(row_data)
     return sub_gathered_row_data
 
@@ -234,8 +275,13 @@ def is_converting_nc1hwc0_to_nchw(golden_data, my_data):
     return True
 
 
-def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=None):
+def fill_row_data(data_info, loaded_my_data=None, is_broadcast_tensor=False):
+    # 第三个参数“is_broadcast_tensor”用于两个模型batch size不一致时将低维的tensor广播到高维进行比较
     # 创建一条比较数据
+    token_id = data_info.get(TOKEN_ID)  
+    data_id = data_info.get(DATA_ID)  
+    golden_data_path = data_info.get(GOLDEN_DATA_PATH)  
+    my_path = data_info.get(MY_DATA_PATH)  
     logger.debug(f"[fill_row_data], golden_data_path: {golden_data_path}, my_path: {my_path}")
     row_data = {TOKEN_ID: str(token_id), DATA_ID: data_id, GOLDEN_DATA_PATH: golden_data_path, MY_DATA_PATH: my_path}
     if not os.path.isfile(golden_data_path):
@@ -251,9 +297,13 @@ def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=N
         logger.debug(f"[fill_row_data] NC1HWC0 -> NCHW, my_data: {my_data.shape}, golden_data: {golden_data.shape}")
         my_data.permute([0, 4, 1, 2, 3]).reshape(golden_data.shape)
 
-    # 比较数据
-    row_data.update(compare_data(golden_data, my_data))
+    if is_broadcast_tensor:
+        broadcast_golden_data, broadcast_my_data = torch.broadcast_tensors(golden_data, my_data)
+        row_data.update(compare_data(broadcast_golden_data, broadcast_my_data))
+    else:
+        row_data.update(compare_data(golden_data, my_data))    
     row_data.update(set_tensor_basic_info_in_row_data(golden_data, my_data))
+
     return row_data
 
 
@@ -277,8 +327,146 @@ def set_tensor_basic_info_in_row_data(golden_data, my_data):
     return row_data
 
 
-def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path, output_path):
+def traverse_tree(node: dict, path, traverse_type='torch', node_id=''):
+    def enumerate_children(children, path, traverse_type='torch_model', node_id=''):
+        res = []
+        for idx, children_node in enumerate(children):
+            if node_id != '':
+                res.extend(traverse_tree(children_node, path, traverse_type, node_id + f'_{idx}'))
+            else:
+                res.extend(traverse_tree(children_node, path, traverse_type, str(idx)))
+        return res
+    
+    res = []  # 用于保存遍历模型topo结构后得到的节点列表
+    node['id'] = node_id
+    if traverse_type == 'torch':
+        node['golden_path'] = os.path.join(os.path.abspath(path), node['name'])
+        res.append(node)
+        if len(node['children']) > 0:
+            res.extend(enumerate_children(node['children'], path, traverse_type, node_id))
+    else:
+        node['my_path'] = os.path.join(os.path.abspath(path), '_*/'.join(node_id.split('_')) + '_*', 'after')
+        res.append(node)
+        if 'nodes' in node.keys() and len(node['nodes']) > 0:
+            res.extend(enumerate_children(node['nodes'], path, traverse_type, node_id))
+    return res
+
+
+# 加速库模型间比对相关
+def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_topo_json_path, output_path="."):
+    cur_my_path = os.path.dirname(os.path.abspath(my_path))
+    token_id = os.path.basename(cur_my_path).split('_')[1]
+
+    with open(golden_topo_json_path, "r") as file:
+        golden_topo = json.load(file)
+    with open(my_topo_json_path, "r") as file:
+        my_topo = json.load(file)
+
+    gathered_golden_data = traverse_tree(golden_topo, golden_path, 'atb')
+    gathered_my_data = traverse_tree(my_topo, my_path, 'atb')
+    matched_path_pair = search_mapping_relationships(gathered_golden_data, gathered_my_data)
+    gathered_row_data = []
+    for data_id, match in enumerate(matched_path_pair):
+        _golden_tensor_path = match['golden']
+        _my_tensor_path = match['my']
+        data_info = {
+            TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: _golden_tensor_path, MY_DATA_PATH: _my_tensor_path
+        }
+        row_data = fill_row_data(data_info, loaded_my_data=None, is_broadcast_tensor=True)
+        gathered_row_data.append(row_data)
+    data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
+    return save_compare_dataframe_to_csv(data_frame, output_path)
+
+
+def search_mapping_relationships(gathered_golden_data, gathered_my_data):
+    matches = []
+    matched_path_pair = []  
+    for golden_item, my_item in zip(gathered_golden_data, gathered_my_data):  
+        if "opType" in golden_item and "opType" in my_item:   
+            matches.append({'golden': golden_item, 'my': my_item})
+
+    for match in matches:
+        try:
+            _golden_path = glob.glob(match['golden']['my_path'])[0]
+            golden_out_path = get_paths(_golden_path, split_pattern='outtensor')
+            _my_path = glob.glob(match['my']['my_path'])[0]
+            my_out_path = get_paths(_my_path, split_pattern='outtensor')
+            for _golden_tensor_path, _my_tensor_path in zip(golden_out_path, my_out_path):
+                matched_path_pair.append({'golden': _golden_tensor_path, 'my': _my_tensor_path})
+        except IndexError as e:
+            msg = f"Cannot find path! golden: {match['golden']['my_path']}, my: {match['my']['my_path']}"
+            logger.debug(msg)
+
+    return matched_path_pair
+
+
+def get_paths(path_dir, split_pattern):
+    out_paths = [x for x in os.listdir(path_dir) if x.startswith('out')]
+    out_paths.sort(key=lambda x: int(x.split(split_pattern)[-1].split('.')[0]))
+    out_paths = [os.path.join(path_dir, x) for x in out_paths]
+    return out_paths
+
+
+def pair_torch_atb_nodes(g_nodes, m_nodes, op_mapping, op_tensor_mapping=None):
     compared_result = []
+
+    def get_row_data(golden_tensor_path, my_tensor_path):
+        if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
+            data_info = {TOKEN_ID: 0, DATA_ID: 0, GOLDEN_DATA_PATH: golden_tensor_path, MY_DATA_PATH: my_tensor_path}
+            row_data = fill_row_data(data_info)
+            compared_result.append(row_data)     
+        else:
+            msg = f"golden tensor path: {golden_tensor_path} or my_tensor_path: {my_tensor_path} is not exist."
+            logger.debug(msg)
+
+    def traverse_nodes(atb_nodes, torch_nodes, mapping_idx_list=None):
+        for atb_node, torch_node in zip(atb_nodes, torch_nodes):        
+            if mapping_idx_list is not None:
+                for atb_idx, torch_idx in mapping_idx_list:
+                    my_tensor_path = os.path.join(atb_node.tensor_path, "after", f"outtensor{atb_idx}.bin")
+                    golden_tensor_path = os.path.join(torch_node.tensor_path, f"output_{torch_idx}.pth")
+                    get_row_data(golden_tensor_path, my_tensor_path)
+            else:
+                my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
+                golden_tensor_path = os.path.join(torch_node.tensor_path, "output.pth")
+                get_row_data(golden_tensor_path, my_tensor_path)
+
+    op_mapping_flat = []
+    if op_tensor_mapping is not None:
+        for atb_op_type, torch_op_type in op_mapping.items():
+            op_mapping_flat.extend([(atb_op_type, x) for x in torch_op_type])
+    else:
+        op_mapping_flat = op_mapping.items()
+
+    for atb_op_type, torch_op_type in op_mapping_flat:
+        if op_tensor_mapping is not None:
+            tensor_mapping_key = atb_op_type + '_' + torch_op_type
+            if tensor_mapping_key in op_tensor_mapping.keys():
+                mapping_idx_list = op_tensor_mapping[tensor_mapping_key]
+            else:
+                mapping_idx_list = None
+            atb_nodes = [m_node for m_node in m_nodes if atb_op_type in m_node.node_type]
+            torch_nodes = [g_node for g_node in g_nodes if torch_op_type in g_node.node_type]
+        else:
+            mapping_idx_list = None
+            atb_nodes = [m_node for m_node in m_nodes if m_node.node_type == atb_op_type]
+            torch_nodes = [g_node for g_node in g_nodes if g_node.node_type == torch_op_type]
+        if len(atb_nodes) != len(torch_nodes):
+            msg = f"The number of {atb_op_type} node in atb is not equal to {torch_op_type} node in torch"
+            logger.debug(msg)
+            continue
+        traverse_nodes(atb_nodes, torch_nodes, mapping_idx_list)
+
+    return compared_result
+                    
+
+def cmp_torch_atb_model(data_info, output_path, mapping_dic):
+    golden_json = data_info.get("golden_json")
+    my_json = data_info.get("my_json")
+    torch_tensor_path = data_info.get("torch_tensor_path")
+    atb_tensor_path = data_info.get("atb_tensor_path")
+    compared_result = []
+
     golden_root_node = ModelTree.json_to_tree(golden_json, torch_tensor_path)
     golden_layer_type = search_layer_node(golden_root_node)
     logger.info("golden_layer_type: %s", golden_layer_type)
@@ -293,77 +481,60 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
     for golden_layer, my_layer in zip(golden_layer_nodes, my_layer_nodes):
         g_layer_leaf_nodes = get_leaf_nodes(golden_layer)
         m_layer_leaf_nodes = get_leaf_nodes(my_layer)
-        for atb_op_type, torch_op_type in ATB_TORCH_BUILT_IN_OP_MAPPING.items():
-            atb_nodes = []
-            torch_nodes = []
-            for m_leaf_node in m_layer_leaf_nodes:
-                if m_leaf_node.node_type == atb_op_type:
-                    atb_nodes.append(m_leaf_node)
-            for g_leaf_node in g_layer_leaf_nodes:
-                if g_leaf_node.node_type == torch_op_type:
-                    torch_nodes.append(g_leaf_node)
-            if len(atb_nodes) != len(torch_nodes):
-                logger.warning("The number of %s node in atb is not equal to %s node in torch",
-                               atb_op_type, torch_op_type)
-                continue
-            for atb_node, torch_node in zip(atb_nodes, torch_nodes):
-                my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
-                golden_tensor_path = os.path.join(torch_node.tensor_path, "output_exec1.pth")
-                logger.info("my_tensor_path: %s", my_tensor_path)
-                logger.info("golden_tensor_path: %s", golden_tensor_path)
-                if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
-                    row_data = fill_row_data(0, 0, golden_tensor_path, my_tensor_path)
-                    compared_result.append(row_data)
-                else:
-                    logger.debug("golden tensor path: %s or my_tensor_path: %s is not exist.",
-                                 golden_tensor_path, my_tensor_path)
-
-
+        compared_result.extend(pair_torch_atb_nodes(g_layer_leaf_nodes, m_layer_leaf_nodes, 
+                                                    mapping_dic.get("ATB_TORCH_BUILT_IN_OP_MAPPING")))
 
     # 自定义算子比对
     for golden_layer, my_layer in zip(golden_layer_nodes, my_layer_nodes):
         g_layer_all_nodes = get_all_nodes(golden_layer)
         m_layer_all_nodes = get_all_nodes(my_layer)
-        for atb_op_type, torch_op_type_list in ATB_TORCH_CUSTOMIZED_OP_MAPPING.items():
-            for torch_op_type in torch_op_type_list:
-                atb_nodes = []
-                torch_nodes = []
-                for m_node in m_layer_all_nodes:
-                    if atb_op_type in m_node.node_type:
-                        atb_nodes.append(m_node)
-                for g_node in g_layer_all_nodes:
-                    if torch_op_type in g_node.node_type:
-                        torch_nodes.append(g_node)
-                if len(atb_nodes) != len(torch_nodes):
-                    logger.warning("The number of %s node in atb is not equal to %s node in torch",
-                                atb_op_type, torch_op_type)
-                    continue
-                for atb_node, torch_node in zip(atb_nodes, torch_nodes):
-                    tensor_mapping_key = atb_op_type + '_' + torch_op_type
-                    if tensor_mapping_key in ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING.keys():
-                        mapping_idx_list = ATB_TORCH_CUSTOMIZED_OP_TENSOR_MAPPING[tensor_mapping_key]
-                        for atb_idx, torch_idx in mapping_idx_list:
-                            my_tensor_path = os.path.join(atb_node.tensor_path, "after", f"outtensor{atb_idx}.bin")
-                            golden_tensor_path = os.path.join(torch_node.tensor_path, f"output_exec1_{torch_idx}.pth")
-                            logger.info("my_tensor_path: %s", my_tensor_path)
-                            logger.info("golden_tensor_path: %s", golden_tensor_path)
-                            if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
-                                row_data = fill_row_data(0, 0, golden_tensor_path, my_tensor_path)
-                                compared_result.append(row_data)     
-                            else:
-                                logger.debug("golden tensor path: %s or my_tensor_path: %s is not exist.",
-                                            golden_tensor_path, my_tensor_path)
-                    else:
-                        my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
-                        golden_tensor_path = os.path.join(torch_node.tensor_path, "output_exec1.pth")
-                        logger.info("my_tensor_path: %s", my_tensor_path)
-                        logger.info("golden_tensor_path: %s", golden_tensor_path)
-                        if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
-                            row_data = fill_row_data(0, 0, golden_tensor_path, my_tensor_path)
-                            compared_result.append(row_data)
-                        else:
-                            logger.debug("golden tensor path: %s or my_tensor_path: %s is not exist.",
-                                        golden_tensor_path, my_tensor_path)
+        compared_result.extend(pair_torch_atb_nodes(g_layer_all_nodes, m_layer_all_nodes, 
+                mapping_dic.get("ATB_TORCH_CUSTOM_OP_MAPPING"), mapping_dic.get("ATB_TORCH_CUSTOM_OP_TENSOR_MAPPING")))
 
     data_frame = pd.DataFrame(compared_result, columns=CSV_GOLDEN_HEADER)
     save_compare_dataframe_to_csv(data_frame, output_path)
+
+
+def load_mapping(mapping_file_path):
+    mapping_file = os.path.join(mapping_file_path, "op_mapping_file.json")
+    if os.path.exists(mapping_file):
+        with open(mapping_file, "r") as file:
+            mapping_dic = json.load(file)
+        msg = f"Using user-specified op_mapping from file: {mapping_file}"
+        logger.info(msg)
+    else:
+        mapping_dic = {
+            "ATB_TORCH_BUILT_IN_OP_MAPPING": ATB_TORCH_BUILT_IN_OP_MAPPING,
+            "ATB_TORCH_CUSTOM_OP_MAPPING": ATB_TORCH_CUSTOM_OP_MAPPING,
+            "ATB_TORCH_CUSTOM_OP_TENSOR_MAPPING": ATB_TORCH_CUSTOM_OP_TENSOR_MAPPING
+        }
+        logger.debug("Using built-in op_mapping")
+    return mapping_dic
+
+
+def cmp_torch_atb_model_init(torch_model_topo_file, golden_path, my_path, output_path, mapping_file_path):
+    try:
+        pid = str(my_path.split("/")[-2].split("_")[1])
+    except IndexError as e:
+        pid = ""
+        msg = f"Cannot parse the right pid from my_path! my_path: {my_path}"
+        logger.error(msg)
+    atb_model_topo_file_path = os.path.join(my_path, "../../..", "model", pid)
+    if os.path.exists(atb_model_topo_file_path):
+        atb_model_topo_name = os.listdir(atb_model_topo_file_path)[0]
+        atb_model_topo_file = os.path.join(atb_model_topo_file_path, atb_model_topo_name)
+        if os.path.exists(atb_model_topo_file):
+            mapping_dic = load_mapping(mapping_file_path)
+            data_info = {
+                "golden_json": torch_model_topo_file,
+                "my_json": atb_model_topo_file,
+                "torch_tensor_path": golden_path,
+                "atb_tensor_path": my_path,
+            }
+            cmp_torch_atb_model(data_info, output_path, mapping_dic)
+        else:
+            msg = f"Cannot find atb model file: {atb_model_topo_file}"
+            logger.error(msg)
+    else:
+        msg = f"Cannot find atb model file path: {atb_model_topo_file_path}"
+        logger.error(msg)
