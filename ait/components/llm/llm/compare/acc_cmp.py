@@ -295,10 +295,10 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
             atb_nodes = []
             torch_nodes = []
             for m_leaf_node in m_layer_leaf_nodes:
-                if m_leaf_node.node_type == atb_op_type:
+                if m_leaf_node.op_type == atb_op_type:
                     atb_nodes.append(m_leaf_node)
             for g_leaf_node in g_layer_leaf_nodes:
-                if g_leaf_node.node_type == torch_op_type:
+                if g_leaf_node.op_type == torch_op_type:
                     torch_nodes.append(g_leaf_node)
             if len(atb_nodes) != len(torch_nodes):
                 logger.warning("The number of %s node in atb is not equal to %s node in torch",
