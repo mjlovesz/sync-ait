@@ -370,6 +370,9 @@ def compare_ge_with_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
 
 
 def is_fx_dump_path(input_path):
+    if get_torchair_ge_graph_path(input_path) is not None:
+        return False
+
     fx_path_pattern = re.compile(r'^gm_[\d]+_dump')
     for sub in input_path.split(os.sep):
         if fx_path_pattern.match(sub):
@@ -377,7 +380,7 @@ def is_fx_dump_path(input_path):
     return False
 
 
-def acc_compare(golden_path, my_path, output_path=".", ge_graph_path=None, do_compare=True):
+def acc_compare(golden_path, my_path, output_path=".", ge_graph_path=None):
     logger.info(f"[compare_torchair], golden_path: {golden_path}, my_path: {my_path}, ge_graph_path: {ge_graph_path}")
     set_msaccucmp_path_from_cann()
     if ge_graph_path is None:
@@ -387,8 +390,10 @@ def acc_compare(golden_path, my_path, output_path=".", ge_graph_path=None, do_co
     my_dump_data = init_ge_dump_data_from_bin_path(my_path)
     is_golden_fx = is_fx_dump_path(golden_path)
     if is_golden_fx:
+        logger.info("Comparing GE with FX")
         golden_dump_data = init_fx_dump_data_from_path(golden_path)
     else:
+        logger.info("Comparing GE with GE")
         golden_dump_data = init_ge_dump_data_from_bin_path(golden_path)
 
     logger.info(f"All token ids in my_dump_data: {my_dump_data.keys()}")

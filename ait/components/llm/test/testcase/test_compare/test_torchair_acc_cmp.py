@@ -154,3 +154,14 @@ def test_init_fx_dump_data_from_path_given_path_when_valid_then_pass():
     }}
     assert result == expected_result
 
+
+def test_acc_compare_given_fx_when_valid_then_pass():
+    csv_path = torchair_acc_cmp.acc_compare(FAKE_FX_DUMP_DATA_NAME, FAKE_GE_DUMP_DATA_NAME)
+    assert os.path.exists(csv_path)
+    assert os.path.getsize(csv_path) > 750  # result with matched comparing data, 284 if empty
+
+
+def test_acc_compare_given_ge_when_valid_then_pass():
+    csv_path = torchair_acc_cmp.acc_compare(FAKE_GE_DUMP_DATA_NAME, FAKE_GE_DUMP_DATA_NAME)
+    assert os.path.exists(csv_path)
+    assert os.path.getsize(csv_path) > 1500  # result with mostly matched comparing data, 284 if empty
