@@ -137,9 +137,8 @@ def test_init_ge_dump_data_from_bin_path_given_path_when_valid_then_pass():
     expected_result = {0: {}, 1: {
         'Add_2': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', 'Add.Add_2.44.6.17065969121619'),
         'Cast_9': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', 'Cast.Cast_9.19.6.17065969118878'),
-        'ConcatV2': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', 'ConcatV2D.ConcatV2.42.6.17065969121611')
-        'Add_2Cast_9ConcatV2': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', fused_op_name)
-        
+        'ConcatV2': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', 'ConcatV2D.ConcatV2.42.6.17065969121611'),
+        'Add_2Cast_9ConcatV2': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', fused_op_name),
     }}
     assert result == expected_result
 
