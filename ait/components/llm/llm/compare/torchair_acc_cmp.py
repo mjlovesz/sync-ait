@@ -213,7 +213,8 @@ def init_fx_dump_data_from_path(fx_dump_path):
 
 
 def compare_single_data(golden_path, my_path, token_id=0, golden_data=None, my_data=None, info=""):
-    golden_path = golden_path if golden_data is None else "{},{}".format(golden_path, info)
+    if golden_data is not None and ",inputs," not in golden_path:
+        golden_path = "{},{}".format(golden_path, info)
     my_path = my_path if my_data is None else "{},{}".format(my_path, info)
     data_info = BasicDataInfo(golden_path, my_path, token_id)
     return fill_row_data(data_info, loaded_my_data=my_data, loaded_golden_data=golden_data)
@@ -354,13 +355,13 @@ def compare_ge_with_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
         logger.debug(f"golden_outputs length: {len(golden_outputs)}, my_outputs length:, {len(my_outputs)}")
 
         for cur_id, (golden_input, my_input, golden_input_path) in enumerate(zip(golden_inputs, my_inputs, golden_input_pathes)):
-            info = "" if ",inputs," in golden_input else "{},{}".format("inputs", cur_id)
+            info = "{},{}".format("inputs", cur_id)
             row_data = compare_single_data(
                 golden_input_path, my_path, token_id, golden_data=golden_input, my_data=my_input, info=info
             )
             gathered_row_data.append(row_data)
         for cur_id, (golden_output, my_output) in enumerate(zip(golden_outputs, my_outputs)):
-            info = "" if ",outputs," in golden_output else "{},{}".format("outputs", cur_id)
+            info = "{},{}".format("outputs", cur_id)
             row_data = compare_single_data(
                 golden_output_path, my_path, token_id, golden_data=golden_output, my_data=my_output, info=info
             )
