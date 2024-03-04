@@ -2,22 +2,24 @@
 import os
 import stat
 import json
+import queue
 
 FILE_PERMISSION = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP
 MODULE_ID_NOT_AVAILABLE = -1
 
 
 class TreeNode:
-    def __init__(self, node_name: str, node_type: str, level=0, order=0, tensor_path=""):
+    def __init__(self, node_name: str, op_type: str, op_param=None, level=0, order=0, tensor_path=""):
         self.node_name = node_name
-        self.node_type = node_type
+        self.op_type = op_type
+        self.op_param = op_param
         self.level = level
         self.order = order
         self.children = []
         self.tensor_path = tensor_path
 
     def __repr__(self):
-        return "{} [{}] [{}] ({})".format(self.node_name, self.tensor_path, self.node_type,
+        return "{} [{}] [{}] ({})".format(self.node_name, self.tensor_path, self.op_type,
                                           ",".join((x.node_name for x in self.children)))
 
     def add_child(self, node):
@@ -32,13 +34,35 @@ class TreeNode:
                 reorder = reorder + 1
             sub_node.sort_children()
 
+    def get_next_sibling_node(self, node):
+        """
+        search next sibling node of the node
+        """
+        next_sibling_node = None
+        node_q = queue.Queue()
+        node_q.put(self)
+
+        while not node_q.empty():
+            parent_node = node_q.get()
+            if node in parent_node.children:
+                node_index = parent_node.children.index(node)
+                if node_index + 1 < len(parent_node.children):
+                    next_sibling_node = parent_node.children[node_index+1]
+                    break
+            else:
+                for child_node in parent_node.children:
+                    node_q.put(child_node)
+
+        return next_sibling_node
+
+
 
 class ModelTree:
     def __init__(self):
         self.root_node = TreeNode("root", "root")
 
     def create_tree(self, module, module_ids, json_path) -> None:
-        self.root_node.node_type = str(type(module).__name__)
+        self.root_node.op_type = str(type(module).__name__)
         self._create_sub_tree(module, self.root_node, module_ids)
         self.root_node.sort_children()
         _tree_to_json(self.root_node, json_path)
@@ -77,7 +101,8 @@ class ModelTree:
             else:
                 rel_path = str(order) + "_" + node_dict["opType"]
                 tensor_path = os.path.join(tensor_path, rel_path)
-                node = TreeNode(node_dict["opName"], node_dict["opType"], level, order, tensor_path)
+                op_param = node_dict.get("param") if "param" in node_dict else None
+                node = TreeNode(node_dict["opName"], node_dict["opType"], op_param, level, order, tensor_path)
 
             if "nodes" in node_dict:
                 reorder = 0
@@ -103,7 +128,7 @@ class ModelTree:
 def _tree_to_dict(node):
     return {
         "name": node.node_name,
-        "type": node.node_type,
+        "type": node.op_type,
         "children": [_tree_to_dict(child) for child in node.children],
     }
 
@@ -111,4 +136,3 @@ def _tree_to_dict(node):
 def _tree_to_json(node, json_path):
     with os.fdopen(os.open(json_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'w') as file:
         json.dump(_tree_to_dict(node), file)
-
