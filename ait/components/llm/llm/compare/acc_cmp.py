@@ -305,10 +305,15 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
                                atb_op_type, torch_op_type)
                 continue
             for atb_node, torch_node in zip(atb_nodes, torch_nodes):
+                if atb_node.op_type == "LinearOperation" and not atb_node.op_param.get("hasBias"):
+                    next_sibling_node = my_root_node.get_next_sibling_node(atb_node)
+                    # 当有些算子如ParallelLinearBaseV2，是将w*x+b的操作拆分成两个算子，linear+add，而torch中使用一个算子Linear实现，
+                    # 因此add node的输出映射的是torch中Linear的输出
+                    if next_sibling_node and next_sibling_node.op_type == "ElewiseOperation" \
+                            and next_sibling_node.op_param.get('elewiseType') == 8:
+                        atb_node = next_sibling_node
                 my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
                 golden_tensor_path = os.path.join(torch_node.tensor_path, "output_exec1.pth")
-                logger.info("my_tensor_path: %s", my_tensor_path)
-                logger.info("golden_tensor_path: %s", golden_tensor_path)
                 if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
                     row_data = fill_row_data(0, 0, golden_tensor_path, my_tensor_path)
                 else:
