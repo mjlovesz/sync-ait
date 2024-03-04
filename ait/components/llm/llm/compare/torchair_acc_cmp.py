@@ -325,7 +325,7 @@ def gather_fused_op_data(fused_op_name, op_map, fused_ge_dump_data, ge_dump_data
 
     filtered_input_names, filtered_inputs, filtered_input_pathes = [], [], []
     for input_name, inputs, input_path in zip(gathered_input_names, gathered_inputs, gatherd_input_pathes):
-        if input_name not in filtered_input_names and input_name not in gathered_ops:
+        if input_name not in gathered_ops:
             filtered_input_names.append(input_name)
             filtered_input_pathes.append(input_path)
             filtered_inputs.append(inputs)
