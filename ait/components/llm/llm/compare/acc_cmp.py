@@ -201,6 +201,8 @@ def save_compare_dataframe_to_csv(data_frame, output_path="."):
 
     cur_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     csv_save_path = os.path.join(output_path, cur_time+"_cmp_report.csv")
+    cur_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    csv_save_path = os.path.join(output_path, cur_time+"_cmp_report.csv")
     data_frame.fillna(value="", inplace=True)
     data_frame.dropna(axis=0, how="all", inplace=True)
     data_frame.to_csv(csv_save_path, index=False)
