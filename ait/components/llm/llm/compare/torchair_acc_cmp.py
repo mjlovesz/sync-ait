@@ -201,6 +201,8 @@ def init_fx_dump_data_from_path(fx_dump_path):
     for token_id, file_list in gathered_files.items():
         cur_dump_data = {}
         for file_path in sorted(file_list):
+            if not file_path.endswith("npy"):
+                continue
             file_name = os.path.basename(file_path)
             split_name = file_name.split(".")
             is_input = ".INPUT." in file_name
@@ -208,7 +210,8 @@ def init_fx_dump_data_from_path(fx_dump_path):
             cur_op_map = cur_dump_data.get(cur_op_name, {})
             cur_op_map.setdefault("input" if is_input else "output", []).append(file_path)
             cur_dump_data[cur_op_name] = cur_op_map
-        dump_data_with_token_id[token_id] = cur_dump_data
+        if len(cur_dump_data) > 0:
+            dump_data_with_token_id[token_id] = cur_dump_data
     return dump_data_with_token_id
 
 
