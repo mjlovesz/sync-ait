@@ -78,8 +78,8 @@ def fake_pbtxt_file():
 
     yield
 
-    # if os.path.exists(FAKE_PBTXT_FILE_PATH):
-    #     os.remove(FAKE_PBTXT_FILE_PATH)
+    if os.path.exists(FAKE_PBTXT_FILE_PATH):
+        os.remove(FAKE_PBTXT_FILE_PATH)
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -98,8 +98,8 @@ def fake_ge_dump_data():
 
     yield
 
-    # if os.path.exists(FAKE_GE_DUMP_DATA_NAME):
-    #     shutil.rmtree(FAKE_GE_DUMP_DATA_NAME)
+    if os.path.exists(FAKE_GE_DUMP_DATA_NAME):
+        shutil.rmtree(FAKE_GE_DUMP_DATA_NAME)
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -117,8 +117,8 @@ def fake_fx_dump_data():
     
     yield
 
-    # if os.path.exists(FAKE_FX_DUMP_DATA_NAME):
-    #     shutil.rmtree(FAKE_FX_DUMP_DATA_NAME)
+    if os.path.exists(FAKE_FX_DUMP_DATA_NAME):
+        shutil.rmtree(FAKE_FX_DUMP_DATA_NAME)
 
 
 def test_get_torchair_ge_graph_path_given_path_when_valid_then_pass():
