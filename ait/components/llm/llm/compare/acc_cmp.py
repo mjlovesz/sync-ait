@@ -498,7 +498,7 @@ def cmp_torch_atb_model(data_info, output_path, mapping_dic):
         g_layer_leaf_nodes = get_leaf_nodes(golden_layer)
         m_layer_leaf_nodes = get_leaf_nodes(my_layer)
         compared_result.extend(pair_built_in_op(g_layer_leaf_nodes, m_layer_leaf_nodes, 
-                                                mapping_dic.get("ATB_TORCH_BUILT_IN_OP_OUTPUT_MAPPING")), my_root_node)
+                                                mapping_dic.get("ATB_TORCH_BUILT_IN_OP_OUTPUT_MAPPING"), my_root_node))
 
     # 自定义算子比对
     for golden_layer, my_layer in zip(golden_layer_nodes, my_layer_nodes):
