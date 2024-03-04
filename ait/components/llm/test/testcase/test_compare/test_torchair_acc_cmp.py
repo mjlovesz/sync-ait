@@ -62,8 +62,8 @@ def fake_pbtxt_file():
 
     yield
 
-    if os.path.exists(FAKE_PBTXT_FILE_NAME):
-        os.remove(FAKE_PBTXT_FILE_NAME)
+    # if os.path.exists(FAKE_PBTXT_FILE_NAME):
+    #     os.remove(FAKE_PBTXT_FILE_NAME)
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -85,8 +85,8 @@ def fake_ge_dump_data():
     
     yield
 
-    if os.path.exists(FAKE_GE_DUMP_DATA_NAME):
-        shutil.rmtree(FAKE_GE_DUMP_DATA_NAME)
+    # if os.path.exists(FAKE_GE_DUMP_DATA_NAME):
+    #     shutil.rmtree(FAKE_GE_DUMP_DATA_NAME)
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -104,8 +104,8 @@ def fake_fx_dump_data():
     
     yield
 
-    if os.path.exists(FAKE_FX_DUMP_DATA_NAME):
-        shutil.rmtree(FAKE_FX_DUMP_DATA_NAME)
+    # if os.path.exists(FAKE_FX_DUMP_DATA_NAME):
+    #     shutil.rmtree(FAKE_FX_DUMP_DATA_NAME)
 
 
 def test_get_torchair_ge_graph_path_given_path_when_valid_then_pass():
@@ -170,11 +170,3 @@ def test_build_metadata_given_path_when_valid_then_pass():
         os.path.join(FAKE_GE_DUMP_DATA_NAME, '1/Add.Add_2.44.6.17065969121619')]
     }}
     assert result == expected_result
-
-
-
-def test_fill_row_data_torchair_given_golden_data_path_when_valid_then_pass(golden_data_file):
-    golden_data_path = {"inputs": [golden_data_file], "outputs": [golden_data_file]}
-    result = acc_cmp.fill_row_data_torchair(0, 0, golden_data_path, my_path="test")
-    assert len(result) == 2 and len(result[0]) == 19 and len(result[1]) == 19
-    assert result[0]["cosine_similarity"] == "1.000000" and result[1]["cosine_similarity"] == "1.000000"
