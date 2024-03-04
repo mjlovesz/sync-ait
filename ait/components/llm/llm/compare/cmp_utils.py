@@ -13,7 +13,7 @@ def search_layer_node(root_node: TreeNode):
         nonlocal layer_node_type
         if layer_node_type:
             return
-        child_op_type = [child_node.node_type for child_node in node.children]
+        child_op_type = [child_node.op_type for child_node in node.children]
         if len(child_op_type) > MIN_LAYER_NUMBER:
             op_type_counts = Counter(child_op_type)
             most_count = op_type_counts.most_common(1)[0][1]
@@ -33,7 +33,7 @@ def get_layer_node(root_node: TreeNode, layer_type: str):
 
     def run(node, layer_type, layer_nodes):
         for child_node in node.children:
-            if child_node.node_type == layer_type:
+            if child_node.op_type == layer_type:
                 layer_nodes.append(child_node)
             else:
                 run(child_node, layer_type, layer_nodes)
