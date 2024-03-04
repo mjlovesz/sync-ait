@@ -316,10 +316,10 @@ def cmp_torch_atb_model(golden_json, my_json, torch_tensor_path, atb_tensor_path
                 golden_tensor_path = os.path.join(torch_node.tensor_path, "output_exec1.pth")
                 if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
                     row_data = fill_row_data(0, 0, golden_tensor_path, my_tensor_path)
+                    compared_result.append(row_data)
                 else:
                     logger.debug("golden tensor path: %s or my_tensor_path: %s is not exist.",
                                  golden_tensor_path, my_tensor_path)
-                compared_result.append(row_data)
 
     data_frame = pd.DataFrame(compared_result, columns=CSV_GOLDEN_HEADER)
     save_compare_dataframe_to_csv(data_frame, output_path)
