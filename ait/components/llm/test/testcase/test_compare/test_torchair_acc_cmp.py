@@ -22,9 +22,10 @@ from llm.compare import torchair_acc_cmp
 
 
 FILE_PERMISSION = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP
-FAKE_PBTXT_FILE_NAME = "test_torchair_acc_cmp_fake_pbtxt_file.txt"
 FAKE_GE_DUMP_DATA_NAME = "test_torchair_acc_cmp_fake_ge_dump_data"
 FAKE_FX_DUMP_DATA_NAME = "test_torchair_acc_cmp_fake_fx_dump_data"
+FAKE_PBTXT_FILE_NAME = torchair_acc_cmp.GE_GRAPH_FILE_PREFIX + "_test.txt"
+FAKE_PBTXT_FILE_PATH = os.path.join(FAKE_GE_DUMP_DATA_NAME, FAKE_PBTXT_FILE_NAME)
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -57,13 +58,13 @@ def fake_pbtxt_file():
       }
     }"""
 
-    with os.fdopen(os.open(FAKE_PBTXT_FILE_NAME, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'w') as ff:
+    with os.fdopen(os.open(FAKE_PBTXT_FILE_PATH, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'w') as ff:
         ff.write(contents)
 
     yield
 
-    # if os.path.exists(FAKE_PBTXT_FILE_NAME):
-    #     os.remove(FAKE_PBTXT_FILE_NAME)
+    # if os.path.exists(FAKE_PBTXT_FILE_PATH):
+    #     os.remove(FAKE_PBTXT_FILE_PATH)
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -79,10 +80,6 @@ def fake_ge_dump_data():
         with os.fdopen(os.open(file_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'wb') as ff:
             pass
 
-    ge_graph_path = os.path.join(FAKE_GE_DUMP_DATA_NAME, torchair_acc_cmp.GE_GRAPH_FILE_PREFIX + "_test.txt")
-    with os.fdopen(os.open(ge_graph_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'wb') as ff:
-        pass
-    
     yield
 
     # if os.path.exists(FAKE_GE_DUMP_DATA_NAME):
@@ -120,7 +117,7 @@ def test_get_torchair_ge_graph_path_given_path_when_invalid_then_none():
 
 
 def test_parse_pbtxt_to_dict_given_path_when_valid_then_pass():
-    result = torchair_acc_cmp.parse_pbtxt_to_dict(FAKE_PBTXT_FILE_NAME)
+    result = torchair_acc_cmp.parse_pbtxt_to_dict(FAKE_PBTXT_FILE_PATH)
     assert isinstance(result, list) and isinstance(result[0], dict)
     expected_result = [{'op': {
         'name': 'Add_2',
