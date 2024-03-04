@@ -42,7 +42,8 @@ def set_fake_set_msaccucmp_path_from_cann():
 
 @pytest.fixture(scope='module', autouse=True)
 def fake_pbtxt_file():
-    contents = """op {
+    contents = """
+    op {
       name: "Add_2"
       output_desc {
         name: "test"
@@ -135,14 +136,15 @@ def test_get_torchair_ge_graph_path_given_path_when_invalid_then_none():
 def test_parse_pbtxt_to_dict_given_path_when_valid_then_pass():
     result = torchair_acc_cmp.parse_pbtxt_to_dict(FAKE_PBTXT_FILE_PATH)
     assert isinstance(result, list) and isinstance(result[0], dict)
-    expected_result = [{'op': {
-        'name': 'Add_2',
-        'output_desc': {
-            'name': 'test',
-            'attr': {'key': '_fx_tensor_name', 'value': {'s': 'mm-aten.mm.default.OUTPUT.0'}},
-            'attr#1': {'name': 'tt2'}
-        }
-    }}]
+    output_desc = {
+        'name': 'test',
+        'attr': {'key': '_fx_tensor_name', 'value': {'s': 'mm-aten.mm.default.OUTPUT.0'}},
+        'attr#1': {'name': 'tt2'}
+    }
+    expected_result = [
+        {'op': {'name': 'Add_2', 'output_desc': output_desc}},
+        {'op': {'name': 'Cast_9', 'output_desc': output_desc}},
+    ]
     assert result == expected_result
 
 
