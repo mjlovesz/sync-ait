@@ -370,8 +370,8 @@ def compare_ge_with_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
 
 
 def is_fx_dump_path(input_path):
-    if get_torchair_ge_graph_path(input_path) is not None:
-        return False
+    if get_torchair_ge_graph_path(input_path) is None:
+        return True
 
     fx_path_pattern = re.compile(r'^gm_[\d]+_dump')
     for sub in input_path.split(os.sep):
