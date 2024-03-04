@@ -302,11 +302,11 @@ def gather_fused_op_data(fused_op_name, op_map, fused_ge_dump_data, ge_dump_data
         cur_input_names = get_all_op_input_names(op_map[cur_op_name])
 
         if cur_op_name in ge_dump_data:
-            cur_path = ge_dump_data[cur_op_name
+            cur_path = ge_dump_data[cur_op_name]
             op_inputs, op_outputs = parse_torchair_bin_dump_data(cur_path)
             min_inputs_len = min(len(cur_input_names), len(op_inputs))
             cur_input_names, op_inputs = cur_input_names[:min_inputs_len], op_inputs[:min_inputs_len]
-            input_pathes = [",".join([cur_path, "inputs", str(idx)]) for idx in range(min_inputs_len)
+            input_pathes = [",".join([cur_path, "inputs", str(idx)]) for idx in range(min_inputs_len)]
             output_path = cur_path  # Till get the last op path
         else:
             logger.warning(
