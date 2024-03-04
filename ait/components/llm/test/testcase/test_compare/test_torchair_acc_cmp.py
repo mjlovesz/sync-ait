@@ -18,18 +18,25 @@ import shutil
 import pytest
 import numpy as np
 
-from llm.compare import torchair_utils
+from llm.compare import torchair_acc_cmp
 
 
 FILE_PERMISSION = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP
-FAKE_PBTXT_FILE_NAME = "test_torchair_utils_fake_pbtxt_file.txt"
-FAKE_GE_DUMP_DATA_NAME = "test_torchair_utils_fake_ge_dump_data"
-FAKE_FX_DUMP_DATA_NAME = "test_torchair_utils_fake_fx_dump_data"
+FAKE_PBTXT_FILE_NAME = "test_torchair_acc_cmp_fake_pbtxt_file.txt"
+FAKE_GE_DUMP_DATA_NAME = "test_torchair_acc_cmp_fake_ge_dump_data"
+FAKE_FX_DUMP_DATA_NAME = "test_torchair_acc_cmp_fake_fx_dump_data"
+
+
+@pytest.fixture(scope='module', autouse=True)
+def set_fake_parse_torchair_bin_dump_data():
+    def fake_parse_torchair_bin_dump_data(my_path):
+        return [np.ones([2, 3]).astype(np.float32)], [np.ones([2, 3]).astype(np.float32)]
+    setattr(torchair_acc_cmp, "parse_torchair_bin_dump_data", fake_parse_torchair_bin_dump_data)
 
 
 @pytest.fixture(scope='module', autouse=True)
 def set_fake_set_msaccucmp_path_from_cann():
-    setattr(torchair_utils, "set_msaccucmp_path_from_cann", lambda: None)
+    setattr(torchair_acc_cmp, "set_msaccucmp_path_from_cann", lambda: None)
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -72,7 +79,7 @@ def fake_ge_dump_data():
         with os.fdopen(os.open(file_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'wb') as ff:
             pass
 
-    ge_graph_path = os.path.join(FAKE_GE_DUMP_DATA_NAME, torchair_utils.GE_GRAPH_FILE_PREFIX + "_test.txt")
+    ge_graph_path = os.path.join(FAKE_GE_DUMP_DATA_NAME, torchair_acc_cmp.GE_GRAPH_FILE_PREFIX + "_test.txt")
     with os.fdopen(os.open(ge_graph_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'wb') as ff:
         pass
     
@@ -102,18 +109,18 @@ def fake_fx_dump_data():
 
 
 def test_get_torchair_ge_graph_path_given_path_when_valid_then_pass():
-    ge_graph_path = torchair_utils.get_torchair_ge_graph_path(FAKE_GE_DUMP_DATA_NAME)
+    ge_graph_path = torchair_acc_cmp.get_torchair_ge_graph_path(FAKE_GE_DUMP_DATA_NAME)
     assert ge_graph_path is not None
-    assert os.path.basename(ge_graph_path).startswith(torchair_utils.GE_GRAPH_FILE_PREFIX)
+    assert os.path.basename(ge_graph_path).startswith(torchair_acc_cmp.GE_GRAPH_FILE_PREFIX)
 
 
 def test_get_torchair_ge_graph_path_given_path_when_invalid_then_none():
-    ge_graph_path = torchair_utils.get_torchair_ge_graph_path(FAKE_FX_DUMP_DATA_NAME)
+    ge_graph_path = torchair_acc_cmp.get_torchair_ge_graph_path(FAKE_FX_DUMP_DATA_NAME)
     assert ge_graph_path is None
 
 
 def test_parse_pbtxt_to_dict_given_path_when_valid_then_pass():
-    result = torchair_utils.parse_pbtxt_to_dict(FAKE_PBTXT_FILE_NAME)
+    result = torchair_acc_cmp.parse_pbtxt_to_dict(FAKE_PBTXT_FILE_NAME)
     assert isinstance(result, list) and isinstance(result[0], dict)
     expected_result = [{'op': {
         'name': 'Add_2',
@@ -127,7 +134,7 @@ def test_parse_pbtxt_to_dict_given_path_when_valid_then_pass():
 
 
 def test_init_ge_dump_data_from_bin_path_given_path_when_valid_then_pass():
-    result = torchair_utils.init_ge_dump_data_from_bin_path(FAKE_GE_DUMP_DATA_NAME)
+    result = torchair_acc_cmp.init_ge_dump_data_from_bin_path(FAKE_GE_DUMP_DATA_NAME)
     expected_result = {0: {}, 1: {
         'Add_2': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', 'Add.Add_2.44.6.17065969121619'),
         'Cast_9': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', 'Cast.Cast_9.19.6.17065969118878'),
@@ -137,7 +144,7 @@ def test_init_ge_dump_data_from_bin_path_given_path_when_valid_then_pass():
 
 
 def test_init_fx_dump_data_from_path_given_path_when_valid_then_pass():
-    result = torchair_utils.init_fx_dump_data_from_path(FAKE_FX_DUMP_DATA_NAME)
+    result = torchair_acc_cmp.init_fx_dump_data_from_path(FAKE_FX_DUMP_DATA_NAME)
     expected_result = {1: {
         'mm-aten.mm.default': {
             'input': [
@@ -152,14 +159,22 @@ def test_init_fx_dump_data_from_path_given_path_when_valid_then_pass():
 
 
 def test_build_metadata_given_path_when_valid_then_pass():
-    result = torchair_utils.build_metadata(FAKE_FX_DUMP_DATA_NAME, FAKE_GE_DUMP_DATA_NAME, FAKE_PBTXT_FILE_NAME)
+    result = torchair_acc_cmp.build_metadata(FAKE_FX_DUMP_DATA_NAME, FAKE_GE_DUMP_DATA_NAME, FAKE_PBTXT_FILE_NAME)
     expected_result = {1: {1: [
         {
             'inputs': [
-                'test_torchair_utils_fake_fx_dump_data/1/mm-aten.mm.default.INPUT.0.20240125031118787351.npy',
-                'test_torchair_utils_fake_fx_dump_data/1/mm-aten.mm.default.INPUT.1.20240125031118787351.npy'],
-            'outputs': ['test_torchair_utils_fake_fx_dump_data/1/mm-aten.mm.default.OUTPUT.0.20240125031118787351.npy']
+                os.path.join(FAKE_FX_DUMP_DATA_NAME, '1/mm-aten.mm.default.INPUT.0.20240125031118787351.npy'),
+                os.path.join(FAKE_FX_DUMP_DATA_NAME, '1/mm-aten.mm.default.INPUT.1.20240125031118787351.npy')],
+            'outputs': [os.path.join(FAKE_FX_DUMP_DATA_NAME, '1/mm-aten.mm.default.OUTPUT.0.20240125031118787351.npy')]
         },
-        'test_torchair_utils_fake_ge_dump_data/1/Add.Add_2.44.6.17065969121619']
+        os.path.join(FAKE_GE_DUMP_DATA_NAME, '1/Add.Add_2.44.6.17065969121619')]
     }}
     assert result == expected_result
+
+
+
+def test_fill_row_data_torchair_given_golden_data_path_when_valid_then_pass(golden_data_file):
+    golden_data_path = {"inputs": [golden_data_file], "outputs": [golden_data_file]}
+    result = acc_cmp.fill_row_data_torchair(0, 0, golden_data_path, my_path="test")
+    assert len(result) == 2 and len(result[0]) == 19 and len(result[1]) == 19
+    assert result[0]["cosine_similarity"] == "1.000000" and result[1]["cosine_similarity"] == "1.000000"
