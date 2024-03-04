@@ -73,7 +73,8 @@ def fake_ge_dump_data():
     os.makedirs(base_path, mode=0o750, exist_ok=True)
 
     file_names = [
-        "Add.Add_2.44.6.17065969121619", "Cast.Cast_9.19.6.17065969118878", "ConcatV2D.ConcatV2.42.6.17065969121611"
+        "Add.Add_2.44.6.17065969121619", "Cast.Cast_9.19.6.17065969118878", "ConcatV2D.ConcatV2.42.6.17065969121611",
+        torchair_acc_cmp.FUSION_OP_TYPE + ".Add_2Cast_9ConcatV2.19.6.17065969118878",  # Fused op name
     ]
     for file_name in file_names:
         file_path = os.path.join(base_path, file_name)
@@ -132,10 +133,13 @@ def test_parse_pbtxt_to_dict_given_path_when_valid_then_pass():
 
 def test_init_ge_dump_data_from_bin_path_given_path_when_valid_then_pass():
     result = torchair_acc_cmp.init_ge_dump_data_from_bin_path(FAKE_GE_DUMP_DATA_NAME)
+    fused_op_name = torchair_acc_cmp.FUSION_OP_TYPE + ".Add_2Cast_9ConcatV2.19.6.17065969118878"
     expected_result = {0: {}, 1: {
         'Add_2': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', 'Add.Add_2.44.6.17065969121619'),
         'Cast_9': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', 'Cast.Cast_9.19.6.17065969118878'),
         'ConcatV2': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', 'ConcatV2D.ConcatV2.42.6.17065969121611')
+        'Add_2Cast_9ConcatV2': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', fused_op_name)
+        
     }}
     assert result == expected_result
 
