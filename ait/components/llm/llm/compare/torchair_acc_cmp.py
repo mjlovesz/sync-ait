@@ -372,17 +372,6 @@ def compare_ge_with_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
     return gathered_row_data
 
 
-def is_fx_dump_path(input_path):
-    if get_torchair_ge_graph_path(input_path) is None:
-        return True
-
-    fx_path_pattern = re.compile(r'^gm_[\d]+_dump')
-    for sub in input_path.split(os.sep):
-        if fx_path_pattern.match(sub):
-            return True
-    return False
-
-
 def acc_compare(golden_path, my_path, output_path=".", ge_graph_path=None):
     logger.info(f"[compare_torchair], golden_path: {golden_path}, my_path: {my_path}, ge_graph_path: {ge_graph_path}")
     set_msaccucmp_path_from_cann()
@@ -391,7 +380,7 @@ def acc_compare(golden_path, my_path, output_path=".", ge_graph_path=None):
 
     graph_map = parse_pbtxt_to_dict(ge_graph_path)
     my_dump_data = init_ge_dump_data_from_bin_path(my_path)
-    is_golden_fx = is_fx_dump_path(golden_path)
+    is_golden_fx = get_torchair_ge_graph_path(golden_path) is None
     if is_golden_fx:
         logger.info("Comparing GE with FX")
         golden_dump_data = init_fx_dump_data_from_path(golden_path)
