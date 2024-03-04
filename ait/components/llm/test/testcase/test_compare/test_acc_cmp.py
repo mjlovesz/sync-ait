@@ -19,7 +19,6 @@ import stat
 import pytest
 import torch
 import numpy as np
-import pandas as pd
 
 from llm.compare import acc_cmp
 from llm.common.constant import (
@@ -139,9 +138,9 @@ def test_fill_row_data_given_my_path_when_shape_not_match_then_error(golden_data
     assert len(row_data["cmp_fail_reason"]) > 0
 
 
-def test_save_compare_dataframe_to_csv_given_data_frame_when_valid_then_pass():
-    dd = pd.DataFrame([{"aa": 11}, {"bb": 12}])
-    csv_save_path = acc_cmp.save_compare_dataframe_to_csv(dd)
+def test_save_compare_reault_to_csv_given_data_frame_when_valid_then_pass():
+    dd = [{"aa": 11}, {"bb": 12}]
+    csv_save_path = acc_cmp.save_compare_reault_to_csv(dd)
     assert os.path.exists(csv_save_path) and os.path.getsize(csv_save_path) > 0
 
     
