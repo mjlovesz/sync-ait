@@ -65,14 +65,10 @@ def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
             # 存在model_tree_path路径，走torch模型和加速库模型比对逻辑，待补充
             logger.info("Automatic mapping comparison starts! Comparing torch tensors and ATB tensors...")
         elif golden_topo_flag and my_topo_flag:
-            # 存在模型的拓扑信息，走加速库模型间的比对逻辑  
-            if compare_topo_json(golden_topo_json_path, my_topo_json_path):
-                # topo信息一致，走dtype和bs比对逻辑：
-                logger.info("Automatic mapping comparison starts! Comparing ATB tensors, the topos are same...")
-                compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_topo_json_path, output_path)
-            else:
-                # topo信息不一致，走量化比对逻辑，待补充
-                logger.info('Automatic mapping comparison starts! Comparing ATB tensors, the topos are different...')
+            # 存在ATB模型的拓扑信息，走加速库模型间的比对逻辑
+            compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_topo_json_path, output_path)
+        else:
+            logger.warn("Unsupported comparison type, please refer to README")
 
     elif os.path.isfile(golden_path) and os.path.isfile(my_path):
         res = compare_file(golden_path, my_path)
@@ -356,7 +352,16 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
 
     gathered_golden_data = traverse_tree(golden_topo, golden_path, 'atb')
     gathered_my_data = traverse_tree(my_topo, my_path, 'atb')
-    matched_path_pair = search_mapping_relationships(gathered_golden_data, gathered_my_data)
+
+    if compare_topo_json(golden_topo_json_path, my_topo_json_path):
+        # topo信息一致，走dtype和bs比对逻辑：
+        logger.info("Automatic mapping comparison starts! Comparing ATB tensors, the topos are same...")
+        matched_path_pair = search_mapping_relationships(gathered_golden_data, gathered_my_data)
+    else:
+        # topo信息不一致，走量化浮点比对逻辑
+        logger.info('Automatic mapping comparison starts! Comparing ATB tensors, the topos are different...')
+        matched_path_pair = search_float_quant_matches(gathered_golden_data, gathered_my_data)
+
     gathered_row_data = []
     for data_id, match in enumerate(matched_path_pair):
         _golden_tensor_path = match['golden']
@@ -368,13 +373,8 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
     return save_compare_dataframe_to_csv(data_frame, output_path)
 
 
-def search_mapping_relationships(gathered_golden_data, gathered_my_data):
-    matches = []
-    matched_path_pair = []  
-    for golden_item, my_item in zip(gathered_golden_data, gathered_my_data):  
-        if "opType" in golden_item and "opType" in my_item:   
-            matches.append({'golden': golden_item, 'my': my_item})
-
+def get_matched_path_pair(matches):
+    matched_path_pair = []
     for match in matches:
         try:
             _golden_path = glob.glob(match['golden']['my_path'])[0]
@@ -386,8 +386,43 @@ def search_mapping_relationships(gathered_golden_data, gathered_my_data):
         except IndexError as e:
             msg = f"Cannot find path! golden: {match['golden']['my_path']}, my: {match['my']['my_path']}"
             logger.debug(msg)
-
     return matched_path_pair
+
+
+def search_float_quant_matches(gathered_golden_data, gathered_my_data):
+    def get_golden_linear_id(my_item, goden_indexes, matches):
+        prefix_suffix = my_item['opName'].split("_", 1)
+        if len(prefix_suffix) != 2:
+            logger.debug(f"Unsupported quant operation name: {my_item['opName']}.")
+        else:
+            float_name = 'LinearOperation_' + my_item['opName'].split("_", 1)[1]
+            if float_name in goden_indexes:
+                matches.append({'golden': gathered_golden_data[goden_indexes[float_name]], 'my': my_item})
+
+    matches = []
+    golden_id = 0
+    goden_indexes = {}
+    
+    for golden_item in gathered_golden_data:
+        if "opName" in golden_item:
+            goden_indexes[golden_item['opName']] = golden_id
+        golden_id = golden_id + 1
+    for my_item in gathered_my_data:
+        if "opName" in my_item:
+            if "opType" in my_item and my_item['opType'] == 'LinearQuantOperation':
+                get_golden_linear_id(my_item, goden_indexes, matches)
+            elif my_item['opName'] in goden_indexes:
+                matches.append({'golden': gathered_golden_data[goden_indexes[my_item['opName']]], 'my': my_item})
+    return get_matched_path_pair(matches)
+
+
+def search_mapping_relationships(gathered_golden_data, gathered_my_data):
+    matches = []
+    matched_path_pair = []  
+    for golden_item, my_item in zip(gathered_golden_data, gathered_my_data):  
+        if "opType" in golden_item and "opType" in my_item:   
+            matches.append({'golden': golden_item, 'my': my_item})
+    return get_matched_path_pair(matches)
 
 
 def get_paths(path_dir, split_pattern):
