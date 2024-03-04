@@ -15,6 +15,7 @@
 import os
 import glob
 import json
+import datetime
 import numpy as np
 import pandas as pd
 import torch
@@ -198,7 +199,8 @@ def save_compare_dataframe_to_csv(data_frame, output_path="."):
     if not os.path.exists(csv_data_path):
         os.makedirs(csv_data_path)
 
-    csv_save_path = os.path.join(csv_data_path, "cmp_report.csv")
+    cur_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    csv_save_path = os.path.join(output_path, cur_time+"_cmp_report.csv")
     data_frame.fillna(value="", inplace=True)
     data_frame.dropna(axis=0, how="all", inplace=True)
     data_frame.to_csv(csv_save_path, index=False)
@@ -406,16 +408,23 @@ def get_paths(path_dir, split_pattern):
     return out_paths
 
 
-def pair_built_in_op(g_nodes, m_nodes, op_mapping):
+def pair_built_in_op(g_nodes, m_nodes, op_mapping, my_root_node):
     compared_result = []
     for atb_op_type, torch_op_type in op_mapping.items():
-        atb_nodes = [m_node for m_node in m_nodes if m_node.node_type == atb_op_type]
-        torch_nodes = [g_node for g_node in g_nodes if g_node.node_type == torch_op_type]
+        atb_nodes = [m_node for m_node in m_nodes if m_node.op_type == atb_op_type]
+        torch_nodes = [g_node for g_node in g_nodes if g_node.op_type == torch_op_type]
         if len(atb_nodes) != len(torch_nodes):
             msg = f"The number of {atb_op_type} node in atb is not equal to {torch_op_type} node in torch"
             logger.debug(msg)
             continue
-        for atb_node, torch_node in zip(atb_nodes, torch_nodes):        
+        for atb_node, torch_node in zip(atb_nodes, torch_nodes):
+            if atb_node.op_type == "LinearOperation" and not atb_node.op_param.get("hasBias"):
+                next_sibling_node = my_root_node.get_next_sibling_node(atb_node)
+                # 当有些算子如ParallelLinearBaseV2，是将w*x+b的操作拆分成两个算子，linear+add，而torch中使用一个算子Linear实现，
+                # 因此add node的输出映射的是torch中Linear的输出
+                if next_sibling_node and next_sibling_node.op_type == "ElewiseOperation" \
+                        and next_sibling_node.op_param.get('elewiseType') == 8:
+                    atb_node = next_sibling_node        
             my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
             golden_tensor_path = os.path.join(torch_node.tensor_path, "output.pth")
             if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
@@ -443,8 +452,8 @@ def pair_custom_op(g_nodes, m_nodes, op_mapping):
             torch_op_type, torch_output = torch_op_type.split('_', 1)[0], torch_op_type.split('_', 1)[1]
         else:
             atb_output, torch_output = "outtensor0", "output"
-        atb_nodes = [m_node for m_node in m_nodes if atb_op_type in m_node.node_type]
-        torch_nodes = [g_node for g_node in g_nodes if torch_op_type in g_node.node_type]
+        atb_nodes = [m_node for m_node in m_nodes if atb_op_type in m_node.op_type]
+        torch_nodes = [g_node for g_node in g_nodes if torch_op_type in g_node.op_type]
         if len(atb_nodes) != len(torch_nodes):
             msg = f"The number of {atb_op_type} node in atb is not equal to {torch_op_type} node in torch"
             logger.debug(msg)
@@ -471,7 +480,7 @@ def cmp_torch_atb_model(data_info, output_path, mapping_dic):
     torch_tensor_path = data_info.get("torch_tensor_path")
     atb_tensor_path = data_info.get("atb_tensor_path")
     compared_result = []
-
+    
     golden_root_node = ModelTree.json_to_tree(golden_json, torch_tensor_path)
     golden_layer_type = search_layer_node(golden_root_node)
     logger.info("golden_layer_type: %s", golden_layer_type)
@@ -487,7 +496,7 @@ def cmp_torch_atb_model(data_info, output_path, mapping_dic):
         g_layer_leaf_nodes = get_leaf_nodes(golden_layer)
         m_layer_leaf_nodes = get_leaf_nodes(my_layer)
         compared_result.extend(pair_built_in_op(g_layer_leaf_nodes, m_layer_leaf_nodes, 
-                                                mapping_dic.get("ATB_TORCH_BUILT_IN_OP_OUTPUT_MAPPING")))
+                                                mapping_dic.get("ATB_TORCH_BUILT_IN_OP_OUTPUT_MAPPING")), my_root_node)
 
     # 自定义算子比对
     for golden_layer, my_layer in zip(golden_layer_nodes, my_layer_nodes):
