@@ -273,7 +273,7 @@ class ErrCheck(BaseCommand):
             nargs='+', # one or more
             choices=['overflow', 'memleak'],
             help="Types that perform different error detection tasks.\n"
-                 "Multiple arguments will trigger all the supplying functionalities.\n"
+                 "Multiple arguments will trigger all the providing functionalities.\n"
                  "At least one argument is required.")
         
         parser.add_argument(
@@ -283,7 +283,7 @@ class ErrCheck(BaseCommand):
             required=False,
             type=check_output_path_legality,
             default='',
-            help="Directory that stores error information.\n"
+            help="Directory that stores the error information.\n"
                  "If not provided, a default directory will be used.\n"
                  "E.g. --output /xx/xxxx/xx")
         
@@ -307,9 +307,10 @@ class ErrCheck(BaseCommand):
             subprocess.run(cmds, shell=False)
             
             # finished inference
-            logger.info("Inference finished.\n"
-                        "Results are stored under the directory:\n"
+            logger.info("Inference finished.")
+            logger.info("Results are stored under the directory:\n"
                         f"\t\t{os.environ['ATB_OUTPUT_DIR']}.")
+            
         
         
 class LlmCommand(BaseCommand):
