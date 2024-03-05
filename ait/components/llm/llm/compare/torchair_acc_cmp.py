@@ -306,7 +306,7 @@ def gather_fused_op_data(fused_op_name, op_map, fused_ge_dump_data, ge_dump_data
     output_path, op_outputs = None, []
     while len(fused_op_name) > 0:
         cur_op_name = find_longest_name(fused_op_name, op_map, fused_ge_dump_data, ge_dump_data)
-        if cur_op_name is None or not cur_op_name in op_map:
+        if cur_op_name is None or cur_op_name not in op_map:
             logger.warning(f"Failed parsing fused op name: {fused_op_name}. Compare manully if required.")
             break
         cur_input_names = get_all_op_input_names(op_map[cur_op_name])

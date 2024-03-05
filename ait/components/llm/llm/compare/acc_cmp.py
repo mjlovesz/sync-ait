@@ -46,13 +46,13 @@ class BasicDataInfo:
     count_data_id = 0  # Count data_id, increment by 1 every time creating a new instance
 
     @classmethod
-    def __count__(cls):
+    def _count(cls):
         cls.count_data_id += 1
 
     def __init__(self, golden_data_path, my_data_path, token_id=0, data_id=None):
         self.token_id, self.my_data_path, self.golden_data_path = token_id, my_data_path, golden_data_path
         self.data_id = self.count_data_id if data_id is None else data_id
-        self.__count__()
+        self._count()
 
     def to_dict(self):
         return {
