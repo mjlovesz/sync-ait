@@ -416,12 +416,7 @@ def align_tensors(tensor1, tensor2, dim=0):
     else:  
         larger_tensor, smaller_tensor = tensor2, tensor1  
         larger_shape, smaller_shape = tensor2_shape, tensor1_shape  
-    
-    # 检查除了对齐维度外的其他维度是否一致  
-    other_dims_match = all(l == s for l, s in zip(larger_shape, smaller_shape) if l != s and dim != i for i, _ in enumerate(larger_shape))  
-    if not other_dims_match:  
-        raise ValueError("Tensors have mismatching dimensions other than the alignment dimension.")  
-      
+          
     # 计算需要对齐的倍数和余数  
     multiplier = larger_shape[dim] // smaller_shape[dim]  
     remainder = larger_shape[dim] % smaller_shape[dim]  
