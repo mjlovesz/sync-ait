@@ -27,7 +27,7 @@ def try_import_torchair():
         raise ee
 
 
-def get_ge_dump_config(dump_path="ait_ge_dump", dump_mode="all", use_fusion=True):
+def get_ge_dump_config(dump_path="ait_ge_dump", dump_mode="all", fusion_switch_file=None):
     try_import_torchair()
 
     from torchair.configs.compiler_config import CompilerConfig
@@ -40,6 +40,10 @@ def get_ge_dump_config(dump_path="ait_ge_dump", dump_mode="all", use_fusion=True
     # Generate GE mapping graph
     config.debug.graph_dump.type = "txt"
     config.debug.graph_dump.path = dump_path
+    if fusion_switch_file is not None:
+        if not os.path.exists(fusion_switch_file):
+            raise FileNotFoundError(f'fusion_switch_file: {fusion_switch_file} not found')
+        config.fusion_config.fusion_switch_file = fusion_switch_file
 
     # Enable GE dump
     config.dump_config.enable_dump = True
@@ -49,7 +53,7 @@ def get_ge_dump_config(dump_path="ait_ge_dump", dump_mode="all", use_fusion=True
     return config
 
 
-def get_fx_dump_config(dump_path="ait_ge_dump", dump_mode="all"):
+def get_fx_dump_config():
     try_import_torchair()
 
     from torchair.configs.compiler_config import CompilerConfig
