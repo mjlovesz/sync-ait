@@ -17,7 +17,7 @@ import sys
 import re
 
 from llm.common.log import logger
-from llm.compare.acc_cmp import BasicDataInfo, fill_row_data, save_compare_reault_to_csv
+from llm.compare.cmp_utils import BasicDataInfo, fill_row_data, save_compare_reault_to_csv
 
 GE_GRAPH_FILE_PREFIX = "dynamo_original_graph_"
 FUSION_OP_TYPE = "AutomaticBufferFusionOp"
