@@ -289,7 +289,11 @@ def fill_row_data(data_info, loaded_my_data=None, is_broadcast_tensor=False):
         my_data.permute([0, 4, 1, 2, 3]).reshape(golden_data.shape)
 
     if is_broadcast_tensor:
-        broadcast_golden_data, broadcast_my_data = torch.broadcast_tensors(golden_data, my_data)
+        try:
+            broadcast_golden_data, broadcast_my_data = torch.broadcast_tensors(golden_data, my_data)
+        except RuntimeError as e:
+            logger.debug(f"torch.broadcast_tensors RuntimeError: {e}")
+            broadcast_golden_data, broadcast_my_data = align_tensors(golden_data, my_data)
         row_data.update(compare_data(broadcast_golden_data, broadcast_my_data))
     else:
         row_data.update(compare_data(golden_data, my_data))    
@@ -361,7 +365,7 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
         _golden_tensor_path = match['golden']
         _my_tensor_path = match['my']
         data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: _golden_tensor_path, MY_DATA_PATH: _my_tensor_path}
-        row_data = fill_row_data(data_info, loaded_my_data=None, is_broadcast_tensor=True)
+        row_data = (data_info, loaded_my_data=None, is_broadcast_tensor=True)
         gathered_row_data.append(row_data)
     data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
     return save_compare_dataframe_to_csv(data_frame, output_path)
@@ -394,3 +398,46 @@ def get_paths(path_dir, split_pattern):
     out_paths.sort(key=lambda x: int(x.split(split_pattern)[-1].split('.')[0]))
     out_paths = [os.path.join(path_dir, x) for x in out_paths]
     return out_paths
+
+
+def align_tensors(tensor1, tensor2, dim=0):  
+    """  
+    将两个shape不一致的tensor对齐为一致
+    :param tensor1: 第一个张量  
+    :param tensor2: 第二个张量  
+    :param dim: 需要对齐的维度, 默认为0
+    :return: 对齐后的两个张量  
+    """   
+    tensor1_shape = list(tensor1.shape)  
+    tensor2_shape = list(tensor2.shape)  
+    if tensor1_shape[dim] > tensor2_shape[dim]:  
+        larger_tensor, smaller_tensor = tensor1, tensor2  
+        larger_shape, smaller_shape = tensor1_shape, tensor2_shape  
+    else:  
+        larger_tensor, smaller_tensor = tensor2, tensor1  
+        larger_shape, smaller_shape = tensor2_shape, tensor1_shape  
+    
+    # 检查除了对齐维度外的其他维度是否一致  
+    other_dims_match = all(l == s for l, s in zip(larger_shape, smaller_shape) if l != s and dim != i for i, _ in enumerate(larger_shape))  
+    if not other_dims_match:  
+        raise ValueError("Tensors have mismatching dimensions other than the alignment dimension.")  
+      
+    # 计算需要对齐的倍数和余数  
+    multiplier = larger_shape[dim] // smaller_shape[dim]  
+    remainder = larger_shape[dim] % smaller_shape[dim]  
+      
+    # 如果倍数不为整数或有余数，则无法简单对齐  
+    if multiplier * smaller_shape[dim] != larger_shape[dim] or remainder != 0:  
+        raise ValueError("Cannot align tensors by simply replicating the smaller tensor along the specified dimension.")  
+      
+    # 复制较小张量并拼接以匹配较大张量的形状  
+    tiles = [1] * len(smaller_shape)  
+    tiles[dim] = multiplier  
+    smaller_replicated = smaller_tensor.repeat(tiles)  
+      
+    # 如果开始时tensor1是较小的张量，现在需要交换回来  
+    if tensor1_shape[dim] < tensor2_shape[dim]:  
+        return smaller_replicated, larger_tensor  
+    else:  
+        return larger_tensor, smaller_replicated  
+  
