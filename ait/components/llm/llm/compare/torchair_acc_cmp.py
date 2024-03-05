@@ -267,11 +267,11 @@ def compare_ge_with_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
                 logger.debug(f"ge_outputs length: {len(ge_outputs)}, fx_outputs length:, {len(fx_outputs)}")
 
                 for cur_id, (fx_input, ge_input) in enumerate(zip(fx_inputs, ge_inputs)):
-                    cur_ge_data = "{},{},{}".format(cur_ge_data,"inputs", cur_id)
+                    cur_ge_data = "{},{},{}".format(cur_ge_data, "inputs", cur_id)
                     row_data = compare_single_data(fx_input, cur_ge_data, token_id, my_data=ge_input)
                     gathered_row_data.append(row_data)
                 for cur_id, (fx_output, ge_output) in enumerate(zip(fx_outputs, ge_outputs)):
-                    cur_ge_data = "{},{},{}".format(cur_ge_data,"outputs", cur_id)
+                    cur_ge_data = "{},{},{}".format(cur_ge_data, "outputs", cur_id)
                     row_data = compare_single_data(fx_output, cur_ge_data, token_id, my_data=ge_output)
                     gathered_row_data.append(row_data)
     return gathered_row_data
@@ -370,6 +370,7 @@ def compare_ge_with_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
             gathered_row_data.append(row_data)
         for cur_id, (golden_output, my_output) in enumerate(zip(golden_outputs, my_outputs)):
             my_path = "{},{},{}".format(my_path, "outputs", cur_id)
+            golden_output_path = "{},{},{}".format(golden_output_path, "outputs", cur_id)
             row_data = compare_single_data(
                 golden_output_path, my_path, token_id, golden_data=golden_output, my_data=my_output
             )
