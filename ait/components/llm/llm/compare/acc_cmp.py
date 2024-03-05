@@ -447,11 +447,16 @@ def pair_custom_op(g_nodes, m_nodes, op_mapping):
         op_mapping_flat.extend([(atb_op_type, x) for x in torch_op_type])
 
     for atb_op_type, torch_op_type in op_mapping_flat:
-        if '_' in atb_op_type and '_' in torch_op_type:
+        if '_' in atb_op_type:
             atb_op_type, atb_output = atb_op_type.split('_', 1)[0], atb_op_type.split('_', 1)[1]
+        else:
+            atb_output = "outtensor0"
+
+        if '_' in torch_op_type:
             torch_op_type, torch_output = torch_op_type.split('_', 1)[0], torch_op_type.split('_', 1)[1]
         else:
-            atb_output, torch_output = "outtensor0", "output"
+            torch_output = "output"
+
         atb_nodes = [m_node for m_node in m_nodes if atb_op_type in m_node.op_type]
         torch_nodes = [g_node for g_node in g_nodes if torch_op_type in g_node.op_type]
         if len(atb_nodes) != len(torch_nodes):
