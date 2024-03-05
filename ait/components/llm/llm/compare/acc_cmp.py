@@ -202,7 +202,7 @@ def save_compare_reault_to_csv(gathered_row_data, output_path="."):
     import pandas as pd
 
     cur_pid = str(os.getpid())
-    csv_data_path = os.path.join(output_path, cur_pid)
+    csv_data_path = os.path.join(output_path, "ait_compare_" + cur_pid)
     if not os.path.exists(csv_data_path):
         os.makedirs(csv_data_path)
     csv_save_path = os.path.join(csv_data_path, "cmp_report.csv")

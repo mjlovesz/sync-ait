@@ -223,6 +223,9 @@ def compare_single_data(golden_path, my_path, token_id=0, golden_data=None, my_d
     return fill_row_data(data_info, loaded_my_data=my_data, loaded_golden_data=golden_data)
 
 
+""" Comparing GE with FX """
+
+
 def filter_valid_fx_desc_tensor_info(desc_key, desc_value):
     """Valid one like: 'attr': {'key': '_fx_tensor_name', 'value': {'s': 'add_1-aten.add.Tensor.OUTPUT.0'}}"""
     if not (desc_key == "attr" or desc_key.startswith("attr#")) or not isinstance(desc_value, dict):
@@ -275,6 +278,9 @@ def compare_ge_with_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
                     row_data = compare_single_data(fx_output, cur_ge_data, token_id, my_data=ge_output, info=info)
                     gathered_row_data.append(row_data)
     return gathered_row_data
+
+
+""" Comparing fused GE with GE """
 
 
 def get_all_op_input_names(op_info):
@@ -336,7 +342,7 @@ def gather_fused_op_data(fused_op_name, op_map, fused_ge_dump_data, ge_dump_data
 
 
 def compare_ge_with_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
-    graph_map_dict = {ii["op"]["name"]: ii["op"] for ii in graph_map if "op" in ii}
+    graph_map_dict = {ii["op"]["name"]: ii["op"] for ii in graph_map if "op" in ii and "name" in ii["op"]}
     gathered_row_data = []
     for op_name, my_path in fused_ge_dump_data.items():
         is_fused_op = os.path.basename(my_path).startswith(FUSION_OP_TYPE)
@@ -370,6 +376,9 @@ def compare_ge_with_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
             )
             gathered_row_data.append(row_data)
     return gathered_row_data
+
+
+""" Main entrance:qa """
 
 
 def acc_compare(golden_path, my_path, output_path=".", ge_graph_path=None):
