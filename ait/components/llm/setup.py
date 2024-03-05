@@ -27,7 +27,7 @@ for root, dirs, files in os.walk('./llm/opcheck/test_framework/'):
 
 setup(
     name='ait-llm',
-    version='0.2.1',
+    version='0.2.2',
     description='Debug tools for large language model(llm)',
     url='https://gitee.com/ascend/ait/ait/components/llm',
     packages=find_packages(),
