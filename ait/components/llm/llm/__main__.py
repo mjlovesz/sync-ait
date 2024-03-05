@@ -176,6 +176,15 @@ class CompareCommand(BaseCommand):
             default='./',
             help='Data output directory.E.g:--output /xx/xxxx/xx')
 
+        parser.add_argument(
+            '--op-mapping-file',
+            '-mf',
+            dest="mapping_file",
+            required=False,
+            type=check_output_path_legality,
+            default='./',
+            help='Operation mapping file directory.E.g:--op-mapping-file /xx/xxxx/xx')
+
     def handle(self, args, **kwargs):
         from llm.compare.torchair_acc_cmp import get_torchair_ge_graph_path
 
@@ -186,9 +195,9 @@ class CompareCommand(BaseCommand):
 
             acc_compare(args.golden_path, args.my_path, args.output, torchair_ge_graph_path)
         else:
-            from llm.compare.acc_cmp import acc_compare
+            from llm.compare.atb_acc_cmp import acc_compare
 
-            acc_compare(args.golden_path, args.my_path, args.output)
+            acc_compare(args.golden_path, args.my_path, args.output, args.mapping_file)
 
 
 class OpcheckCommand(BaseCommand):
