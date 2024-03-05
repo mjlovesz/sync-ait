@@ -21,12 +21,6 @@ import torch
 import numpy as np
 
 from llm.compare import acc_cmp
-from llm.common.constant import (
-    TOKEN_ID,
-    DATA_ID,
-    MY_DATA_PATH,
-    GOLDEN_DATA_PATH,
-)
 
 
 FILE_PERMISSION = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP

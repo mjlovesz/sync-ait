@@ -215,10 +215,7 @@ def init_fx_dump_data_from_path(fx_dump_path):
     return dump_data_with_token_id
 
 
-def compare_single_data(golden_path, my_path, token_id=0, golden_data=None, my_data=None, info=""):
-    if golden_data is not None and ",inputs," not in golden_path:
-        golden_path = "{},{}".format(golden_path, info)
-    my_path = my_path if my_data is None else "{},{}".format(my_path, info)
+def compare_single_data(golden_path, my_path, token_id=0, golden_data=None, my_data=None):
     data_info = BasicDataInfo(golden_path, my_path, token_id)
     return fill_row_data(data_info, loaded_my_data=my_data, loaded_golden_data=golden_data)
 
@@ -270,12 +267,12 @@ def compare_ge_with_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
                 logger.debug(f"ge_outputs length: {len(ge_outputs)}, fx_outputs length:, {len(fx_outputs)}")
 
                 for cur_id, (fx_input, ge_input) in enumerate(zip(fx_inputs, ge_inputs)):
-                    info = "{},{}".format("inputs", cur_id)
-                    row_data = compare_single_data(fx_input, cur_ge_data, token_id, my_data=ge_input, info=info)
+                    cur_ge_data = "{},{},{}".format(cur_ge_data,"inputs", cur_id)
+                    row_data = compare_single_data(fx_input, cur_ge_data, token_id, my_data=ge_input)
                     gathered_row_data.append(row_data)
                 for cur_id, (fx_output, ge_output) in enumerate(zip(fx_outputs, ge_outputs)):
-                    info = "{},{}".format("outputs", cur_id)
-                    row_data = compare_single_data(fx_output, cur_ge_data, token_id, my_data=ge_output, info=info)
+                    cur_ge_data = "{},{},{}".format(cur_ge_data,"outputs", cur_id)
+                    row_data = compare_single_data(fx_output, cur_ge_data, token_id, my_data=ge_output)
                     gathered_row_data.append(row_data)
     return gathered_row_data
 
@@ -338,7 +335,7 @@ def gather_fused_op_data(fused_op_name, op_map, fused_ge_dump_data, ge_dump_data
             filtered_input_names.append(input_name)
             filtered_input_pathes.append(input_path)
             filtered_inputs.append(inputs)
-    return filtered_inputs, filtered_input_pathes, op_outputs, output_path  # op_outputs is just the last op output
+    return (filtered_inputs, filtered_input_pathes), (op_outputs, output_path)  # op_outputs is just the last op output
 
 
 def compare_ge_with_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
@@ -347,7 +344,7 @@ def compare_ge_with_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
     for op_name, my_path in fused_ge_dump_data.items():
         is_fused_op = os.path.basename(my_path).startswith(FUSION_OP_TYPE)
         if is_fused_op:
-            golden_inputs, golden_input_pathes, golden_outputs, golden_output_path = gather_fused_op_data(
+            (golden_inputs, golden_input_pathes), (golden_outputs, golden_output_path) = gather_fused_op_data(
                 op_name, graph_map_dict, fused_ge_dump_data, ge_dump_data
             )
         elif op_name in ge_dump_data:
@@ -364,15 +361,17 @@ def compare_ge_with_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
         logger.debug(f"golden_outputs length: {len(golden_outputs)}, my_outputs length:, {len(my_outputs)}")
 
         for cur_id, (golden_input, my_input, golden_input_path) in enumerate(zip(golden_inputs, my_inputs, golden_input_pathes)):
-            info = "{},{}".format("inputs", cur_id)
+            my_path = "{},{},{}".format(my_path, "inputs", cur_id)
+            if ",inputs," not in golden_output_path:
+                golden_output_path = "{},{},{}".format(golden_output_path, "inputs", cur_id)
             row_data = compare_single_data(
-                golden_input_path, my_path, token_id, golden_data=golden_input, my_data=my_input, info=info
+                golden_input_path, my_path, token_id, golden_data=golden_input, my_data=my_input
             )
             gathered_row_data.append(row_data)
         for cur_id, (golden_output, my_output) in enumerate(zip(golden_outputs, my_outputs)):
-            info = "{},{}".format("outputs", cur_id)
+            my_path = "{},{},{}".format(my_path, "outputs", cur_id)
             row_data = compare_single_data(
-                golden_output_path, my_path, token_id, golden_data=golden_output, my_data=my_output, info=info
+                golden_output_path, my_path, token_id, golden_data=golden_output, my_data=my_output
             )
             gathered_row_data.append(row_data)
     return gathered_row_data
