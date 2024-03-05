@@ -18,24 +18,48 @@ import shutil
 import pytest
 import numpy as np
 
-from llm.compare import torchair_utils
+from llm.compare import torchair_acc_cmp
 
 
 FILE_PERMISSION = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP
-FAKE_PBTXT_FILE_NAME = "test_torchair_utils_fake_pbtxt_file.txt"
-FAKE_GE_DUMP_DATA_NAME = "test_torchair_utils_fake_ge_dump_data"
-FAKE_FX_DUMP_DATA_NAME = "test_torchair_utils_fake_fx_dump_data"
+FAKE_GE_DUMP_DATA_NAME = "test_torchair_acc_cmp_fake_ge_dump_data"
+FAKE_FX_DUMP_DATA_NAME = "test_torchair_acc_cmp_fake_fx_dump_data"
+FAKE_PBTXT_FILE_NAME = torchair_acc_cmp.GE_GRAPH_FILE_PREFIX + "_test.txt"
+FAKE_PBTXT_FILE_PATH = os.path.join(FAKE_GE_DUMP_DATA_NAME, FAKE_PBTXT_FILE_NAME)
+
+
+@pytest.fixture(scope='module', autouse=True)
+def set_fake_parse_torchair_bin_dump_data():
+    def fake_parse_torchair_bin_dump_data(my_path):
+        return [np.ones([2, 3]).astype(np.float32)], [np.ones([2, 3]).astype(np.float32)]
+    setattr(torchair_acc_cmp, "parse_torchair_bin_dump_data", fake_parse_torchair_bin_dump_data)
 
 
 @pytest.fixture(scope='module', autouse=True)
 def set_fake_set_msaccucmp_path_from_cann():
-    setattr(torchair_utils, "set_msaccucmp_path_from_cann", lambda: None)
+    setattr(torchair_acc_cmp, "set_msaccucmp_path_from_cann", lambda: None)
 
 
 @pytest.fixture(scope='module', autouse=True)
 def fake_pbtxt_file():
-    contents = """op {
+    contents = """
+    op {
       name: "Add_2"
+      output_desc {
+        name: "test"
+        attr {
+          key: "_fx_tensor_name"
+          value {
+            s: "mm-aten.mm.default.OUTPUT.0"
+          }
+        }
+        attr {
+          name: "tt2"
+        }
+      }
+    }
+    op {
+      name: "Cast_9"
       output_desc {
         name: "test"
         attr {
@@ -50,13 +74,13 @@ def fake_pbtxt_file():
       }
     }"""
 
-    with os.fdopen(os.open(FAKE_PBTXT_FILE_NAME, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'w') as ff:
+    with os.fdopen(os.open(FAKE_PBTXT_FILE_PATH, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'w') as ff:
         ff.write(contents)
 
     yield
 
-    if os.path.exists(FAKE_PBTXT_FILE_NAME):
-        os.remove(FAKE_PBTXT_FILE_NAME)
+    if os.path.exists(FAKE_PBTXT_FILE_PATH):
+        os.remove(FAKE_PBTXT_FILE_PATH)
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -65,17 +89,14 @@ def fake_ge_dump_data():
     os.makedirs(base_path, mode=0o750, exist_ok=True)
 
     file_names = [
-        "Add.Add_2.44.6.17065969121619", "Cast.Cast_9.19.6.17065969118878", "ConcatV2D.ConcatV2.42.6.17065969121611"
+        "Add.Add_2.44.6.17065969121619", "Cast.Cast_9.19.6.17065969118878", "ConcatV2D.ConcatV2.42.6.17065969121611",
+        torchair_acc_cmp.FUSION_OP_TYPE + ".Add_2Cast_9ConcatV2.19.6.17065969118878",  # Fused op name
     ]
     for file_name in file_names:
         file_path = os.path.join(base_path, file_name)
         with os.fdopen(os.open(file_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'wb') as ff:
             pass
 
-    ge_graph_path = os.path.join(FAKE_GE_DUMP_DATA_NAME, torchair_utils.GE_GRAPH_FILE_PREFIX + "_test.txt")
-    with os.fdopen(os.open(ge_graph_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'wb') as ff:
-        pass
-    
     yield
 
     if os.path.exists(FAKE_GE_DUMP_DATA_NAME):
@@ -102,42 +123,45 @@ def fake_fx_dump_data():
 
 
 def test_get_torchair_ge_graph_path_given_path_when_valid_then_pass():
-    ge_graph_path = torchair_utils.get_torchair_ge_graph_path(FAKE_GE_DUMP_DATA_NAME)
+    ge_graph_path = torchair_acc_cmp.get_torchair_ge_graph_path(FAKE_GE_DUMP_DATA_NAME)
     assert ge_graph_path is not None
-    assert os.path.basename(ge_graph_path).startswith(torchair_utils.GE_GRAPH_FILE_PREFIX)
+    assert os.path.basename(ge_graph_path).startswith(torchair_acc_cmp.GE_GRAPH_FILE_PREFIX)
 
 
 def test_get_torchair_ge_graph_path_given_path_when_invalid_then_none():
-    ge_graph_path = torchair_utils.get_torchair_ge_graph_path(FAKE_FX_DUMP_DATA_NAME)
+    ge_graph_path = torchair_acc_cmp.get_torchair_ge_graph_path(FAKE_FX_DUMP_DATA_NAME)
     assert ge_graph_path is None
 
 
 def test_parse_pbtxt_to_dict_given_path_when_valid_then_pass():
-    result = torchair_utils.parse_pbtxt_to_dict(FAKE_PBTXT_FILE_NAME)
+    result = torchair_acc_cmp.parse_pbtxt_to_dict(FAKE_PBTXT_FILE_PATH)
     assert isinstance(result, list) and isinstance(result[0], dict)
-    expected_result = [{'op': {
-        'name': 'Add_2',
-        'output_desc': {
-            'name': 'test',
-            'attr': {'key': '_fx_tensor_name', 'value': {'s': 'mm-aten.mm.default.OUTPUT.0'}},
-            'attr#1': {'name': 'tt2'}
-        }
-    }}]
+    output_desc = {
+        'name': 'test',
+        'attr': {'key': '_fx_tensor_name', 'value': {'s': 'mm-aten.mm.default.OUTPUT.0'}},
+        'attr#1': {'name': 'tt2'}
+    }
+    expected_result = [
+        {'op': {'name': 'Add_2', 'output_desc': output_desc}},
+        {'op': {'name': 'Cast_9', 'output_desc': output_desc}},
+    ]
     assert result == expected_result
 
 
 def test_init_ge_dump_data_from_bin_path_given_path_when_valid_then_pass():
-    result = torchair_utils.init_ge_dump_data_from_bin_path(FAKE_GE_DUMP_DATA_NAME)
+    result = torchair_acc_cmp.init_ge_dump_data_from_bin_path(FAKE_GE_DUMP_DATA_NAME)
+    fused_op_name = torchair_acc_cmp.FUSION_OP_TYPE + ".Add_2Cast_9ConcatV2.19.6.17065969118878"
     expected_result = {0: {}, 1: {
         'Add_2': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', 'Add.Add_2.44.6.17065969121619'),
         'Cast_9': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', 'Cast.Cast_9.19.6.17065969118878'),
-        'ConcatV2': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', 'ConcatV2D.ConcatV2.42.6.17065969121611')
+        'ConcatV2': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', 'ConcatV2D.ConcatV2.42.6.17065969121611'),
+        'Add_2Cast_9ConcatV2': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', fused_op_name),
     }}
     assert result == expected_result
 
 
 def test_init_fx_dump_data_from_path_given_path_when_valid_then_pass():
-    result = torchair_utils.init_fx_dump_data_from_path(FAKE_FX_DUMP_DATA_NAME)
+    result = torchair_acc_cmp.init_fx_dump_data_from_path(FAKE_FX_DUMP_DATA_NAME)
     expected_result = {1: {
         'mm-aten.mm.default': {
             'input': [
@@ -151,15 +175,13 @@ def test_init_fx_dump_data_from_path_given_path_when_valid_then_pass():
     assert result == expected_result
 
 
-def test_build_metadata_given_path_when_valid_then_pass():
-    result = torchair_utils.build_metadata(FAKE_FX_DUMP_DATA_NAME, FAKE_GE_DUMP_DATA_NAME, FAKE_PBTXT_FILE_NAME)
-    expected_result = {1: {1: [
-        {
-            'inputs': [
-                'test_torchair_utils_fake_fx_dump_data/1/mm-aten.mm.default.INPUT.0.20240125031118787351.npy',
-                'test_torchair_utils_fake_fx_dump_data/1/mm-aten.mm.default.INPUT.1.20240125031118787351.npy'],
-            'outputs': ['test_torchair_utils_fake_fx_dump_data/1/mm-aten.mm.default.OUTPUT.0.20240125031118787351.npy']
-        },
-        'test_torchair_utils_fake_ge_dump_data/1/Add.Add_2.44.6.17065969121619']
-    }}
-    assert result == expected_result
+def test_acc_compare_given_fx_when_valid_then_pass():
+    csv_path = torchair_acc_cmp.acc_compare(FAKE_FX_DUMP_DATA_NAME, FAKE_GE_DUMP_DATA_NAME)
+    assert os.path.exists(csv_path)
+    assert os.path.getsize(csv_path) > 750  # result with matched comparing data, 284 if empty
+
+
+def test_acc_compare_given_ge_with_fused_op_when_valid_then_pass():
+    csv_path = torchair_acc_cmp.acc_compare(FAKE_GE_DUMP_DATA_NAME, FAKE_GE_DUMP_DATA_NAME)
+    assert os.path.exists(csv_path)
+    assert os.path.getsize(csv_path) > 1900  # result with mostly matched comparing data, 284 if empty
