@@ -3,9 +3,11 @@ import os
 import stat
 import json
 import queue
+from collections import Counter
 
 FILE_PERMISSION = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP
 MODULE_ID_NOT_AVAILABLE = -1
+MIN_LAYER_NUMBER = 10
 
 
 class TreeNode:
@@ -55,6 +57,64 @@ class TreeNode:
 
         return next_sibling_node
 
+    def get_layer_node(self, layer_type: str):
+        all_layer_nodes = []
+
+        def run(node, layer_type, layer_nodes):
+            for child_node in node.children:
+                if child_node.op_type == layer_type:
+                    layer_nodes.append(child_node)
+                else:
+                    run(child_node, layer_type, layer_nodes)
+
+        run(self, layer_type, all_layer_nodes)
+        return all_layer_nodes
+
+    def get_layer_node_type(self):
+        layer_node_type = ""
+
+        def run(node):
+            nonlocal layer_node_type
+            if layer_node_type:
+                return
+            child_op_type = [child_node.op_type for child_node in node.children]
+            if len(child_op_type) > MIN_LAYER_NUMBER:
+                op_type_counts = Counter(child_op_type)
+                most_count = op_type_counts.most_common(1)[0][1]
+                if most_count > MIN_LAYER_NUMBER / 2:
+                    most_op_type = op_type_counts.most_common(1)[0][0]
+                    layer_node_type = most_op_type
+            else:
+                for child_node in node.children:
+                    run(child_node)
+
+        run(self)
+        return layer_node_type
+
+    def get_leaf_nodes(self):
+        all_leaf_nodes = []
+
+        def run(node, leaf_nodes):
+            for child_node in node.children:
+                if child_node.children:
+                    run(child_node, leaf_nodes)
+                else:
+                    leaf_nodes.append(child_node)
+
+        run(self, all_leaf_nodes)
+        return all_leaf_nodes
+
+    def get_all_nodes(self):
+        all_nodes = [self]
+
+        def run(node, children_nodes):
+            for child_node in node.children:
+                children_nodes.append(child_node)
+                if child_node.children:
+                    run(child_node, children_nodes)
+
+        run(self, all_nodes)
+        return all_nodes
 
 
 class ModelTree:
