@@ -37,7 +37,7 @@ from auto_optimizer import OnnxGraph
 from msquickcmp.atc import atc_utils
 from auto_optimizer.graph_refactor import Node
 from msquickcmp.common import utils
-from msquickcmp.common.utils import AccuracyCompareException, get_shape_to_directory_name
+from msquickcmp.common.utils import AccuracyCompareException, get_shape_to_directory_name, safe_delete_path_if_exists
 from msquickcmp.common.convert import convert_bin_dump_data_to_npy
 from msquickcmp.common.convert import convert_npy_to_bin
 from msquickcmp.net_compare import analyser
@@ -47,7 +47,7 @@ from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.npu.om_parser import OmParser
 from msquickcmp.accuracy_locat import accuracy_locat as al
 from msquickcmp.single_op import single_op as sp
-from components.utils.security_check import get_valid_path, check_write_directory, get_valid_write_path
+from components.utils.security_check import check_write_directory
 
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
 READ_WRITE_FLAGS = os.O_RDWR | os.O_CREAT
@@ -128,27 +128,11 @@ def _append_is_npu_ops_to_csv(csv_path):
             writer.writerows(rows)
 
 
-def safe_delete_path_if_exists(path, is_log=False):
-    if os.path.exists(path):
-        is_dir = os.path.isdir(path)
-        path = get_valid_write_path(path, extensions=None, check_user_stat=False, is_dir=is_dir)
-        if os.path.isfile(path):
-            if is_log:
-                utils.logger.info("File %s exist and will be deleted.", path)
-            os.remove(path)
-        else:
-            if is_log:
-                utils.logger.info("Folder %s exist and will be deleted.", path)
-            shutil.rmtree(path)
-
-
-def get_file_ext(path):
-    return os.path.splitext(path)[-1]
-
-
 def mindir_to_om_process(args: CmpArgsAdapter):
     is_mindir_compare_accuracy = False
-    if get_file_ext(args.model_path) == ".onnx" and get_file_ext(args.offline_model_path) == ".mindir":
+    model_path_ext = os.path.splitext(args.model_path)[-1]
+    offline_model_path_ext = os.path.splitext(args.offline_model_path)[-1]
+    if model_path_ext in [".onnx", ] and offline_model_path_ext in [".mindir", ]:
         is_mindir_compare_accuracy = True
         LD_PRELOAD = "LD_PRELOAD"
         ld_preload = os.getenv(LD_PRELOAD)
