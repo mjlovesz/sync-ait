@@ -142,19 +142,7 @@ def safe_delete_path_if_exists(path, is_log=False):
             shutil.rmtree(path)
 
 
-def cmp_process(args: CmpArgsAdapter, use_cli: bool):
-    """
-    Function Description:
-        main process function
-    Exception Description:
-        exit the program when an AccuracyCompare Exception  occurs
-    """
-    args.model_path = os.path.realpath(args.model_path)
-    args.weight_path = os.path.realpath(args.weight_path) if args.weight_path else None
-    args.offline_model_path = os.path.realpath(args.offline_model_path)
-    args.cann_path = os.path.realpath(args.cann_path)
-    args.input_path = convert_npy_to_bin(args.input_path)
-
+def mindir_to_om_process(args: CmpArgsAdapter):
     is_mindir_compare_accuracy = False
     get_file_ext = lambda path: os.path.splitext(path)[-1]
     if get_file_ext(args.model_path) == ".onnx" and get_file_ext(args.offline_model_path) == ".mindir":
@@ -185,17 +173,31 @@ def cmp_process(args: CmpArgsAdapter, use_cli: bool):
         ]
         utils.execute_command(command)
 
-        args.offline_model_path = os.path.realpath(os.path.join(pwd, ".mslite.om"))
-        command = [
-            "mv",
-            os.path.join(pwd, ".om"),
-            args.offline_model_path
-        ]
-        utils.execute_command(command, info_need=False)
-
+        cur_om_path = os.path.join(pwd, ".om")
         if not os.path.exists(args.offline_model_path):
-            utils.logger.info("{} not found, please check.".format(args.offline_model_path))
+            utils.logger.info("om model not found, please check.")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+
+        args.offline_model_path = os.path.realpath(os.path.join(pwd, ".mslite.om"))
+        shutil.move(cur_om_path, args.offline_model_path)
+
+    return is_mindir_compare_accuracy
+
+
+def cmp_process(args: CmpArgsAdapter, use_cli: bool):
+    """
+    Function Description:
+        main process function
+    Exception Description:
+        exit the program when an AccuracyCompare Exception  occurs
+    """
+    args.model_path = os.path.realpath(args.model_path)
+    args.weight_path = os.path.realpath(args.weight_path) if args.weight_path else None
+    args.offline_model_path = os.path.realpath(args.offline_model_path)
+    args.cann_path = os.path.realpath(args.cann_path)
+    args.input_path = convert_npy_to_bin(args.input_path)
+
+    is_mindir_compare_accuracy = mindir_to_om_process(args)
 
     try:
         check_and_run(args, use_cli)
