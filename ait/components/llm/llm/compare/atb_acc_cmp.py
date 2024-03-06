@@ -55,7 +55,6 @@ def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
         logger.info("Compared results: %s", res)
     else:
         logger.error("The golden_path and my_path must both be directory or file.")
-        exit(1)
 
 
 def is_model_topo_exist(golden_path):
