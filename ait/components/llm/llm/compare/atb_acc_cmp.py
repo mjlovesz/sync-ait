@@ -308,13 +308,17 @@ def cmp_torch_atb_model(data_info, output_path, mapping_dic):
 
 
 def validate_json(json_obj):
-    if "ATB_TORCH_BUILT_IN_OP_OUTPUT_MAPPING" in json_obj.keys():
-        built_in_mapping = json_obj["ATB_TORCH_BUILT_IN_OP_OUTPUT_MAPPING"]
+    built_in_out_name = "ATB_TORCH_BUILT_IN_OP_OUTPUT_MAPPING"
+    custom_out_name = "ATB_TORCH_CUSTOM_OP_OUTPUT_MAPPING"
+    if not built_in_out_name in json_obj.keys() or not custom_out_name in json_obj.keys():
+        return False
+    if built_in_out_name in json_obj.keys():
+        built_in_mapping = json_obj[built_in_out_name]
         for key, value in built_in_mapping.items():
             if not re.match(r"^[a-zA-Z0-9_]*$", key) and not not re.match(r"^[a-zA-Z0-9_]*$", value):
                 return False
-    if "ATB_TORCH_CUSTOM_OP_OUTPUT_MAPPING" in json_obj.keys():
-        custom_mapping = json_obj["ATB_TORCH_CUSTOM_OP_OUTPUT_MAPPING"]
+    if custom_out_name in json_obj.keys():
+        custom_mapping = json_obj[custom_out_name]
         for key, value in custom_mapping.items():
             if not re.match(r"^[a-zA-Z0-9_]*$", key):
                 return False
@@ -326,7 +330,11 @@ def validate_json(json_obj):
     return True
 
 
-def load_mapping(mapping_file_path):
+def load_mapping(mapping_file_path): 
+    mapping_dic = {
+        "ATB_TORCH_BUILT_IN_OP_OUTPUT_MAPPING": ATB_TORCH_BUILT_IN_OP_OUTPUT_MAPPING,
+        "ATB_TORCH_CUSTOM_OP_OUTPUT_MAPPING": ATB_TORCH_CUSTOM_OP_OUTPUT_MAPPING,
+    }
     mapping_file = os.path.join(mapping_file_path, "op_mapping_file.json")
     if os.path.exists(mapping_file):
         with open(mapping_file, "r") as file:
@@ -334,17 +342,13 @@ def load_mapping(mapping_file_path):
         if validate_json(file_content):
             for map_name, map_content in file_content.items():
                 for k, v in map_content.items():
-                    mapping_file[map_name][k] = v
+                    mapping_dic[map_name][k] = v
             msg = f"Using user-specified op_mapping from file: {mapping_file}"
             logger.info(msg)
         else:
             msg = f"Invalid op_mapping file: {mapping_file}"
             logger.error(msg)
     else:
-        mapping_dic = {
-            "ATB_TORCH_BUILT_IN_OP_OUTPUT_MAPPING": ATB_TORCH_BUILT_IN_OP_OUTPUT_MAPPING,
-            "ATB_TORCH_CUSTOM_OP_OUTPUT_MAPPING": ATB_TORCH_CUSTOM_OP_OUTPUT_MAPPING,
-        }
         logger.debug("Using built-in op_mapping")
     return mapping_dic
 
