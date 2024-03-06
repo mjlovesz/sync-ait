@@ -14,6 +14,7 @@
 
 import os
 import glob
+import json
 import numpy as np
 import json
 import torch
@@ -68,14 +69,15 @@ def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
         golden_tensor_path = os.path.join(golden_path, "golden_tensor")
         golden_topo_flag, golden_topo_json_path = is_model_topo_exist(golden_path)
         my_topo_flag, my_topo_json_path = is_model_topo_exist(my_path)
-        model_tree_path = os.path.join(os.path.dirname(os.path.abspath(golden_path)), "model_tree.json")
+        torch_model_topo_file = os.path.join(golden_path, "..", "model_tree.json")
         if os.path.isdir(golden_tensor_path):
             # 存在golden_tensor路径，走手动映射比对逻辑
             logger.info("Manual mapping comparing starts! Comparing manual dump tensors and ATB tensors...")
             compare_metadata(golden_tensor_path, output_path)
-        elif os.path.exists(model_tree_path):
-            # 存在model_tree_path路径，走torch模型和加速库模型比对逻辑，待补充
+        elif os.path.exists(torch_model_topo_file):
+            # 存在torch_model_topo_file路径，走torch模型和加速库模型比对逻辑
             logger.info("Automatic mapping comparison starts! Comparing torch tensors and ATB tensors...")
+            cmp_torch_atb_model_init(torch_model_topo_file, golden_path, my_path, output_path, mapping_file_path)
         elif golden_topo_flag and my_topo_flag:
             # 存在模型的拓扑信息，走加速库模型间的比对逻辑  
             if compare_topo_json(golden_topo_json_path, my_topo_json_path):
@@ -98,17 +100,19 @@ def is_model_topo_exist(golden_path):
     absolute_path = os.path.abspath(golden_path)      
     model_dir_path = os.path.join(absolute_path, '../../../', 'model')
     model_dir_path = os.path.normpath(model_dir_path)
-    if not os.path.isdir(model_dir_path): 
-        logger.error("Can not find model topo infomation, please use ait llm dump.")
+    if not os.path.isdir(model_dir_path):
+        msg = f"Cannot find {model_dir_path}, please check! Use ait llm dump if needed."
+        logger.info(msg)
         return False, "" 
     # 搜索/model目录下的所有文件，查找JSON文件  
-    for root, dirs, files in os.walk(model_dir_path):  
+    for root, _, files in os.walk(model_dir_path):  
         for file in files:
             if file.endswith('.json'):    
                 json_file_path = os.path.join(root, file)  
                 return True, json_file_path  
-    # 如果没有找到json文件，返回False和空字符串  
-    logger.error("Can not find model topo infomation, please use ait llm dump.")        
+    # 如果没有找到json文件，返回False和空字符串 
+    msg = f"Cannot find model topo json in {model_dir_path}, please check! Use ait llm dump if needed."
+    logger.info(msg)        
     return False, ""      
 
 

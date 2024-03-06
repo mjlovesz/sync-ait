@@ -8,15 +8,17 @@ MODULE_ID_NOT_AVAILABLE = -1
 
 
 class TreeNode:
-    def __init__(self, node_name: str, node_type: str, level=0, order=0):
+    def __init__(self, node_name: str, node_type: str, level=0, order=0, tensor_path=""):
         self.node_name = node_name
         self.node_type = node_type
         self.level = level
         self.order = order
         self.children = []
+        self.tensor_path = tensor_path
 
     def __repr__(self):
-        return "{} [{}] ({})".format(self.node_name, self.node_type, ",".join((x.node_name for x in self.children)))
+        return "{} [{}] [{}]({})".format(self.node_name, self.tensor_path, self.node_type, 
+                                         ",".join((x.node_name for x in self.children)))
 
     def add_child(self, node):
         self.children.append(node)
@@ -42,16 +44,50 @@ class ModelTree:
         _tree_to_json(self.root_node, json_path)
 
     @staticmethod
-    def json_to_tree(json_path: str) -> TreeNode:
+    def json_to_tree(json_path: str, tensor_path="") -> TreeNode:
         with open(json_path, "r") as file:
             node_dict = json.loads(file.read(), parse_constant=lambda x: None)
-            return _dict_to_tree(node_dict, 0, 0)
+            
+        def _dict_to_tree(node_dict, level, order, tensor_path):
+            try:
+                op_name = node_dict["name"]
+            except Exception as e:
+                print(node_dict)
+                raise e
+            node_tensor_path = os.path.join(tensor_path, op_name)
+            node = TreeNode(op_name, node_dict["type"], level, order, tensor_path=node_tensor_path)
+            sub_level = level + 1
+            sub_order = 0
+            for child_dict in node_dict["children"]:
+                child_node = _dict_to_tree(child_dict, sub_level, sub_order, tensor_path)
+                node.add_child(child_node)
+                sub_order += 1
+            return node
+
+        return _dict_to_tree(node_dict, 0, 0, tensor_path)
 
     @staticmethod
-    def atb_json_to_tree(json_path: str) -> TreeNode:
+    def atb_json_to_tree(json_path: str, tensor_path="") -> TreeNode:
         with open(json_path, "r") as file:
             node_dict = json.loads(file.read(), parse_constant=lambda x: None)
-            return _atb_dict_to_tree(node_dict, 0, 0)
+
+            def _atb_dict_to_tree(node_dict, level, order, tensor_path):
+                if level == 0:
+                    node = TreeNode("root", node_dict["modelName"], tensor_path=tensor_path)
+                else:
+                    rel_path = str(order) + "_" + node_dict["opType"]
+                    tensor_path = os.path.join(tensor_path, rel_path)
+                    node = TreeNode(node_dict["opName"], node_dict["opType"], level, order, tensor_path)
+                
+                if "nodes" in node_dict:
+                    reorder = 0
+                    for child_dict in node_dict["nodes"]:
+                        child_node = _atb_dict_to_tree(child_dict, level + 1, reorder, tensor_path)
+                        reorder += 1
+                        node.add_child(child_node)
+                return node
+        
+        return _atb_dict_to_tree(node_dict, 0, 0, tensor_path)
 
     def _create_sub_tree(self, module, father_node, module_ids):
         new_level = father_node.level + 1
@@ -75,28 +111,3 @@ def _tree_to_dict(node):
 def _tree_to_json(node, json_path):
     with os.fdopen(os.open(json_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'w') as file:
         json.dump(_tree_to_dict(node), file)
-
-
-def _dict_to_tree(node_dict, level, order):
-    node = TreeNode(node_dict["name"], node_dict["type"], level, order)
-    sub_level = level + 1
-    sub_order = 0
-    for child_dict in node_dict["children"]:
-        child_node = _dict_to_tree(child_dict, sub_level, sub_order)
-        node.add_child(child_node)
-        sub_order = sub_order + 1
-    return node
-
-
-def _atb_dict_to_tree(node_dict, level, order):
-    if level == 0:
-        node = TreeNode("root", node_dict["modelName"])
-    else:
-        node = TreeNode(node_dict["opName"], node_dict["opType"], level, order)
-    if "nodes" in node_dict:
-        reorder = 0
-        for child_dict in node_dict["nodes"]:
-            child_node = _atb_dict_to_tree(child_dict, level + 1, reorder)
-            reorder = reorder + 1
-            node.add_child(child_node)
-    return node
