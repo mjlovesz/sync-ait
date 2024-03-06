@@ -75,19 +75,13 @@ def mean_absolute_error(golden_data: torch.Tensor, my_data: torch.Tensor):
     return result.item(), ''
 
 
-def kl_error(golden_data: torch.Tensor, my_data: torch.Tensor):
-    golden_data = torch.where(
-        torch.abs(golden_data) < FLOAT_EPSILON,
-        torch.tensor(FLOAT_EPSILON),
-        golden_data
-    )
-    my_data = torch.where(
-        torch.abs(my_data) < FLOAT_EPSILON,
-        torch.tensor(FLOAT_EPSILON),
-        my_data
-    )
-    res = F.kl_div(torch.log(my_data), golden_data, reduction="sum").item()
-    return res, ''
+def kl_divergence(golden_data: torch.Tensor, my_data: torch.Tensor):
+    norm_xx = (my_data - my_data.min()) / (my_data.max() - my_data.min()) + FLOAT_EPSILON
+    norm_yy = (golden_data - golden_data.min()) / (golden_data.max() - golden_data.min()) + FLOAT_EPSILON
+
+    norm_xx /= norm_xx.sum()
+    norm_yy /= norm_yy.sum()
+    return (norm_xx * (norm_xx / norm_yy).log()).sum().item(), ""
 
 
 def relative_euclidean_distance(golden_data: torch.Tensor, my_data: torch.Tensor):
@@ -105,6 +99,6 @@ CMP_ALG_MAP = {
     "mean_relative_error": mean_relative_error,
     "max_absolute_error": max_absolute_error,
     "mean_absolute_error": mean_absolute_error,
-    "kl_error": kl_error,
+    "kl_divergence": kl_divergence,
     "relative_euclidean_distance": relative_euclidean_distance,
 }
