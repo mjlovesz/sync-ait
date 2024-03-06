@@ -15,7 +15,7 @@
 import os
 
 from components.utils.file_open_check import FileStat
-from llm.common.constant import LD_PRELOAD, ATB_PROB_LIB_WITH_ABI, ATB_PROB_LIB_WITHOUT_ABI, ATB_HOME_PATH, ASCEND_TOOLKIT_HOME, ATB_OUTPUT_DIR, ATB_CHECK_TYPE, CHECK_TYPE_MAPPING, ATB_EXIT
+from llm.common.constant import ATB_CUR_PID, LD_PRELOAD, ATB_PROB_LIB_WITH_ABI, ATB_PROB_LIB_WITHOUT_ABI, ATB_HOME_PATH, ASCEND_TOOLKIT_HOME, ATB_OUTPUT_DIR, ATB_CHECK_TYPE, CHECK_TYPE_MAPPING, ATB_EXIT
 from llm.common.log import logger
 import subprocess
 
@@ -38,6 +38,7 @@ def is_use_cxx11():
     
 def init_error_check(args) -> None:
     # locate cann directory
+    os.environ[ATB_CUR_PID] = str(os.getpid())
     cann_path = os.environ.get(ASCEND_TOOLKIT_HOME, "/usr/local/Ascend/ascend-toolkit/latest")
     if not cann_path or not os.path.exists(cann_path):
         raise OSError("cann_path is invalid, please install cann-toolkit and set the environment variables.")
@@ -51,7 +52,7 @@ def init_error_check(args) -> None:
         raise OSError(f"{so_name} is not found in {cann_path}. Try installing the latest cann-toolkit")
     if not FileStat(so_path).is_basically_legal('read', strict_permission=True):
         raise OSError(f"{so_name} is illegal, group or others writable file stat is not permitted")
-    logger.info(f"Append save_tensor_so_path: {so_path} to LD_PRELOAD")
+    # logger.info(f"Append save_tensor_so_path: {so_path} to LD_PRELOAD")
     ld_preload = os.getenv(LD_PRELOAD)
     ld_preload = ld_preload or ""
     os.environ[LD_PRELOAD] = so_path + ":" + ld_preload

@@ -308,9 +308,7 @@ class ErrCheck(BaseCommand):
             
             # finished inference
             logger.info("Inference finished.")
-            logger.info("Results are stored under the directory:\n"
-                        f"\t\t{os.environ['ATB_OUTPUT_DIR']}.")
-            
+            logger.info(f"Results are stored under the directory: {os.environ['ATB_OUTPUT_DIR']}.")    
         
         
 class LlmCommand(BaseCommand):
