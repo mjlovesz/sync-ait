@@ -194,9 +194,9 @@ def get_matched_path_pair(matches):
 
 def search_mapping_relationships(gathered_golden_data, gathered_my_data):
     matches = []
-    matched_path_pair = []  
-    for golden_item, my_item in zip(gathered_golden_data, gathered_my_data):  
-        if "opType" in golden_item and "opType" in my_item:   
+    matched_path_pair = []
+    for golden_item, my_item in zip(gathered_golden_data, gathered_my_data):
+        if "opType" in golden_item and "opType" in my_item:
             matches.append({'golden': golden_item, 'my': my_item})
 
     return get_matched_path_pair(matches)
