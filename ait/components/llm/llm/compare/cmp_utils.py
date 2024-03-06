@@ -89,10 +89,8 @@ def set_tensor_basic_info_in_row_data(golden_data, my_data):
 
 
 def save_compare_reault_to_csv(gathered_row_data, output_path="."):
-    cur_pid = str(os.getpid())
-    csv_data_path = os.path.join(output_path, cur_pid)
-    if not os.path.exists(csv_data_path):
-        os.makedirs(csv_data_path)
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
 
     cur_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     csv_save_path = os.path.join(output_path, f"ait_cmp_report_{cur_time}.csv")
