@@ -76,8 +76,11 @@ def mean_absolute_error(golden_data: torch.Tensor, my_data: torch.Tensor):
 
 
 def kl_divergence(golden_data: torch.Tensor, my_data: torch.Tensor):
-    norm_xx = (my_data - my_data.min()) / (my_data.max() - my_data.min()) + FLOAT_EPSILON
-    norm_yy = (golden_data - golden_data.min()) / (golden_data.max() - golden_data.min()) + FLOAT_EPSILON
+    try:
+        norm_xx = (my_data - my_data.min()) / (my_data.max() - my_data.min()) + FLOAT_EPSILON
+        norm_yy = (golden_data - golden_data.min()) / (golden_data.max() - golden_data.min()) + FLOAT_EPSILON
+    except ZeroDivisionError as e:
+        return "", "The max value and min value of my_data or golden_data is equal."
 
     norm_xx /= norm_xx.sum()
     norm_yy /= norm_yy.sum()
