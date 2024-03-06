@@ -142,7 +142,7 @@ def safe_delete_path_if_exists(path, is_log=False):
             shutil.rmtree(path)
 
 
-def get_file_ext(path: string):
+def get_file_ext(path):
     return os.path.splitext(path)[-1]
 
 
