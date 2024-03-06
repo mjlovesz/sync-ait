@@ -174,7 +174,7 @@ def mindir_to_om_process(args: CmpArgsAdapter):
         utils.execute_command(command)
 
         cur_om_path = os.path.join(pwd, ".om")
-        if not os.path.exists(args.offline_model_path):
+        if not os.path.exists(cur_om_path):
             utils.logger.info("om model not found, please check.")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
