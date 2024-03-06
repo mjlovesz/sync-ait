@@ -248,11 +248,14 @@ def pair_custom_op(g_nodes, m_nodes, op_mapping):
         op_mapping_flat.extend([(atb_op_type, x) for x in torch_op_type])
 
     for atb_op_type, torch_op_type in op_mapping_flat:
-        if '_' in atb_op_type and '_' in torch_op_type:
+        if '_' in atb_op_type:
             atb_op_type, atb_output = atb_op_type.split('_', 1)[0], atb_op_type.split('_', 1)[1]
+        else:
+            atb_output = "outtensor0"
+        if '_' in torch_op_type:
             torch_op_type, torch_output = torch_op_type.split('_', 1)[0], torch_op_type.split('_', 1)[1]
         else:
-            atb_output, torch_output = "outtensor0", "output"
+            torch_output = "outtensor0"
         atb_nodes = [m_node for m_node in m_nodes if atb_op_type in m_node.op_type]
         torch_nodes = [g_node for g_node in g_nodes if torch_op_type in g_node.op_type]
         if len(atb_nodes) != len(torch_nodes):
@@ -308,26 +311,15 @@ def cmp_torch_atb_model(data_info, output_path, mapping_dic):
 
 
 def validate_json(json_obj):
-    built_in_out_name = "ATB_TORCH_BUILT_IN_OP_OUTPUT_MAPPING"
-    custom_out_name = "ATB_TORCH_CUSTOM_OP_OUTPUT_MAPPING"
-    if not built_in_out_name in json_obj.keys() or not custom_out_name in json_obj.keys():
-        return False
-    if built_in_out_name in json_obj.keys():
-        built_in_mapping = json_obj[built_in_out_name]
-        for key, value in built_in_mapping.items():
-            if not re.match(r"^[a-zA-Z0-9_]*$", key):
-                return False
-            if not isinstance(value, str):
-                return False
+    for key, value in json_obj.items():
+        if not re.match(r"^[a-zA-Z0-9_]*$", key):
+            return False
+        if not isinstance(value, str) and not isinstance(value, list):
+            return False
+        if isinstance(value, str):
             if not re.match(r"^[a-zA-Z0-9_]*$", value):
                 return False
-    if custom_out_name in json_obj.keys():
-        custom_mapping = json_obj[custom_out_name]
-        for key, value in custom_mapping.items():
-            if not re.match(r"^[a-zA-Z0-9_]*$", key):
-                return False
-            if not isinstance(value, list):
-                return False
+        if isinstance(value, list):
             for v in value:
                 if not re.match(r"^[a-zA-Z0-9_]*$", v):
                     return False
@@ -344,9 +336,8 @@ def load_mapping(mapping_file_path):
         with open(mapping_file, "r") as file:
             file_content = json.load(file)
         if validate_json(file_content):
-            for map_name, map_content in file_content.items():
-                for k, v in map_content.items():
-                    mapping_dic[map_name][k] = v
+            for k, v in file_content.items():
+                mapping_dic["ATB_TORCH_CUSTOM_OP_OUTPUT_MAPPING"][k] = v
             msg = f"Using user-specified op_mapping from file: {mapping_file}"
             logger.info(msg)
         else:

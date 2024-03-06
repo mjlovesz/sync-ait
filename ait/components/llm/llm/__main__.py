@@ -182,7 +182,7 @@ class CompareCommand(BaseCommand):
             dest="mapping_file",
             required=False,
             type=check_output_path_legality,
-            default='./',
+            default='',
             help='Operation mapping file directory.E.g:--op-mapping-file /xx/xxxx/xx')
 
     def handle(self, args, **kwargs):
