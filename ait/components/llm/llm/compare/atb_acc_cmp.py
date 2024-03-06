@@ -319,9 +319,8 @@ def validate_json(json_obj):
                 return False
             if not isinstance(value, str):
                 return False
-            for v in value:
-                if not re.match(r"^[a-zA-Z0-9_]*$", v):
-                    return False
+            if not re.match(r"^[a-zA-Z0-9_]*$", value):
+                return False
     if custom_out_name in json_obj.keys():
         custom_mapping = json_obj[custom_out_name]
         for key, value in custom_mapping.items():
