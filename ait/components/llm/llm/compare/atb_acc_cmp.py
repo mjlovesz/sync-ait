@@ -19,20 +19,11 @@ import json
 
 from llm.compare.cmp_utils import compare_data, read_data
 from llm.common.log import logger
-from llm.common.constant import (
-    TOKEN_ID,
-    DATA_ID,
-    MY_DATA_PATH,
-    GOLDEN_DATA_PATH,
-)
 from llm.compare.cmp_utils import BasicDataInfo, fill_row_data, save_compare_reault_to_csv
 from llm.compare.op_mapping import ATB_TORCH_BUILT_IN_OP_OUTPUT_MAPPING, ATB_TORCH_CUSTOM_OP_OUTPUT_MAPPING
 from llm.dump.torch_dump.topo import ModelTree
 
 from tqdm import tqdm
-
-import pydevd_pycharm
-pydevd_pycharm.settrace('90.253.71.235', port=9990, stdoutToServer=True, stderrToServer=True)
 
 
 def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
@@ -172,12 +163,8 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
     matched_path_pair = search_mapping_relationships(gathered_golden_data, gathered_my_data)
     gathered_row_data = []
     for data_id, match in enumerate(matched_path_pair):
-        _golden_tensor_path = match['golden']
-        _my_tensor_path = match['my']
-        data_info = {
-            TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: _golden_tensor_path, MY_DATA_PATH: _my_tensor_path
-        }
-        row_data = fill_row_data(data_info, loaded_my_data=None, is_broadcast_tensor=True)
+        data_info = BasicDataInfo(match['golden'], match['my'], token_id, data_id)
+        row_data = fill_row_data(data_info, is_broadcast_tensor=True)
         gathered_row_data.append(row_data)
     return save_compare_reault_to_csv(gathered_row_data, output_path)
 
@@ -349,10 +336,8 @@ def load_mapping(mapping_file_path):
 
 
 def cmp_torch_atb(torch_model_topo_file, golden_path, my_path, output_path, mapping_file_path):
-    if not my_path.endswith("/"):
-        my_path += "/"
     try:
-        pid = str(my_path.split("/")[-3].split("_")[1])
+        pid = str(my_path.split("/")[-2].split("_")[1])
     except IndexError as e:
         pid = ""
         msg = f"Cannot parse the right pid from my_path! my_path: {my_path}"
