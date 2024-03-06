@@ -165,7 +165,7 @@ def cmp_process(args: CmpArgsAdapter, use_cli: bool):
         save_om_so_path = os.path.join(site.getsitepackages()[0], "msquickcmp", "libsaveom.so")
         if not os.path.exists(save_om_so_path):
             utils.logger.error("libsaveom.so not found, check the installation process")
-            raise AccuracyCompareException(utils.ACCURACY_COMPARION_INVALID_PATH_ERROR)
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
         if not os.getenv(LD_PRELOAD):
             os.environ[LD_PRELOAD] = save_om_so_path
         elif (save_om_so_path not in os.getenv(LD_PRELOAD).split(":")):
@@ -195,7 +195,7 @@ def cmp_process(args: CmpArgsAdapter, use_cli: bool):
 
         if not os.path.exists(args.offline_model_path):
             utils.logger.info("{} not found, please check.".format(args.offline_model_path))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
     try:
         check_and_run(args, use_cli)
