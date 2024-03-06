@@ -4,7 +4,8 @@
 #include "ge/ge_ir_build.h"
 #include "ge/ge_api_error_codes.h"
 
-bool SaveOM(const void *model, size_t length, const std::string &file_path) {
+bool SaveOM(const void *model, size_t length, const std::string &file_path)
+{
     auto om_buffer = new uint8_t[length];
     std::memcpy(om_buffer, model, length);
     ge::ModelBufferData om_model;
