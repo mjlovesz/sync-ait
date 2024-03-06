@@ -37,26 +37,6 @@ def is_use_cxx11():
         
     
 def init_error_check(args) -> None:
-    # type
-    os.environ[ATB_CHECK_TYPE] = ''.join(CHECK_TYPE_MAPPING[type_] for type_ in args.type)
-    
-    # output_dir
-    output_dir = args.output
-    if not output_dir:
-        default_dir = os.path.join(os.getcwd(), r'ait_err_check', r'overflow')
-        logger.warning("Output directory is not provided. "
-                       "Results will be stored under the default directory instead. ")
-        os.makedirs(default_dir, exist_ok=True)
-        os.environ[ATB_OUTPUT_DIR] = default_dir
-    else:
-        output_dir = os.path.join(output_dir, r'ait_err_check', r'overflow')
-        output_dir = os.path.abspath(output_dir)
-        os.makedirs(output_dir, exist_ok=True)
-        os.environ[ATB_OUTPUT_DIR] = output_dir
-
-    # exit
-    os.environ[ATB_EXIT] = '1' if args.exit else '0'
-    
     # locate cann directory
     os.environ[ATB_CUR_PID] = str(os.getpid())
     cann_path = os.environ.get(ASCEND_TOOLKIT_HOME, "/usr/local/Ascend/ascend-toolkit/latest")
@@ -76,6 +56,26 @@ def init_error_check(args) -> None:
     ld_preload = os.getenv(LD_PRELOAD)
     ld_preload = ld_preload or ""
     os.environ[LD_PRELOAD] = save_tensor_so_path + ":" + ld_preload
+    
+    # type
+    os.environ[ATB_CHECK_TYPE] = ''.join(CHECK_TYPE_MAPPING[type_] for type_ in args.type)
+    
+    # output_dir
+    output_dir = args.output
+    if not output_dir:
+        default_dir = os.path.join(os.getcwd(), r'ait_err_check', r'overflow')
+        logger.warning("Output directory is not provided. "
+                       "Results will be stored under the default directory instead. ")
+        os.makedirs(default_dir, exist_ok=True)
+        os.environ[ATB_OUTPUT_DIR] = default_dir
+    else:
+        output_dir = os.path.join(output_dir, r'ait_err_check', r'overflow')
+        output_dir = os.path.abspath(output_dir)
+        os.makedirs(output_dir, exist_ok=True)
+        os.environ[ATB_OUTPUT_DIR] = output_dir
+
+    # exit
+    os.environ[ATB_EXIT] = '1' if args.exit else '0'
     
     logger.info("Initialization finished. Inference processing.")
     

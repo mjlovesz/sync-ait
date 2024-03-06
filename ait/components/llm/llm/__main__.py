@@ -269,12 +269,12 @@ class ErrCheck(BaseCommand):
         parser.add_argument(
             '--type',
             dest="type",
-            required=True,
             nargs='+', # one or more
-            choices=['overflow', 'memleak'],
+            choices=['overflow'],
+            default=['overflow'],
             help="Types that perform different error detection tasks.\n"
                  "Multiple arguments will trigger all the providing functionalities.\n"
-                 "At least one argument is required.")
+                 "Default to overflow check.")
         
         parser.add_argument(
             '--output',
