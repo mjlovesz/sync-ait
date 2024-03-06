@@ -62,20 +62,20 @@ def init_error_check(args) -> None:
     cann_path = os.environ.get(ASCEND_TOOLKIT_HOME, "/usr/local/Ascend/ascend-toolkit/latest")
     if not cann_path or not os.path.exists(cann_path):
         raise OSError("cann_path is invalid, please install cann-toolkit and set the environment variables.")
+
     cur_is_use_cxx11 = is_use_cxx11()
     logger.info(f"Info detected from ATB so is_use_cxx11: {cur_is_use_cxx11}")
-    
-    # read so package according to the cann directory
-    so_name = ATB_PROB_LIB_WITH_ABI if cur_is_use_cxx11 else ATB_PROB_LIB_WITHOUT_ABI
-    so_path = os.path.join(cann_path, "tools", "ait_backend", "dump", so_name)
-    if not os.path.exists(so_path):
-        raise OSError(f"{so_name} is not found in {cann_path}. Try installing the latest cann-toolkit")
-    if not FileStat(so_path).is_basically_legal('read', strict_permission=True):
-        raise OSError(f"{so_name} is illegal, group or others writable file stat is not permitted")
-    # logger.info(f"Append save_tensor_so_path: {so_path} to LD_PRELOAD")
+    save_tensor_so_name = ATB_PROB_LIB_WITH_ABI if cur_is_use_cxx11 else ATB_PROB_LIB_WITHOUT_ABI
+    save_tensor_so_path = os.path.join(cann_path, "tools", "ait_backend", "dump", save_tensor_so_name)
+    if not os.path.exists(save_tensor_so_path):
+        raise OSError(f"{save_tensor_so_name} is not found in {cann_path}. Try installing the latest cann-toolkit")
+    if not FileStat(save_tensor_so_path).is_basically_legal('read', strict_permission=True):
+        raise OSError(f"{save_tensor_so_name} is illegal, group or others writable file stat is not permitted")
+
+    logger.info(f"Append save_tensor_so_path: {save_tensor_so_path} to LD_PRELOAD")
     ld_preload = os.getenv(LD_PRELOAD)
     ld_preload = ld_preload or ""
-    os.environ[LD_PRELOAD] = so_path + ":" + ld_preload
+    os.environ[LD_PRELOAD] = save_tensor_so_path + ":" + ld_preload
     
     logger.info("Initialization finished. Inference processing.")
     
