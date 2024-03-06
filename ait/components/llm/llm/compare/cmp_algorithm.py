@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import torch
+from torch.nn import functional as F
 
 from llm.common.log import logger
 
 
-FLOAT_EPSILON = torch.finfo(float).eps
+FLOAT_EPSILON = torch.finfo(torch.float).eps
 NAN = 'NaN'
 
 
@@ -56,6 +57,36 @@ def mean_relative_error(golden_data: torch.Tensor, my_data: torch.Tensor):
     return result.item(), ''
 
 
+def max_absolute_error(golden_data: torch.Tensor, my_data: torch.Tensor):
+    result = torch.where(
+        torch.abs(golden_data) > FLOAT_EPSILON,
+        torch.abs(my_data - golden_data),  # abs(aa - bb) / abs(bb) -> abs(aa / bb - 1)
+        torch.tensor(0, dtype=my_data.dtype),
+    ).max()
+    return result.item(), ''
+
+
+def mean_absolute_error(golden_data: torch.Tensor, my_data: torch.Tensor):
+    result = torch.where(
+        torch.abs(golden_data) > FLOAT_EPSILON,
+        torch.abs(my_data - golden_data),  # abs(aa - bb) / abs(bb) -> abs(aa / bb - 1)
+        torch.tensor(0, dtype=my_data.dtype),
+    ).mean()
+    return result.item(), ''
+
+
+def kl_divergence(golden_data: torch.Tensor, my_data: torch.Tensor):
+    try:
+        norm_xx = (my_data - my_data.min()) / (my_data.max() - my_data.min()) + FLOAT_EPSILON
+        norm_yy = (golden_data - golden_data.min()) / (golden_data.max() - golden_data.min()) + FLOAT_EPSILON
+    except ZeroDivisionError as e:
+        return "", "The max value and min value of my_data or golden_data is equal."
+
+    norm_xx /= norm_xx.sum()
+    norm_yy /= norm_yy.sum()
+    return (norm_xx * (norm_xx / norm_yy).log()).sum().item(), ""
+
+
 def relative_euclidean_distance(golden_data: torch.Tensor, my_data: torch.Tensor):
     ground_truth_square_num = (golden_data ** 2).sum()
     if ground_truth_square_num ** 0.5 <= FLOAT_EPSILON:
@@ -69,5 +100,8 @@ CMP_ALG_MAP = {
     "cosine_similarity": cosine_similarity,
     "max_relative_error": max_relative_error,
     "mean_relative_error": mean_relative_error,
-    "relative_euclidean_distance": relative_euclidean_distance
+    "max_absolute_error": max_absolute_error,
+    "mean_absolute_error": mean_absolute_error,
+    "kl_divergence": kl_divergence,
+    "relative_euclidean_distance": relative_euclidean_distance,
 }
