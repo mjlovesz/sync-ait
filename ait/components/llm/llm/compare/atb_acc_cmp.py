@@ -41,14 +41,10 @@ def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
             logger.info("Automatic mapping comparison starts! Comparing torch tensors and ATB tensors...")
             cmp_torch_atb(torch_model_topo_file, golden_path, my_path, output_path, mapping_file_path)
         elif golden_topo_flag and my_topo_flag:
-            # 存在模型的拓扑信息，走加速库模型间的比对逻辑
-            if compare_topo_json(golden_topo_json_path, my_topo_json_path):
-                # topo信息一致，走dtype和bs比对逻辑：
-                logger.info("Automatic mapping comparison starts! Comparing ATB tensors, the topos are same...")
-                compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_topo_json_path, output_path)
-            else:
-                # topo信息不一致，走量化比对逻辑，待补充
-                logger.info('Automatic mapping comparison starts! Comparing ATB tensors, the topos are different...')
+            # 存在ATB模型的拓扑信息，走加速库模型间的比对逻辑
+            compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_topo_json_path, output_path)
+        else:
+            logger.warn("Unsupported comparison type, please refer to README")
 
     elif os.path.isfile(golden_path) and os.path.isfile(my_path):
         res = compare_file(golden_path, my_path)
@@ -157,9 +153,17 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
     with open(my_topo_json_path, "r") as file:
         my_topo = json.load(file)
 
-    gathered_golden_data = traverse_tree(golden_topo, golden_path, 'atb')
-    gathered_my_data = traverse_tree(my_topo, my_path, 'atb')
-    matched_path_pair = search_mapping_relationships(gathered_golden_data, gathered_my_data)
+    if compare_topo_json(golden_topo_json_path, my_topo_json_path):
+        # topo信息一致，走dtype和bs比对逻辑：
+        logger.info("Automatic mapping comparison starts! Comparing ATB tensors, the topos are same...")
+        gathered_golden_data = traverse_tree(golden_topo, golden_path, 'atb')
+        gathered_my_data = traverse_tree(my_topo, my_path, 'atb')
+        matched_path_pair = search_mapping_relationships(gathered_golden_data, gathered_my_data)
+    else:
+        # topo信息不一致，走量化浮点比对逻辑
+        logger.info('Automatic mapping comparison starts! Comparing ATB tensors, the topos are different...')
+        matched_path_pair = search_float_quant_matches(golden_path, my_path, golden_topo_json_path, my_topo_json_path)
+
     gathered_row_data = []
     for data_id, match in enumerate(matched_path_pair):
         data_info = BasicDataInfo(match['golden'], match['my'], token_id, data_id)
@@ -168,25 +172,78 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
     return save_compare_reault_to_csv(gathered_row_data, output_path)
 
 
+def add_specific_path(golden_tensor, my_tensor, matched_path_pair):
+    try:
+        _golden_path = glob.glob(golden_tensor)[0]
+        golden_out_path = get_paths(_golden_path, split_pattern='outtensor')
+        _my_path = glob.glob(my_tensor)[0]
+        my_out_path = get_paths(_my_path, split_pattern='outtensor')
+        for _golden_tensor_path, _my_tensor_path in zip(golden_out_path, my_out_path):
+            matched_path_pair.append({'golden': _golden_tensor_path, 'my': _my_tensor_path})
+    except IndexError as e:
+        msg = f"Cannot find path! golden: {golden_tensor}, my: {my_tensor}"
+        logger.debug(msg)
+
+
+def get_matched_path_pair(matches):
+    matched_path_pair = []
+    for match in matches:
+        add_specific_path(match['golden']['my_path'], match['my']['my_path'], matched_path_pair)
+    return matched_path_pair
+
+
 def search_mapping_relationships(gathered_golden_data, gathered_my_data):
     matches = []
-    matched_path_pair = []
-    for golden_item, my_item in zip(gathered_golden_data, gathered_my_data):
-        if "opType" in golden_item and "opType" in my_item:
+    matched_path_pair = []  
+    for golden_item, my_item in zip(gathered_golden_data, gathered_my_data):  
+        if "opType" in golden_item and "opType" in my_item:   
             matches.append({'golden': golden_item, 'my': my_item})
 
-    for match in matches:
-        try:
-            _golden_path = glob.glob(match['golden']['my_path'])[0]
-            golden_out_path = get_paths(_golden_path, split_pattern='outtensor')
-            _my_path = glob.glob(match['my']['my_path'])[0]
-            my_out_path = get_paths(_my_path, split_pattern='outtensor')
-            for _golden_tensor_path, _my_tensor_path in zip(golden_out_path, my_out_path):
-                matched_path_pair.append({'golden': _golden_tensor_path, 'my': _my_tensor_path})
-        except IndexError as e:
-            msg = f"Cannot find path! golden: {match['golden']['my_path']}, my: {match['my']['my_path']}"
-            logger.debug(msg)
+    return get_matched_path_pair(matches)
 
+
+def search_float_quant_matches(golden_path, my_path, golden_topo_json_path, my_topo_json_path):
+    matched_path_pair = []
+    from llm.dump.torch_dump.topo import TreeNode, ModelTree
+    golden_tree = ModelTree.atb_json_to_tree(golden_topo_json_path)
+    my_tree = ModelTree.atb_json_to_tree(my_topo_json_path)
+    
+    def get_subnode_by_name(target_node, target_name):
+        for next_node in target_node.children:
+            if next_node.node_name == target_name:
+                return next_node
+    def type_based_matches(my_node, golden_node):
+        my_type_map = {}
+        golden_type_map = {}
+        my_legal_opname = {}
+        for sub_node in my_node.children:
+            match_type = sub_node.op_type
+            if match_type == 'LinearOperation':
+                match_type = 'LinearQuantOperation'
+            if match_type not in my_type_map:
+                my_type_map[match_type] = []
+            my_type_map[match_type].append(sub_node.node_name)
+        for sub_node in golden_node.children:
+            if sub_node.op_type not in golden_type_map:
+                golden_type_map[sub_node.op_type] = []
+            golden_type_map[sub_node.op_type].append(sub_node.node_name)
+        for key, value in my_type_map.items():
+            if (key in golden_type_map) and (len(value) == len(golden_type_map[key])):
+                for my_name, golden_name in zip(my_type_map[key], golden_type_map[key]):
+                    my_legal_opname[my_name] = golden_name
+            elif (key == 'LinearQuantOperation') and ('LinearOperation' in golden_type_map) and \
+                (len(value) == len(golden_type_map['LinearOperation'])):
+                for my_name, golden_name in zip(my_type_map[key], golden_type_map['LinearOperation']):
+                    my_legal_opname[my_name] = golden_name
+        for my_sub in my_node.children:
+            if my_sub.node_name in my_legal_opname:
+                my_level = '_*/'.join(my_sub.node_name.split("_", 1)[1].split('_')) + '_*'
+                golden_level = '_*/'.join(my_legal_opname[my_sub.node_name].split("_", 1)[1].split('_')) + '_*'
+                my_tensor = os.path.join(os.path.abspath(my_path), my_level, 'after')
+                golden_tensor = os.path.join(os.path.abspath(golden_path), golden_level, 'after')
+                add_specific_path(golden_tensor, my_tensor, matched_path_pair)
+                type_based_matches(my_sub, get_subnode_by_name(golden_node, my_legal_opname[my_sub.node_name]))
+    type_based_matches(my_tree, golden_tree)
     return matched_path_pair
 
 
