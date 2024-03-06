@@ -301,7 +301,7 @@ class ErrCheck(BaseCommand):
         if args.exec:
             logger.info(f"Preparing to execute the command: {args.exec}")
             logger.warning("Please make sure that the executable command is safe.")
-            init_dump_task(args)
+            init_error_check(args)
             # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
             cmds = args.exec.split()
             subprocess.run(cmds, shell=False)
