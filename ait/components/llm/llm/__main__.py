@@ -197,7 +197,8 @@ class CompareCommand(BaseCommand):
         else:
             from llm.compare.atb_acc_cmp import acc_compare
 
-            acc_compare(args.golden_path, args.my_path, args.output, args.mapping_file)
+            acc_compare(os.path.abspath(args.golden_path), os.path.abspath(args.my_path),
+                        args.output, args.mapping_file)
 
 
 class OpcheckCommand(BaseCommand):
