@@ -164,7 +164,7 @@ build_om_so() {
     chmod 750 $SITE_PACKAGES_PATH
   fi
 
-  g++ ${CURRENT_DIR}/components/debug/compare/msquickcmp/save_om_model/export_om_model.cc \
+  g++ ${CURRENT_DIR}/components/debug/compare/msquickcmp/save_om_model/export_om_model.cpp \
           -I ${ASCEND_AICPU_PATH}/$(uname -m)-linux/include/ \
           -L ${ASCEND_AICPU_PATH}/$(uname -m)-linux/lib64 \
           -lge_compiler \
