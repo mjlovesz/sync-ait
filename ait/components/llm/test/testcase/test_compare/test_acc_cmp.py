@@ -32,6 +32,7 @@ FAKE_MY_DATA_PATH = "test_acc_cmp_fake_test_data.npy"
 @pytest.fixture(scope='module')
 def golden_data_file():
     golden_data = np.ones((2, 3)).astype(np.float32)
+    golden_data[0][0] = 10
     np.save(FAKE_GOLDEN_DATA_PATH, golden_data)
 
     yield FAKE_GOLDEN_DATA_PATH
@@ -43,6 +44,7 @@ def golden_data_file():
 @pytest.fixture(scope='module')
 def test_data_file():
     test_data = np.ones((2, 3)).astype(np.float32)
+    test_data[0][0] = 10
     np.save(FAKE_MY_DATA_PATH, test_data)
 
     yield FAKE_MY_DATA_PATH
@@ -86,7 +88,7 @@ def test_check_tensor_given_golden_data_when_nan_then_false():
 def test_fill_row_data_given_my_path_when_valid_then_pass(golden_data_file, test_data_file):
     data_info = llm.compare.cmp_utils.BasicDataInfo(golden_data_file, test_data_file, 0, 0)
     row_data = llm.compare.cmp_utils.fill_row_data(data_info)
-    assert isinstance(row_data, dict) and len(row_data) == 19
+    assert isinstance(row_data, dict) and len(row_data) == 22
     assert row_data["cosine_similarity"] == '1.000000'
     assert len(row_data["cmp_fail_reason"]) == 0
 
@@ -96,7 +98,7 @@ def test_fill_row_data_given_loaded_my_data_when_valid_then_pass(golden_data_fil
     loaded_my_data = np.zeros_like(golden_data)
     data_info = llm.compare.cmp_utils.BasicDataInfo(golden_data_file, "test")
     row_data = llm.compare.cmp_utils.fill_row_data(data_info, loaded_my_data=loaded_my_data)
-    assert isinstance(row_data, dict) and len(row_data) == 19
+    assert isinstance(row_data, dict) and len(row_data) == 22
     assert row_data["cosine_similarity"] == 'NaN'
     assert len(row_data["cmp_fail_reason"]) > 0
 
@@ -165,12 +167,14 @@ def test_compare_data_given_data_file_when_valid_then_pass(golden_data_file, tes
     golden_data = llm.compare.cmp_utils.read_data(golden_data_file)
     res = llm.compare.cmp_utils.compare_data(test_data, golden_data)
     assert res == {'cosine_similarity': '1.000000', 'max_relative_error': 0.0, 'mean_relative_error': 0.0,
+                   'kl_divergence': 0.0, 'max_absolute_error': 0.0, 'mean_absolute_error': 0.0,
                    'relative_euclidean_distance': 0.0, 'cmp_fail_reason': ''}
 
 
 def test_compare_file_given_data_file_when_valid_then_pass(golden_data_file, test_data_file):
     res = atb_acc_cmp.compare_file(golden_data_file, test_data_file)
     assert res == {'cosine_similarity': '1.000000', 'max_relative_error': 0.0, 'mean_relative_error': 0.0,
+                   'kl_divergence': 0.0, 'max_absolute_error': 0.0, 'mean_absolute_error': 0.0,
                    'relative_euclidean_distance': 0.0, 'cmp_fail_reason': ''}
 
 
