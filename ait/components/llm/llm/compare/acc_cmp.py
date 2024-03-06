@@ -16,7 +16,7 @@ import os
 import glob
 import json
 import numpy as np
-import pandas as pd
+import json
 import torch
 from tqdm import tqdm
 
@@ -41,21 +41,31 @@ from llm.common.constant import (
     GOLDEN_MEAN_VALUE,
     CSV_GOLDEN_HEADER,
 )
-from llm.compare import torchair_utils
-from llm.compare.cmp_utils import search_layer_node, get_layer_node, get_leaf_nodes, get_all_nodes
-from llm.compare.op_mapping import ATB_TORCH_BUILT_IN_OP_MAPPING, ATB_TORCH_CUSTOM_OP_MAPPING, \
-    ATB_TORCH_CUSTOM_OP_TENSOR_MAPPING
-from llm.dump.torch_dump.topo import ModelTree
 
-NCHW_DIMS = 4
-NC1HWC0_DIMS = 5
+
+class BasicDataInfo:
+    count_data_id = 0  # Count data_id, increment by 1 every time creating a new instance
+
+    @classmethod
+    def _count(cls):
+        cls.count_data_id += 1
+
+    def __init__(self, golden_data_path, my_data_path, token_id=0, data_id=None):
+        self.token_id, self.my_data_path, self.golden_data_path = token_id, my_data_path, golden_data_path
+        self.data_id = self.count_data_id if data_id is None else data_id
+        self._count()
+
+    def to_dict(self):
+        return {
+            TOKEN_ID: str(self.token_id),
+            DATA_ID: str(self.data_id),
+            GOLDEN_DATA_PATH: self.golden_data_path,
+            MY_DATA_PATH: self.my_data_path,
+        }
 
 
 def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
-    torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
-    if torchair_ge_graph_path is not None:
-        compare_torchair(golden_path, my_path, torchair_ge_graph_path, output_path=output_path)
-    elif os.path.isdir(golden_path):
+    if os.path.isdir(golden_path):
         golden_tensor_path = os.path.join(golden_path, "golden_tensor")
         golden_topo_flag, golden_topo_json_path = is_model_topo_exist(golden_path)
         my_topo_flag, my_topo_json_path = is_model_topo_exist(my_path)
@@ -77,7 +87,6 @@ def acc_compare(golden_path, my_path, output_path=".", mapping_file_path="."):
             else:
                 # topo信息不一致，走量化比对逻辑，待补充
                 logger.info('Automatic mapping comparison starts! Comparing ATB tensors, the topos are different...')
-
     elif os.path.isfile(golden_path) and os.path.isfile(my_path):
         res = compare_file(golden_path, my_path)
         logger.info("Compared results: %s", res)
@@ -189,30 +198,25 @@ def compare_metadata(golden_path, output_path="."):
     golden_meta_path = os.path.join(golden_path, "metadata.json")
     with open(golden_meta_path, "r") as file:
         golden_meta = json.load(file)
-    data_frame = fill_in_data(golden_meta)
-    return save_compare_dataframe_to_csv(data_frame, output_path)
+    gathered_row_data = fill_in_data(golden_meta)
+    return save_compare_reault_to_csv(gathered_row_data, output_path)
 
 
-def save_compare_dataframe_to_csv(data_frame, output_path="."):
+def save_compare_reault_to_csv(gathered_row_data, output_path="."):
+    import pandas as pd
+
     cur_pid = str(os.getpid())
     csv_data_path = os.path.join(output_path, cur_pid)
     if not os.path.exists(csv_data_path):
         os.makedirs(csv_data_path)
-
     csv_save_path = os.path.join(csv_data_path, "cmp_report.csv")
+
+    data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
     data_frame.fillna(value="", inplace=True)
     data_frame.dropna(axis=0, how="all", inplace=True)
     data_frame.to_csv(csv_save_path, index=False)
     logger.info(f"Saved comparing results: {csv_save_path}")
     return csv_save_path
-
-
-# torchair 比对相关
-def compare_torchair(golden_path, my_path, ge_graph_path, output_path="."):
-    logger.info(f"[compare_torchair], golden_path: {golden_path}, my_path: {my_path}, ge_graph_path: {ge_graph_path}")
-    metadata = torchair_utils.build_metadata(golden_path, my_path, ge_graph_path)
-    data_frame = fill_in_data(metadata)
-    return save_compare_dataframe_to_csv(data_frame, output_path)
 
 
 def fill_in_data(golden_meta):
@@ -224,81 +228,34 @@ def fill_in_data(golden_meta):
             if not isinstance(path_list, (list, tuple)) or len(path_list) < 2:
                 logger.warning(f"Invalid data in golden metadata.json, data_id: {data_id}, token_id: {token_id}")
                 continue
-            golden_data_path = path_list[0]
-            my_path = path_list[1]
-
-            if torchair_utils.is_torchair_dump_data(golden_data_path, my_path):
-                sub_gathered_row_data = fill_row_data_torchair(token_id, data_id, golden_data_path, my_path)
-                gathered_row_data.extend(sub_gathered_row_data)
-            else:
-                data_info = {
-                    TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: golden_data_path, MY_DATA_PATH: my_path
-                }
-                row_data = fill_row_data(data_info)
-                gathered_row_data.append(row_data)
-    return pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
+            data_info = BasicDataInfo(path_list[0], path_list[1], token_id, data_id)
+            row_data = fill_row_data(data_info)
+            gathered_row_data.append(row_data)
+    return gathered_row_data
 
 
-# torchair 比对相关
-def fill_row_data_torchair(token_id, data_id, golden_data_path, my_path):
-    my_inputs, my_outputs = torchair_utils.parse_torchair_bin_dump_data(my_path)
-    sub_gathered_row_data = []
-    logger.debug(
-        f"my_inputs length: {len(my_inputs)}, golden_data_path inputs length:, {len(golden_data_path['inputs'])}"
-    )
-    logger.debug(
-        f"my_outputs length: {len(my_outputs)}, golden_data_path outputs length:, {len(golden_data_path['outputs'])}"
-    )
-
-    for cur_id, (golden_input, my_input) in enumerate(zip(golden_data_path["inputs"], my_inputs)):
-        sub_my_path = "{},{},{}".format(my_path, "inputs", cur_id)
-        data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: golden_input, MY_DATA_PATH: sub_my_path}
-        row_data = fill_row_data(data_info, loaded_my_data=my_input)
-        sub_gathered_row_data.append(row_data)
-    for cur_id, (golden_output, my_output) in enumerate(zip(golden_data_path["outputs"], my_outputs)):
-        sub_my_path = "{},{},{}".format(my_path, "outputs", cur_id)
-        data_info = {TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: golden_output, MY_DATA_PATH: sub_my_path}
-        row_data = fill_row_data(data_info, loaded_my_data=my_output)
-        sub_gathered_row_data.append(row_data)
-    return sub_gathered_row_data
-
-
-def is_converting_nc1hwc0_to_nchw(golden_data, my_data):
-    if not (golden_data.dim() == NCHW_DIMS and my_data.dim() == NC1HWC0_DIMS):
-        return False
-
-    golden_shape, my_shape = golden_data.shape, my_data.shape
-    if not (golden_shape[0] == my_shape[0] and golden_shape[2] == my_shape[2] and golden_shape[3] == my_shape[3]):
-        return False
-    if np.prod(golden_shape) != np.prod(my_shape):
-        return False
-    return True
-
-
-def fill_row_data(data_info, loaded_my_data=None, is_broadcast_tensor=False):
+def fill_row_data(data_info, loaded_my_data=None, loaded_golden_data=None, is_broadcast_tensor=False):
     # 第三个参数“is_broadcast_tensor”用于两个模型batch size不一致时将低维的tensor广播到高维进行比较
     # 创建一条比较数据
-    token_id = data_info.get(TOKEN_ID)  
-    data_id = data_info.get(DATA_ID)  
-    golden_data_path = data_info.get(GOLDEN_DATA_PATH)  
-    my_path = data_info.get(MY_DATA_PATH)  
-    logger.debug(f"[fill_row_data], golden_data_path: {golden_data_path}, my_path: {my_path}")
-    row_data = {TOKEN_ID: str(token_id), DATA_ID: data_id, GOLDEN_DATA_PATH: golden_data_path, MY_DATA_PATH: my_path}
-    if not os.path.isfile(golden_data_path):
+    golden_data_path, my_data_path = data_info.golden_data_path, data_info.my_data_path
+    logger.debug(f"[fill_row_data], golden_data_path: {golden_data_path}, my_data_path: {my_data_path}")
+    row_data = data_info.to_dict()
+    if loaded_golden_data is None and not os.path.isfile(golden_data_path):
         row_data[CMP_FAIL_REASON] = f"golden_data_path: {golden_data_path} is not a file."
         return row_data
-    if loaded_my_data is None and not os.path.isfile(my_path):
-        row_data[CMP_FAIL_REASON] = f"my_path: {my_path} is not a file."
+    if loaded_my_data is None and not os.path.isfile(my_data_path):
+        row_data[CMP_FAIL_REASON] = f"my_data_path: {my_data_path} is not a file."
         return row_data
 
-    golden_data = read_data(golden_data_path)
-    my_data = read_data(my_path) if loaded_my_data is None else torch.from_numpy(loaded_my_data)
-    if is_converting_nc1hwc0_to_nchw(golden_data, my_data):
-        logger.debug(f"[fill_row_data] NC1HWC0 -> NCHW, my_data: {my_data.shape}, golden_data: {golden_data.shape}")
-        my_data.permute([0, 4, 1, 2, 3]).reshape(golden_data.shape)
+    golden_data = read_data(golden_data_path) if loaded_golden_data is None else torch.from_numpy(loaded_golden_data)
+    my_data = read_data(my_data_path) if loaded_my_data is None else torch.from_numpy(loaded_my_data)
 
     if is_broadcast_tensor:
-        broadcast_golden_data, broadcast_my_data = torch.broadcast_tensors(golden_data, my_data)
+        try:
+            broadcast_golden_data, broadcast_my_data = torch.broadcast_tensors(golden_data, my_data)
+        except RuntimeError as e:
+            logger.debug(f"torch.broadcast_tensors RuntimeError: {e}")
+            broadcast_golden_data, broadcast_my_data = align_tensors(golden_data, my_data)
         row_data.update(compare_data(broadcast_golden_data, broadcast_my_data))
     else:
         row_data.update(compare_data(golden_data, my_data))    
@@ -367,15 +324,10 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
     matched_path_pair = search_mapping_relationships(gathered_golden_data, gathered_my_data)
     gathered_row_data = []
     for data_id, match in enumerate(matched_path_pair):
-        _golden_tensor_path = match['golden']
-        _my_tensor_path = match['my']
-        data_info = {
-            TOKEN_ID: token_id, DATA_ID: data_id, GOLDEN_DATA_PATH: _golden_tensor_path, MY_DATA_PATH: _my_tensor_path
-        }
-        row_data = fill_row_data(data_info, loaded_my_data=None, is_broadcast_tensor=True)
+        data_info = BasicDataInfo(match['golden'], match['my'], token_id, data_id)
+        row_data = fill_row_data(data_info, is_broadcast_tensor=True)
         gathered_row_data.append(row_data)
-    data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
-    return save_compare_dataframe_to_csv(data_frame, output_path)
+    return save_compare_reault_to_csv(gathered_row_data, output_path)
 
 
 def search_mapping_relationships(gathered_golden_data, gathered_my_data):
@@ -407,134 +359,39 @@ def get_paths(path_dir, split_pattern):
     return out_paths
 
 
-def pair_torch_atb_nodes(g_nodes, m_nodes, op_mapping, op_tensor_mapping=None):
-    compared_result = []
-
-    def get_row_data(golden_tensor_path, my_tensor_path):
-        if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
-            data_info = {TOKEN_ID: 0, DATA_ID: 0, GOLDEN_DATA_PATH: golden_tensor_path, MY_DATA_PATH: my_tensor_path}
-            row_data = fill_row_data(data_info)
-            compared_result.append(row_data)     
-        else:
-            msg = f"golden tensor path: {golden_tensor_path} or my_tensor_path: {my_tensor_path} is not exist."
-            logger.debug(msg)
-
-    def traverse_nodes(atb_nodes, torch_nodes, mapping_idx_list=None):
-        for atb_node, torch_node in zip(atb_nodes, torch_nodes):        
-            if mapping_idx_list is not None:
-                for atb_idx, torch_idx in mapping_idx_list:
-                    my_tensor_path = os.path.join(atb_node.tensor_path, "after", f"outtensor{atb_idx}.bin")
-                    golden_tensor_path = os.path.join(torch_node.tensor_path, f"output_{torch_idx}.pth")
-                    get_row_data(golden_tensor_path, my_tensor_path)
-            else:
-                my_tensor_path = os.path.join(atb_node.tensor_path, "after", "outtensor0.bin")
-                golden_tensor_path = os.path.join(torch_node.tensor_path, "output.pth")
-                get_row_data(golden_tensor_path, my_tensor_path)
-
-    op_mapping_flat = []
-    if op_tensor_mapping is not None:
-        for atb_op_type, torch_op_type in op_mapping.items():
-            op_mapping_flat.extend([(atb_op_type, x) for x in torch_op_type])
-    else:
-        op_mapping_flat = op_mapping.items()
-
-    for atb_op_type, torch_op_type in op_mapping_flat:
-        if op_tensor_mapping is not None:
-            tensor_mapping_key = atb_op_type + '_' + torch_op_type
-            if tensor_mapping_key in op_tensor_mapping.keys():
-                mapping_idx_list = op_tensor_mapping[tensor_mapping_key]
-            else:
-                mapping_idx_list = None
-            atb_nodes = [m_node for m_node in m_nodes if atb_op_type in m_node.node_type]
-            torch_nodes = [g_node for g_node in g_nodes if torch_op_type in g_node.node_type]
-        else:
-            mapping_idx_list = None
-            atb_nodes = [m_node for m_node in m_nodes if m_node.node_type == atb_op_type]
-            torch_nodes = [g_node for g_node in g_nodes if g_node.node_type == torch_op_type]
-        if len(atb_nodes) != len(torch_nodes):
-            msg = f"The number of {atb_op_type} node in atb is not equal to {torch_op_type} node in torch"
-            logger.debug(msg)
-            continue
-        traverse_nodes(atb_nodes, torch_nodes, mapping_idx_list)
-
-    return compared_result
-                    
-
-def cmp_torch_atb_model(data_info, output_path, mapping_dic):
-    golden_json = data_info.get("golden_json")
-    my_json = data_info.get("my_json")
-    torch_tensor_path = data_info.get("torch_tensor_path")
-    atb_tensor_path = data_info.get("atb_tensor_path")
-    compared_result = []
-
-    golden_root_node = ModelTree.json_to_tree(golden_json, torch_tensor_path)
-    golden_layer_type = search_layer_node(golden_root_node)
-    logger.info("golden_layer_type: %s", golden_layer_type)
-    golden_layer_nodes = get_layer_node(golden_root_node, golden_layer_type)
-
-    my_root_node = ModelTree.atb_json_to_tree(my_json, atb_tensor_path)
-    my_layer_type = search_layer_node(my_root_node)
-    logger.info("my_layer_type: %s", my_layer_type)
-    my_layer_nodes = get_layer_node(my_root_node, my_layer_type)
-    
-    # 原生算子比对
-    for golden_layer, my_layer in zip(golden_layer_nodes, my_layer_nodes):
-        g_layer_leaf_nodes = get_leaf_nodes(golden_layer)
-        m_layer_leaf_nodes = get_leaf_nodes(my_layer)
-        compared_result.extend(pair_torch_atb_nodes(g_layer_leaf_nodes, m_layer_leaf_nodes, 
-                                                    mapping_dic.get("ATB_TORCH_BUILT_IN_OP_MAPPING")))
-
-    # 自定义算子比对
-    for golden_layer, my_layer in zip(golden_layer_nodes, my_layer_nodes):
-        g_layer_all_nodes = get_all_nodes(golden_layer)
-        m_layer_all_nodes = get_all_nodes(my_layer)
-        compared_result.extend(pair_torch_atb_nodes(g_layer_all_nodes, m_layer_all_nodes, 
-                mapping_dic.get("ATB_TORCH_CUSTOM_OP_MAPPING"), mapping_dic.get("ATB_TORCH_CUSTOM_OP_TENSOR_MAPPING")))
-
-    data_frame = pd.DataFrame(compared_result, columns=CSV_GOLDEN_HEADER)
-    save_compare_dataframe_to_csv(data_frame, output_path)
-
-
-def load_mapping(mapping_file_path):
-    mapping_file = os.path.join(mapping_file_path, "op_mapping_file.json")
-    if os.path.exists(mapping_file):
-        with open(mapping_file, "r") as file:
-            mapping_dic = json.load(file)
-        msg = f"Using user-specified op_mapping from file: {mapping_file}"
-        logger.info(msg)
-    else:
-        mapping_dic = {
-            "ATB_TORCH_BUILT_IN_OP_MAPPING": ATB_TORCH_BUILT_IN_OP_MAPPING,
-            "ATB_TORCH_CUSTOM_OP_MAPPING": ATB_TORCH_CUSTOM_OP_MAPPING,
-            "ATB_TORCH_CUSTOM_OP_TENSOR_MAPPING": ATB_TORCH_CUSTOM_OP_TENSOR_MAPPING
-        }
-        logger.debug("Using built-in op_mapping")
-    return mapping_dic
-
-
-def cmp_torch_atb_model_init(torch_model_topo_file, golden_path, my_path, output_path, mapping_file_path):
-    try:
-        pid = str(my_path.split("/")[-2].split("_")[1])
-    except IndexError as e:
-        pid = ""
-        msg = f"Cannot parse the right pid from my_path! my_path: {my_path}"
-        logger.error(msg)
-    atb_model_topo_file_path = os.path.join(my_path, "../../..", "model", pid)
-    if os.path.exists(atb_model_topo_file_path):
-        atb_model_topo_name = os.listdir(atb_model_topo_file_path)[0]
-        atb_model_topo_file = os.path.join(atb_model_topo_file_path, atb_model_topo_name)
-        if os.path.exists(atb_model_topo_file):
-            mapping_dic = load_mapping(mapping_file_path)
-            data_info = {
-                "golden_json": torch_model_topo_file,
-                "my_json": atb_model_topo_file,
-                "torch_tensor_path": golden_path,
-                "atb_tensor_path": my_path,
-            }
-            cmp_torch_atb_model(data_info, output_path, mapping_dic)
-        else:
-            msg = f"Cannot find atb model file: {atb_model_topo_file}"
-            logger.error(msg)
-    else:
-        msg = f"Cannot find atb model file path: {atb_model_topo_file_path}"
-        logger.error(msg)
+def align_tensors(tensor1, tensor2, dim=0):  
+    """  
+    将两个shape不一致的tensor对齐为一致
+    :param tensor1: 第一个张量  
+    :param tensor2: 第二个张量  
+    :param dim: 需要对齐的维度, 默认为0
+    :return: 对齐后的两个张量  
+    """   
+    tensor1_shape = list(tensor1.shape)  
+    tensor2_shape = list(tensor2.shape)  
+    if tensor1_shape[dim] > tensor2_shape[dim]:  
+        larger_tensor, smaller_tensor = tensor1, tensor2  
+        larger_shape, smaller_shape = tensor1_shape, tensor2_shape  
+    else:  
+        larger_tensor, smaller_tensor = tensor2, tensor1  
+        larger_shape, smaller_shape = tensor2_shape, tensor1_shape  
+          
+    # 计算需要对齐的倍数和余数  
+    multiplier = larger_shape[dim] // smaller_shape[dim]  
+    remainder = larger_shape[dim] % smaller_shape[dim]  
+      
+    # 如果倍数不为整数或有余数，则无法简单对齐  
+    if multiplier * smaller_shape[dim] != larger_shape[dim] or remainder != 0:  
+        raise ValueError("Cannot align tensors by simply replicating the smaller tensor along the specified dimension.")  
+      
+    # 复制较小张量并拼接以匹配较大张量的形状  
+    tiles = [1] * len(smaller_shape)  
+    tiles[dim] = multiplier  
+    smaller_replicated = smaller_tensor.repeat(tiles)  
+      
+    # 如果开始时tensor1是较小的张量，现在需要交换回来  
+    if tensor1_shape[dim] < tensor2_shape[dim]:  
+        return smaller_replicated, larger_tensor  
+    else:  
+        return larger_tensor, smaller_replicated  
+  
