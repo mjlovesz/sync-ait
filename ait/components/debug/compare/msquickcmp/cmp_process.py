@@ -26,8 +26,8 @@ import time
 import subprocess
 import csv
 import logging
-import pandas as pd
 import site
+import pandas as pd
 
 import sklearn as _ # import first, bypassing error libgomp-xxx.so.xxx: cannot allocate memory in static TLS block
 import onnxruntime
@@ -142,9 +142,12 @@ def safe_delete_path_if_exists(path, is_log=False):
             shutil.rmtree(path)
 
 
+def get_file_ext(path: string):
+    return os.path.splitext(path)[-1]
+
+
 def mindir_to_om_process(args: CmpArgsAdapter):
     is_mindir_compare_accuracy = False
-    get_file_ext = lambda path: os.path.splitext(path)[-1]
     if get_file_ext(args.model_path) == ".onnx" and get_file_ext(args.offline_model_path) == ".mindir":
         is_mindir_compare_accuracy = True
         LD_PRELOAD = "LD_PRELOAD"
