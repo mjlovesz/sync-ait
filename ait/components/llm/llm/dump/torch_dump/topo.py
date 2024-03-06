@@ -49,7 +49,7 @@ class TreeNode:
             if node in parent_node.children:
                 node_index = parent_node.children.index(node)
                 if node_index + 1 < len(parent_node.children):
-                    next_sibling_node = parent_node.children[node_index+1]
+                    next_sibling_node = parent_node.children[node_index + 1]
                     break
             else:
                 for child_node in parent_node.children:
