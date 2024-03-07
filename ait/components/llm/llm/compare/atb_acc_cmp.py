@@ -204,7 +204,7 @@ def search_mapping_relationships(gathered_golden_data, gathered_my_data):
 
 def search_float_quant_matches(golden_path, my_path, golden_topo_json_path, my_topo_json_path):
     matched_path_pair = []
-    from llm.dump.torch_dump.topo import TreeNode, ModelTree
+    from llm.dump.torch_dump.topo import TreeNode
     golden_tree = ModelTree.atb_json_to_tree(golden_topo_json_path)
     my_tree = ModelTree.atb_json_to_tree(my_topo_json_path)
     
@@ -212,6 +212,8 @@ def search_float_quant_matches(golden_path, my_path, golden_topo_json_path, my_t
         for next_node in target_node.children:
             if next_node.node_name == target_name:
                 return next_node
+        return None
+
     def type_based_matches(my_node, golden_node):
         my_type_map = {}
         golden_type_map = {}
