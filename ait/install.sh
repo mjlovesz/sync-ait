@@ -159,7 +159,7 @@ uninstall(){
 build_om_so() {
   echo "Installing libsaveom.so"
   echo "This part is used for the accuracy comparison of mindir and onnx models. "
-  echo "This will not affect the usage of other components."
+  echo "If installation failed, the usage of other components will not be affected."
   SITE_PACKAGES_PATH=$(python3 -c "import site; print(site.getsitepackages()[0])")
 
   g++ ${CURRENT_DIR}/components/debug/compare/msquickcmp/save_om_model/export_om_model.cpp \
