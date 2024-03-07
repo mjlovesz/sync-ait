@@ -76,9 +76,14 @@ class TranspltCommand(BaseCommand):
 
     def handle(self, args):
         log_util.set_logger_level(args.log_level)
-        log_util.init_file_logger()
         self._set_env()
-        start_scan_kit(args)
+        if args.tools == llm:
+            from app_analyze.llm_transform import transform_quant
+
+            transform_quant.transform_quant(args.source)
+        else:
+            log_util.init_file_logger()
+            start_scan_kit(args)
 
 
 def get_cmd_instance():
