@@ -168,7 +168,8 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
     for data_id, match in enumerate(matched_path_pair):
         data_info = BasicDataInfo(match['golden'], match['my'], token_id, data_id)
         row_data = fill_row_data(data_info, is_broadcast_tensor=True)
-        gathered_row_data.append(row_data)
+        if len(row_data) != 0:
+            gathered_row_data.append(row_data)
     return save_compare_reault_to_csv(gathered_row_data, output_path)
 
 

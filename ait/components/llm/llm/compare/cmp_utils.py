@@ -54,6 +54,9 @@ def fill_row_data(data_info: BasicDataInfo, loaded_my_data=None, loaded_golden_d
     golden_data = read_data(golden_data_path) if loaded_golden_data is None else torch.from_numpy(loaded_golden_data)
     my_data = read_data(my_data_path) if loaded_my_data is None else torch.from_numpy(loaded_my_data)
 
+    if (golden_data.dtype == torch.int8) ^ (my_data.dtype == torch.int8):
+        return {}
+
     if is_broadcast_tensor:
         try:
             broadcast_golden_data, broadcast_my_data = torch.broadcast_tensors(golden_data, my_data)
