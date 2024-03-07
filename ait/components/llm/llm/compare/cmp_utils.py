@@ -38,8 +38,7 @@ class BasicDataInfo:
         }
 
 
-def fill_row_data(data_info: BasicDataInfo, gathered_row_data, loaded_my_data=None, \
-    loaded_golden_data=None, is_broadcast_tensor=False):
+def fill_row_data(data_info: BasicDataInfo, loaded_my_data=None, loaded_golden_data=None, is_broadcast_tensor=False):
     # 第三个参数“is_broadcast_tensor”用于两个模型batch size不一致时将低维的tensor广播到高维进行比较
     # 创建一条比较数据
     golden_data_path, my_data_path = data_info.golden_data_path, data_info.my_data_path
@@ -47,16 +46,13 @@ def fill_row_data(data_info: BasicDataInfo, gathered_row_data, loaded_my_data=No
     row_data = data_info.to_dict()
     if loaded_golden_data is None and not os.path.isfile(golden_data_path):
         row_data[CMP_FAIL_REASON] = f"golden_data_path: {golden_data_path} is not a file."
-        gathered_row_data.append(row_data)
+        return row_data
     if loaded_my_data is None and not os.path.isfile(my_data_path):
         row_data[CMP_FAIL_REASON] = f"my_data_path: {my_data_path} is not a file."
-        gathered_row_data.append(row_data)
+        return row_data
 
     golden_data = read_data(golden_data_path) if loaded_golden_data is None else torch.from_numpy(loaded_golden_data)
     my_data = read_data(my_data_path) if loaded_my_data is None else torch.from_numpy(loaded_my_data)
-
-    if (golden_data.dtype == torch.int8) ^ (my_data.dtype == torch.int8):
-        return
 
     if is_broadcast_tensor:
         try:
@@ -69,7 +65,7 @@ def fill_row_data(data_info: BasicDataInfo, gathered_row_data, loaded_my_data=No
         row_data.update(compare_data(golden_data, my_data))
     row_data.update(set_tensor_basic_info_in_row_data(golden_data, my_data))
 
-    gathered_row_data.append(row_data)
+    return row_data
 
 
 def set_tensor_basic_info_in_row_data(golden_data, my_data):
@@ -98,6 +94,12 @@ def save_compare_reault_to_csv(gathered_row_data, output_path="."):
 
     cur_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     csv_save_path = os.path.join(output_path, f"ait_cmp_report_{cur_time}.csv")
+
+    # 过滤不宜展示的数据，int8建议只与int8比较
+    for row_data in gathered_row_data:
+        if GOLDEN_DTYPE in row_data and MY_DTYPE in row_data:
+            if (row_data[GOLDEN_DTYPE] == 'torch.int8') ^ (row_data[MY_DTYPE] == 'torch.int8'):
+                gathered_row_data.remove(row_data)
 
     data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
     data_frame.fillna(value="", inplace=True)
