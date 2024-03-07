@@ -19,6 +19,7 @@ import subprocess
 from components.utils.parser import BaseCommand
 from llm.dump.initial import init_dump_task, clear_dump_task
 from llm.opcheck.opchecker import OpChecker
+from llm.errcheck.initial import init_error_check
 from llm.common.utils import str2bool, check_positive_integer, check_device_integer, safe_string, check_exec_cmd, \
     check_ids_string, check_number_list, check_output_path_legality, check_input_path_legality
 from llm.common.log import set_log_level
@@ -271,7 +272,64 @@ class OpcheckCommand(BaseCommand):
         op.start_test(args)
         logger.info(f"===================Opcheck end====================")
 
-
+        
+class ErrCheck(BaseCommand):
+    def add_arguments(self, parser, **kwargs) -> None:
+        parser.add_argument(
+            '--exec',
+            dest="exec",
+            required=True,
+            type=safe_string,
+            default='',
+            help='Executable command that running acl-transformer model inference.\n'
+                 'User is responsible for the safeness of the input command.\n'
+                 "E.g. --exec 'bash run.sh patches/models/modeling_xxx.py'.")
+        
+        parser.add_argument(
+            '--type',
+            dest="type",
+            nargs='+', # one or more
+            choices=['overflow'],
+            default=['overflow'],
+            help="Types that perform different error detection tasks.\n"
+                 "Multiple arguments will trigger all the providing functionalities.\n"
+                 "Default to overflow check.")
+        
+        parser.add_argument(
+            '--output',
+            '-o',
+            dest="output",
+            required=False,
+            type=check_output_path_legality,
+            default='',
+            help="Directory that stores the error information.\n"
+                 "If not provided, a default directory will be used.\n"
+                 "E.g. --output /xx/xxxx/xx")
+        
+        parser.add_argument(
+            '--exit',
+            dest='exit',
+            required=False,
+            action='store_true',
+            default=False,
+            help="Flag determines whether to exit the program after detecting an error.\n"
+                 "Defaults to False."
+        )
+        
+    def handle(self, args, **kwargs) -> None:
+        if args.exec:
+            logger.info("Preparing to execute the command: %s", args.exec)
+            logger.warning("Please make sure that the executable command is safe.")
+            init_error_check(args)
+            # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
+            cmds = args.exec.split()
+            subprocess.run(cmds, shell=False)
+            
+            # finished inference
+            logger.info("Inference finished.")
+            logger.info("Results are stored under the directory: %s.", os.environ['ATB_OUTPUT_DIR'])    
+        
+        
 class LlmCommand(BaseCommand):
     def __init__(self, name="", help_info="", children=None, has_handle=False, **kwargs):
         super().__init__(name, help_info, children, has_handle, **kwargs)
@@ -290,4 +348,6 @@ def get_cmd_instance():
                                           alias_name="cc")
     opcheck_cmd_instance = OpcheckCommand("opcheck", "Operation check tool for large language model", 
                                           alias_name='oo')
-    return LlmCommand("llm", llm_help_info, [dump_cmd_instance, compare_cmd_instance, opcheck_cmd_instance])
+    errcheck_cmd_instance = ErrCheck("errcheck", "Error check tool for large language models.",
+                                     alias_name='ee')
+    return LlmCommand("llm", llm_help_info, [dump_cmd_instance, compare_cmd_instance, opcheck_cmd_instance, errcheck_cmd_instance])
