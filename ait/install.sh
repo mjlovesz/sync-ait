@@ -156,6 +156,34 @@ uninstall(){
 }
 
 
+build_om_so() {
+  echo "Installing libsaveom.so"
+  echo "This part is used for the accuracy comparison of mindir and onnx models. "
+  echo "If installation failed, the usage of other components will not be affected."
+  SITE_PACKAGES_PATH=$(python3 -c "import site; print(site.getsitepackages()[0])")
+
+  g++ ${CURRENT_DIR}/components/debug/compare/msquickcmp/save_om_model/export_om_model.cpp \
+          -I ${ASCEND_AICPU_PATH}/$(uname -m)-linux/include/ \
+          -L ${ASCEND_AICPU_PATH}/$(uname -m)-linux/lib64 \
+          -lge_compiler \
+          --std=c++11 -fPIC -shared -D_GLIBCXX_USE_CXX11_ABI=0 -o libsaveom.so
+  
+  if [ ! -f "${CURRENT_DIR}/libsaveom.so" ]
+  then
+    echo "libsaveom.so compilation failed"
+  else
+    if [ ! -d "${SITE_PACKAGES_PATH}/msquickcmp/" ]
+    then
+      rm libsaveom.so
+      echo "msquickcmp not exist, failed to install libsaveom.so"
+    else
+      mv libsaveom.so "${SITE_PACKAGES_PATH}/msquickcmp/"
+      echo "Finish libsaveom.so installation."
+    fi
+  fi
+}
+
+
 install(){
   pip3 install ${CURRENT_DIR} ${arg_force_reinstall}
 
@@ -166,6 +194,8 @@ install(){
     pre_check_skl2onnx
     pip3 install ${CURRENT_DIR}/components/debug/compare \
     ${arg_force_reinstall}
+
+    build_om_so
 
   fi
 
@@ -233,6 +263,7 @@ install(){
     bash ${CURRENT_DIR}/components/convert/build.sh
 
     source ${CURRENT_DIR}/components/transplt/install.sh $full_install
+    build_om_so
   fi
 
   rm -rf ${CURRENT_DIR}/ait.egg-info
