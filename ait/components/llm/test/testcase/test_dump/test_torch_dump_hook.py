@@ -30,11 +30,13 @@ def test_hook_when_tp_default_then_save_inputs():
     x = torch.randn(4, 4)
     model(x)
     for name in MODEL_NAME_LIST:
-        except_input_path = os.path.join(DUMP_PATH, str(os.getpid()) + "_cpu", "0", name, "input_exec1_0.pth")
-        except_output_path = os.path.join(DUMP_PATH, str(os.getpid()) + "_cpu", "0", name, "output_exec1.pth")
+        except_input_path = os.path.join(DUMP_PATH, "ait_dump/torch_tensors",
+                                         str(os.getpid()) + "_cpu", "0", name, "input_0.pth")
+        except_output_path = os.path.join(DUMP_PATH, "ait_dump/torch_tensors",
+                                          str(os.getpid()) + "_cpu", "0", name, "output.pth")
         assert os.path.exists(except_input_path)
         assert os.path.exists(except_output_path)
-    topo_path = os.path.join(DUMP_PATH, str(os.getpid()) + "_cpu", "model_tree.json")
+    topo_path = os.path.join(DUMP_PATH, "ait_dump/torch_tensors", str(os.getpid()) + "_cpu", "model_tree.json")
     assert os.path.exists(topo_path)
         
     if os.path.exists(DUMP_PATH):
