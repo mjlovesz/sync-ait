@@ -166,13 +166,18 @@ build_om_so() {
           -lge_compiler \
           --std=c++11 -fPIC -shared -D_GLIBCXX_USE_CXX11_ABI=0 -o libsaveom.so
   
-  if [ ! -d "${SITE_PACKAGES_PATH}/msquickcmp/" ]
+  if [ ! -f "{CURRENT_DIR}/libsaveom.so"]
   then
-    rm libsaveom.so
-    echo "msquickcmp not exist, failed to install libsaveom.so"
+    echo "libsaveom.so compilation failed"
   else
-    mv libsaveom.so "${SITE_PACKAGES_PATH}/msquickcmp/"
-    echo "Finish libsaveom.so installation."
+    if [ ! -d "${SITE_PACKAGES_PATH}/msquickcmp/" ]
+    then
+      rm libsaveom.so
+      echo "msquickcmp not exist, failed to install libsaveom.so"
+    else
+      mv libsaveom.so "${SITE_PACKAGES_PATH}/msquickcmp/"
+      echo "Finish libsaveom.so installation."
+    fi
   fi
 }
 
