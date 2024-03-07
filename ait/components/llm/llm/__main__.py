@@ -19,6 +19,7 @@ import subprocess
 from components.utils.parser import BaseCommand
 from llm.dump.initial import init_dump_task, clear_dump_task
 from llm.opcheck.opchecker import OpChecker
+from llm.errcheck.initial import init_error_check
 from llm.common.utils import str2bool, check_positive_integer, check_device_integer, safe_string, check_exec_cmd, \
     check_ids_string, check_number_list, check_output_path_legality, check_input_path_legality
 from llm.errcheck.initial import init_error_check
