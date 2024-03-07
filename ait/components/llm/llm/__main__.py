@@ -22,7 +22,6 @@ from llm.opcheck.opchecker import OpChecker
 from llm.errcheck.initial import init_error_check
 from llm.common.utils import str2bool, check_positive_integer, check_device_integer, safe_string, check_exec_cmd, \
     check_ids_string, check_number_list, check_output_path_legality, check_input_path_legality
-from llm.errcheck.initial import init_error_check
 from llm.common.log import set_log_level
 from llm.common.log import logger
 
@@ -319,7 +318,7 @@ class ErrCheck(BaseCommand):
         
     def handle(self, args, **kwargs) -> None:
         if args.exec:
-            logger.info(f"Preparing to execute the command: {args.exec}")
+            logger.info("Preparing to execute the command: %s", args.exec)
             logger.warning("Please make sure that the executable command is safe.")
             init_error_check(args)
             # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
@@ -328,7 +327,7 @@ class ErrCheck(BaseCommand):
             
             # finished inference
             logger.info("Inference finished.")
-            logger.info(f"Results are stored under the directory: {os.environ['ATB_OUTPUT_DIR']}.")    
+            logger.info("Results are stored under the directory: %s.", os.environ['ATB_OUTPUT_DIR'])    
         
         
 class LlmCommand(BaseCommand):
