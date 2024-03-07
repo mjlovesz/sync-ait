@@ -26,6 +26,7 @@ import time
 import subprocess
 import csv
 import logging
+import site
 import pandas as pd
 
 import sklearn as _ # import first, bypassing error libgomp-xxx.so.xxx: cannot allocate memory in static TLS block
@@ -36,7 +37,7 @@ from auto_optimizer import OnnxGraph
 from msquickcmp.atc import atc_utils
 from auto_optimizer.graph_refactor import Node
 from msquickcmp.common import utils
-from msquickcmp.common.utils import AccuracyCompareException, get_shape_to_directory_name
+from msquickcmp.common.utils import AccuracyCompareException, get_shape_to_directory_name, safe_delete_path_if_exists
 from msquickcmp.common.convert import convert_bin_dump_data_to_npy
 from msquickcmp.common.convert import convert_npy_to_bin
 from msquickcmp.net_compare import analyser
@@ -46,6 +47,7 @@ from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.npu.om_parser import OmParser
 from msquickcmp.accuracy_locat import accuracy_locat as al
 from msquickcmp.single_op import single_op as sp
+from components.utils.security_check import check_write_directory
 
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
 READ_WRITE_FLAGS = os.O_RDWR | os.O_CREAT
@@ -126,6 +128,48 @@ def _append_is_npu_ops_to_csv(csv_path):
             writer.writerows(rows)
 
 
+def mindir_to_om_process(args: CmpArgsAdapter):
+    is_mindir_compare_accuracy = False
+    model_path_ext = os.path.splitext(args.model_path)[-1]
+    offline_model_path_ext = os.path.splitext(args.offline_model_path)[-1]
+    if model_path_ext in [".onnx", ] and offline_model_path_ext in [".mindir", ]:
+        is_mindir_compare_accuracy = True
+        LD_PRELOAD = "LD_PRELOAD"
+        ld_preload = os.getenv(LD_PRELOAD, "")
+        save_om_so_path = os.path.join(site.getsitepackages()[0], "msquickcmp", "libsaveom.so")
+        if not os.path.exists(save_om_so_path):
+            utils.logger.error("libsaveom.so not found, check the installation process")
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+        if not os.getenv(LD_PRELOAD):
+            os.environ[LD_PRELOAD] = save_om_so_path
+        elif (save_om_so_path not in os.getenv(LD_PRELOAD).split(":")):
+            if len(ld_preload):
+                os.environ[LD_PRELOAD] = save_om_so_path + ":" + ld_preload
+            else:
+                os.environ[LD_PRELOAD] = save_om_so_path
+
+        utils.logger.info("Using {}".format(save_om_so_path))
+
+        pwd = os.path.realpath("./")
+        check_write_directory(pwd, check_user_stat=True)
+        command = [
+            "benchmark",
+            "--modelFile={}".format(args.offline_model_path),
+            "--device=Ascend"
+        ]
+        utils.execute_command(command)
+
+        cur_om_path = os.path.join(pwd, ".om")
+        if not os.path.exists(cur_om_path):
+            utils.logger.info("om model not found, please check.")
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+
+        args.offline_model_path = os.path.realpath(os.path.join(pwd, ".mslite.om"))
+        shutil.move(cur_om_path, args.offline_model_path)
+
+    return is_mindir_compare_accuracy
+
+
 def cmp_process(args: CmpArgsAdapter, use_cli: bool):
     """
     Function Description:
@@ -138,9 +182,16 @@ def cmp_process(args: CmpArgsAdapter, use_cli: bool):
     args.offline_model_path = os.path.realpath(args.offline_model_path)
     args.cann_path = os.path.realpath(args.cann_path)
     args.input_path = convert_npy_to_bin(args.input_path)
+
+    is_mindir_compare_accuracy = mindir_to_om_process(args)
+
     try:
         check_and_run(args, use_cli)
+        if is_mindir_compare_accuracy:
+            safe_delete_path_if_exists(args.offline_model_path)
     except utils.AccuracyCompareException as error:
+        if is_mindir_compare_accuracy:
+            safe_delete_path_if_exists(args.offline_model_path)
         raise error
 
 

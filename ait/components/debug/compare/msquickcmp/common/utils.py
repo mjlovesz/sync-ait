@@ -30,6 +30,7 @@ import argparse
 import numpy as np
 import pandas as pd
 
+from components.utils.security_check import get_valid_write_path
 from msquickcmp.common.dynamic_argument_bean import DynamicArgumentEnum
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
@@ -648,3 +649,17 @@ def merge_csv(csv_list, output_dir, output_csv_name):
     summary_csv_path = os.path.join(output_dir, output_csv_name)
     merged_df.to_csv(summary_csv_path, index=False)
     return summary_csv_path
+
+
+def safe_delete_path_if_exists(path, is_log=False):
+    if os.path.exists(path):
+        is_dir = os.path.isdir(path)
+        path = get_valid_write_path(path, extensions=None, check_user_stat=False, is_dir=is_dir)
+        if os.path.isfile(path):
+            if is_log:
+                utils.logger.info("File %s exist and will be deleted.", path)
+            os.remove(path)
+        else:
+            if is_log:
+                utils.logger.info("Folder %s exist and will be deleted.", path)
+            shutil.rmtree(path)
