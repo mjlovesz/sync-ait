@@ -113,8 +113,7 @@ def fill_in_data(golden_meta):
                 logger.warning(f"Invalid data in golden metadata.json, data_id: {data_id}, token_id: {token_id}")
                 continue
             data_info = BasicDataInfo(path_list[0], path_list[1], token_id, data_id)
-            row_data = fill_row_data(data_info)
-            gathered_row_data.append(row_data)
+            fill_row_data(data_info, gathered_row_data)
     return gathered_row_data
 
 
@@ -167,8 +166,7 @@ def compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_to
     gathered_row_data = []
     for data_id, match in enumerate(matched_path_pair):
         data_info = BasicDataInfo(match['golden'], match['my'], token_id, data_id)
-        row_data = fill_row_data(data_info, is_broadcast_tensor=True)
-        gathered_row_data.append(row_data)
+        fill_row_data(data_info, gathered_row_data, is_broadcast_tensor=True)
     return save_compare_reault_to_csv(gathered_row_data, output_path)
 
 
@@ -277,8 +275,7 @@ def pair_built_in_op(g_nodes, m_nodes, op_mapping, my_root_node):
             golden_tensor_path = os.path.join(torch_node.tensor_path, "output.pth")
             if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
                 data_info = BasicDataInfo(golden_tensor_path, my_tensor_path, data_id=0)
-                row_data = fill_row_data(data_info)
-                compared_result.append(row_data)
+                fill_row_data(data_info, compared_result)
             else:
                 msg = f"golden tensor path: {golden_tensor_path} or my_tensor_path: {my_tensor_path} is not exist."
                 logger.debug(msg)
@@ -312,8 +309,7 @@ def pair_custom_op(g_nodes, m_nodes, op_mapping):
             golden_tensor_path = os.path.join(torch_node.tensor_path, f"{torch_output}.pth")
             if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
                 data_info = BasicDataInfo(golden_tensor_path, my_tensor_path, data_id=0)
-                row_data = fill_row_data(data_info)
-                compared_result.append(row_data)
+                fill_row_data(data_info, compared_result)
             else:
                 msg = f"golden tensor path: {golden_tensor_path} or my_tensor_path: {my_tensor_path} is not exist."
                 logger.debug(msg)
