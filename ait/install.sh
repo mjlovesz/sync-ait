@@ -159,19 +159,21 @@ uninstall(){
 build_om_so() {
   echo "Installing libsaveom.so"
   SITE_PACKAGES_PATH=$(python3 -c "import site; print(site.getsitepackages()[0])")
-  if [ ! -d "$SITE_PACKAGES_PATH" ]; then
-    mkdir -p "$SITE_PACKAGES_PATH"
-    chmod 750 $SITE_PACKAGES_PATH
-  fi
 
   g++ ${CURRENT_DIR}/components/debug/compare/msquickcmp/save_om_model/export_om_model.cpp \
           -I ${ASCEND_AICPU_PATH}/$(uname -m)-linux/include/ \
           -L ${ASCEND_AICPU_PATH}/$(uname -m)-linux/lib64 \
           -lge_compiler \
           --std=c++11 -fPIC -shared -D_GLIBCXX_USE_CXX11_ABI=0 -o libsaveom.so
-
-  mv libsaveom.so "${SITE_PACKAGES_PATH}/msquickcmp"
-  echo "Finish libsaveom.so installation."
+  
+  if [ ! -d "${SITE_PACKAGES_PATH}/msquickcmp/" ]
+  then
+    rm libsaveom.so
+    echo "msquickcmp not exist, failed to install libsaveom.so"
+  else
+    mv libsaveom.so "${SITE_PACKAGES_PATH}/msquickcmp/"
+    echo "Finish libsaveom.so installation."
+  fi
 }
 
 
@@ -240,7 +242,6 @@ install(){
   then
     pre_check_skl2onnx
     download_and_install_aclruntime
-    build_om_so
 
     pip3 install ${CURRENT_DIR}/components/debug/compare \
     ${CURRENT_DIR}/components/debug/surgeon \
@@ -255,6 +256,7 @@ install(){
     bash ${CURRENT_DIR}/components/convert/build.sh
 
     source ${CURRENT_DIR}/components/transplt/install.sh $full_install
+    build_om_so
   fi
 
   rm -rf ${CURRENT_DIR}/ait.egg-info
