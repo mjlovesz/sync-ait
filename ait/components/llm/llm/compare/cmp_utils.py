@@ -95,6 +95,12 @@ def save_compare_reault_to_csv(gathered_row_data, output_path="."):
     cur_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     csv_save_path = os.path.join(output_path, f"ait_cmp_report_{cur_time}.csv")
 
+    # 过滤不宜展示的数据，int8建议只与int8比较
+    for row_data in gathered_row_data:
+        if GOLDEN_DTYPE in row_data and MY_DTYPE in row_data:
+            if (row_data[GOLDEN_DTYPE] == 'torch.int8') ^ (row_data[MY_DTYPE] == 'torch.int8'):
+                gathered_row_data.remove(row_data)
+
     data_frame = pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
     data_frame.fillna(value="", inplace=True)
     data_frame.dropna(axis=0, how="all", inplace=True)
