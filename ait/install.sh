@@ -166,7 +166,7 @@ build_om_so() {
           -lge_compiler \
           --std=c++11 -fPIC -shared -D_GLIBCXX_USE_CXX11_ABI=0 -o libsaveom.so
   
-  if [ ! -f "{CURRENT_DIR}/libsaveom.so" ]
+  if [ ! -f "${CURRENT_DIR}/libsaveom.so" ]
   then
     echo "libsaveom.so compilation failed"
   else
