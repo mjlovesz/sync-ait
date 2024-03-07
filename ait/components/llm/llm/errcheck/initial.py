@@ -63,15 +63,16 @@ def init_error_check(args) -> None:
     # output_dir
     output_dir = args.output
     if not output_dir:
-        default_dir = os.path.join(os.getcwd(), r'ait_err_check', r'overflow')
+        # set default directory to current work directory
+        default_dir = os.getcwd()
         logger.warning("Output directory is not provided. "
                        "Results will be stored under the default directory instead. ")
-        os.makedirs(default_dir, exist_ok=True)
         os.environ[ATB_OUTPUT_DIR] = default_dir
     else:
-        output_dir = os.path.join(output_dir, r'ait_err_check', r'overflow')
         output_dir = os.path.abspath(output_dir)
-        os.makedirs(output_dir, exist_ok=True)
+        if not os.path.exists(output_dir):
+            logger.warning("Specified directory does not exist. Creating directory...")
+            os.makedirs(output_dir, exist_ok=True)
         os.environ[ATB_OUTPUT_DIR] = output_dir
 
     # exit
