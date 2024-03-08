@@ -169,7 +169,8 @@ def transform_quant(source_path):
         logger.info(f"\nsource hpp file: {hpp_file_path},\ntarget hpp file: {target_hpp_file_path}")
         with open(target_hpp_file_path, "w") as ff:
             ff.write(hpp_contents)
-        results.append((hpp_file_path, target_hpp_file_path))
+        source_files.append(hpp_file_path)
+        target_files.append(target_hpp_file_path)
     
     logger.info("\nTransformed source files: [\n    " +
         "\n    ".join(source_files) + "\n]" +
