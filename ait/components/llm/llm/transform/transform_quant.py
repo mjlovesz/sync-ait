@@ -153,7 +153,7 @@ def transform_quant(source_path):
         if os.path.exists(hpp_file):
             pairs.append((cpp_file, hpp_file))
 
-    results = []
+    source_files, target_files = [], []
     for cpp_file_path, hpp_file_path in pairs:
         cpp_contents, in_tensor_added = transform_quant_cpp(cpp_file_path)
         hpp_contents = transform_quant_hpp(hpp_file_path, in_tensor_added)
@@ -162,7 +162,8 @@ def transform_quant(source_path):
         logger.info(f"\nsource cpp file: {cpp_file_path},\ntarget cpp file: {target_cpp_file_path}")
         with open(target_cpp_file_path, "w") as ff:
             ff.write(cpp_contents)
-        results.append((cpp_file_path, target_cpp_file_path))
+        source_files.append(cpp_file_path)
+        target_files.append(target_cpp_file_path)
 
         target_hpp_file_path = to_quant_file_path(hpp_file_path)
         logger.info(f"\nsource hpp file: {hpp_file_path},\ntarget hpp file: {target_hpp_file_path}")
@@ -170,5 +171,8 @@ def transform_quant(source_path):
             ff.write(hpp_contents)
         results.append((hpp_file_path, target_hpp_file_path))
     
-    for source, target in results:
-        logger.info(f"Transformed source: {source} -> target: {target}")
+    logger.info("\nTransformed source files: [\n    " +
+        "\n    ".join(source_files) + "\n]" +
+        "\nTransformed target files: [\n    " +
+        "\n    ".join(target_files) + "\n]"
+    )
