@@ -11,11 +11,11 @@ IN_HOLDER = "IN_HOLDER"
 class TransformQuantCppLayerFunction:
     def __init__(self, contents, cursor, in_tensor_added, indent=4):
         self.contents, self.cursor, self.in_tensor_added = contents, cursor, in_tensor_added
-        self.in_tensor_added_enums = in_tensor_added.copy()
+        self.in_tensor_added_enums = in_tensor_added
         self.in_tensor_added_params = [ii.lower() for ii in in_tensor_added]
         self.all_tokens = list(cursor.get_tokens())
         self.all_token_len = len(self.all_tokens)
-        self.total_id = self.all_token_len - 3  # starts from 3 and ends on -3, avoiding index overflow
+        self.total_id = self.all_token_len - 4  # starts from 4 and ends on -4, avoiding index overflow
         self.indent_prefix = " " * indent
         self.cur_param_index, self.cur_intensor_enum_index = 0, 0
         self.updates = []
@@ -308,7 +308,7 @@ class TransformQuantCppLayerFunction:
         return self.param_groups[cur_token_spelling] == LINEAR_PARAM and "out" in node_name.lower()
 
     def __call__(self):
-        cur_id = 3  # starts from 3 and ends on -3, avoiding index overflow
+        cur_id = 4  # starts from 4 and ends on -4, avoiding index overflow
         self.cur_param_index, self.cur_intensor_enum_index = 0, 0
         temp_atb_param_nodes = self.atb_param_nodes.copy()
         norm_count, linear_count, is_mlp_norm = 0, 0, False

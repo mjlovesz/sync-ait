@@ -51,11 +51,12 @@ def update_from_json(contents, cursor, in_tensor_added):
     json_param_spelling, in_param_spelling = json_param.spelling, in_param.spelling
     insert_position = cursor.extent.end.offset - 1
     param_format = "    " + json_param_spelling + '.at("{}").get_to(' + in_param_spelling + ".{});"
-    insert_contents = "\n".join([param_format.format(ii.lower(), ii.lower()) for ii in in_tensor_added])
+    insert_contents = "\n".join([param_format.format(ii.lower(), ii.lower()) for ii in in_tensor_added]) + "\n"
     return insert_contents, insert_position, insert_position
 
 
 def is_layer_function(cursor):
+    # This check may change depending on actual situation
     if len(list(cursor.get_arguments())) < 2:
         return False
     op_parameter = list(cursor.get_arguments())[1]

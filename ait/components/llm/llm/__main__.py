@@ -339,10 +339,14 @@ class Transform(BaseCommand):
             required=True,
             help="directory of source folder, should contain both cpp and h file",
         )
+        parser.add_argument(
+            "--log-level", default="INFO", choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], help="specify log level"
+        )
         
     def handle(self, args, **kwargs) -> None:
         from llm.transform import transform_quant
 
+        set_log_level(args.log_level)
         transform_quant.transform_quant(args.source)
 
 
