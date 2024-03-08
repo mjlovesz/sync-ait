@@ -10,21 +10,36 @@ from llm.transform.utils import (
 from llm.common.log import logger
 from llm.transform.transform_quant_cpp_layer_function import TransformQuantCppLayerFunction
 
-USING_SCALE_BIAS_ITEMS = ["IN_QKV", "IN_SELFOUTLINEAR", "IN_MLP"]
+USING_SCALE_BIAS_ITEMS = ["IN_QKV", "IN_QMIXED", "IN_KMIXED", "IN_VMIXED", "IN_SELFOUTLINEAR", "IN_MLP"]
 INTERMIDATE_PREFIX = "INTERMIDATE_"
 CPP_TEMP_FILE_NAME = "transform_quant_cpp_temp.cpp"
 HPP_TEMP_FILE_NAME = "transform_quant_cpp_temp.hpp"
-DEQSCALE_SUFFIX = "_DEQSCALE"
-BIAS_SUFFIX = "_BIAS"
+DEQSCALE_SUFFIX = "DEQSCALE"
+BIAS_SUFFIX = "BIAS"
+WEIGHT_SUFFIX = "WEIGHT"
 
 
 def add_scale_bias_in_enum(contents, enum_cursor, indent=4):
     added_items, insert_position, is_intermodate_found = [], enum_cursor.extent.end.offset - 1, False
+    all_enums, op_weight_with_bias = [], {}
+    for enum_item in enum_cursor.get_children():
+        enum_item_spelling = enum_item.spelling
+        all_enums.append(enum_item_spelling)
+        if not enum_item_spelling.endswith(BIAS_SUFFIX):
+            continue
+        enum_op_name = enum_item_spelling[:-len(BIAS_SUFFIX)]
+        enum_op_name = enum_op_name[:-1] if enum_op_name.endswith("_") else enum_op_name
+        if enum_op_name + WEIGHT_SUFFIX in all_enums:
+            op_weight_with_bias[enum_op_name + WEIGHT_SUFFIX] = enum_item_spelling
+        elif enum_op_name + "_" + WEIGHT_SUFFIX in all_enums:
+            op_weight_with_bias[enum_op_name + "_" + WEIGHT_SUFFIX] = enum_item_spelling
+
     for enum_item in enum_cursor.get_children():
         enum_item_spelling = enum_item.spelling
         if any([ii in enum_item_spelling for ii in USING_SCALE_BIAS_ITEMS]):
-            added_items.append(enum_item_spelling + DEQSCALE_SUFFIX)
-            added_items.append(enum_item_spelling + BIAS_SUFFIX)  # [TODO] check if bias already exists
+            added_items.append(enum_item_spelling + "_" + DEQSCALE_SUFFIX)
+            if not enum_item_spelling in op_weight_with_bias:
+                added_items.append(enum_item_spelling + "_" + BIAS_SUFFIX)
         if not is_intermodate_found and enum_item_spelling.startswith(INTERMIDATE_PREFIX):
             insert_position = contents[: enum_item.extent.start.offset].rfind("\n") + 1
             is_intermodate_found = True

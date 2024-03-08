@@ -6,6 +6,7 @@ MLP_PARAM = "MLP"
 ATTENTION_PARAM = "ATTENTION"
 IN_BETA = "IN_BETA"
 IN_HOLDER = "IN_HOLDER"
+BIAS_SUFFIX = "BIAS"
 
 
 class TransformQuantCppLayerFunction:
@@ -270,10 +271,11 @@ class TransformQuantCppLayerFunction:
         self.updates.append((insert_start, insert_end, insert_contents))
 
         in_tensor_added = self.in_tensor_added_enums[self.cur_intensor_enum_index]
-        self.cur_intensor_enum_index += 1
-        insert_contents, insert_start, insert_end, cur_id = self.update_intensor_id(cur_id, in_tensor_added)
-        print_update_info(insert_contents, insert_start, insert_end, cur_id)
-        self.updates.append((insert_start, insert_end, insert_contents))
+        if in_tensor_added.endswith(BIAS_SUFFIX):
+            self.cur_intensor_enum_index += 1
+            insert_contents, insert_start, insert_end, cur_id = self.update_intensor_id(cur_id, in_tensor_added)
+            print_update_info(insert_contents, insert_start, insert_end, cur_id)
+            self.updates.append((insert_start, insert_end, insert_contents))
         return cur_id
 
     def update_for_output_linear(self, cur_id, param_name, node_name):
@@ -347,6 +349,9 @@ class TransformQuantCppLayerFunction:
             elif self.is_output_linear(cur_token_spelling, node_name) and linear_count > 0:
                 linear_count += 1
                 cur_id = self.update_for_output_linear(cur_id, param_name, node_name)
+            elif self.param_groups[cur_token_spelling] == LINEAR_PARAM and linear_count > 0:
+                linear_count += 1
+                cur_id = self.update_for_qkv_linear(cur_id, param_name, node_name)
             elif self.param_groups[cur_token_spelling] == MLP_PARAM:
                 cur_id = self.update_for_mlp(cur_id, param_name, node_name)
             cur_id += 1
