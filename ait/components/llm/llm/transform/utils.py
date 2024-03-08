@@ -2,7 +2,7 @@ import os
 import string
 from llm.common.log import logger
 
-CODE_CHAR = string.printable  # For getting rid of Chinese char
+CODE_CHAR = string.printable.replace("\r", "")  # For getting rid of Chinese char and windows `\r`
 
 
 def print_spelling(param, info="", level="debug"):

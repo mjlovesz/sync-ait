@@ -124,8 +124,6 @@ class TransformQuantCppLayerFunction:
         return cur_id
 
     def update_intensor_id(self, cur_id, cur_in_tensor_added):
-        # insert_contents = ""
-        # insert_start = insert_end = self.all_tokens[cur_id].extent.start.offset
         while cur_id < self.total_id:
             cur_token_spelling = self.all_tokens[cur_id].spelling
             if cur_token_spelling == "}":
@@ -157,7 +155,6 @@ class TransformQuantCppLayerFunction:
         self.cur_param_index += 2
 
         insert_contents = f"{self.indent_prefix}atb::infer::{param_type} {param_name};\n"
-        # insert_contents += f"{self.indent_prefix}{param_name}.layerType = atb::infer::RmsNormParam::RmsNormType::RMS_NORM_NORM;\n"
         insert_contents += f"{self.indent_prefix}{param_name}.normParam.quantInputScale = param.{scale_name};\n"
         insert_contents += f"{self.indent_prefix}{param_name}.normParam.quantInputOffset = param.{offset_name};\n"
         insert_contents += f"{self.indent_prefix}{param_name}.normParam.quantType = atb::infer::QUANT_INT8;\n"
