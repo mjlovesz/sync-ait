@@ -364,7 +364,7 @@ def get_cmd_instance():
     opcheck_cmd_instance = OpcheckCommand("opcheck", "Operation check tool for large language model", alias_name='oo')
     errcheck_cmd_instance = ErrCheck("errcheck", "Error check tool for large language models.", alias_name='ee')
     transform_cmd_instance = Transform(
-        "transform", "Transform tool for large language models. Curretly] only float to quant model"
+        "transform", "Transform tool for large language models. Curretly only float to quant model"
     )
 
     instances = [

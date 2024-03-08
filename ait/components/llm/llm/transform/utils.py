@@ -23,10 +23,11 @@ def print_update_info(insert_contents, insert_start, insert_end, cur_id=None):
 
 def check_libclang_so():
     import clang
+    from clang import cindex
 
     libclang_so_path = os.path.join(os.path.dirname(clang.__file__), "native", "libclang.so")
     if os.path.exists(libclang_so_path):
-        clang.Config.set_library_file(libclang_so_path)
+        cindex.Config.set_library_file(libclang_so_path)
     else:
         loger.warning(f"libclang so: {libclang_so_path} not found, may meet error lately.")
 
