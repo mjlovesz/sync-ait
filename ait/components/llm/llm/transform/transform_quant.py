@@ -8,7 +8,6 @@ from llm.transform.utils import (
     update_contents,
 )
 from llm.common.log import logger
-from llm.transform.transform_quant_cpp_layer_function import TransformQuantCppLayerFunction
 
 USING_SCALE_BIAS_ITEMS = ["IN_QKV", "IN_QMIXED", "IN_KMIXED", "IN_VMIXED", "IN_SELFOUTLINEAR", "IN_MLP"]
 INTERMIDATE_PREFIX = "INTERMIDATE_"
@@ -17,6 +16,8 @@ HPP_TEMP_FILE_NAME = "transform_quant_cpp_temp.hpp"
 DEQSCALE_SUFFIX = "DEQSCALE"
 BIAS_SUFFIX = "BIAS"
 WEIGHT_SUFFIX = "WEIGHT"
+IN_BETA = "IN_BETA"
+IN_HOLDER = "IN_HOLDER"
 
 
 def add_scale_bias_in_enum(contents, enum_cursor, indent=4):
@@ -38,16 +39,19 @@ def add_scale_bias_in_enum(contents, enum_cursor, indent=4):
         enum_item_spelling = enum_item.spelling
         if any([ii in enum_item_spelling for ii in USING_SCALE_BIAS_ITEMS]):
             added_items.append(enum_item_spelling + "_" + DEQSCALE_SUFFIX)
-            if not enum_item_spelling in op_weight_with_bias:
+            if enum_item_spelling not in op_weight_with_bias:
                 added_items.append(enum_item_spelling + "_" + BIAS_SUFFIX)
         if not is_intermodate_found and enum_item_spelling.startswith(INTERMIDATE_PREFIX):
             insert_position = contents[: enum_item.extent.start.offset].rfind("\n") + 1
             is_intermodate_found = True
 
+    if IN_BETA not in all_enums:
+        added_items.append(IN_BETA)
+
     indent_prefix = " " * indent
     insert_contents = "".join([indent_prefix + ii + ",\n" for ii in added_items])
     insert_contents = "\n" + indent_prefix + "// Quant weights\n" + insert_contents + "\n"
-    return insert_contents, insert_position, insert_position, added_items
+    return (insert_contents, insert_position, insert_position), added_items
 
 
 def update_in_tensor_count(contents, cursor, in_tensor_count_added):
@@ -99,6 +103,7 @@ def parse_file_as_cursor(file_path):
 
 def transform_quant_cpp(cpp_file_path, indent=4):
     from clang import cindex
+    from llm.transform.transform_quant_cpp_layer_function import TransformQuantCppLayerFunction
 
     cursor, contents = parse_file_as_cursor(cpp_file_path)
     children = list(next(list(cursor.get_children())[-1].get_children()).get_children())
@@ -109,7 +114,7 @@ def transform_quant_cpp(cpp_file_path, indent=4):
         cur_spelling = cur_cursor.spelling
         print_spelling(cur_cursor, info=f"current cursor: {cur_spelling}, {cur_cursor.kind}, ")
         if cur_cursor.kind == cindex.CursorKind.ENUM_DECL:
-            insert_contents, insert_start, insert_end, in_tensor_added = add_scale_bias_in_enum(
+            (insert_contents, insert_start, insert_end), in_tensor_added = add_scale_bias_in_enum(
                 contents, cur_cursor, indent
             )
         elif cur_cursor.kind == cindex.CursorKind.VAR_DECL and is_in_tensor_count(cur_spelling):
@@ -158,6 +163,7 @@ def to_quant_file_path(file_path):
 
 
 def transform_quant(source_path):
+    import stat
     from glob import glob
 
     check_libclang_so()
@@ -176,14 +182,16 @@ def transform_quant(source_path):
 
         target_cpp_file_path = to_quant_file_path(cpp_file_path)
         logger.info(f"\nsource cpp file: {cpp_file_path},\ntarget cpp file: {target_cpp_file_path}")
-        with open(target_cpp_file_path, "w") as ff:
+
+        file_permission = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP
+        with os.fdopen(os.open(target_cpp_file_path, os.O_CREAT | os.O_WRONLY, file_permission), 'w') as ff:
             ff.write(cpp_contents)
         source_files.append(cpp_file_path)
         target_files.append(target_cpp_file_path)
 
         target_hpp_file_path = to_quant_file_path(hpp_file_path)
         logger.info(f"\nsource hpp file: {hpp_file_path},\ntarget hpp file: {target_hpp_file_path}")
-        with open(target_hpp_file_path, "w") as ff:
+        with os.fdopen(os.open(target_hpp_file_path, os.O_CREAT | os.O_WRONLY, file_permission), 'w') as ff:
             ff.write(hpp_contents)
         source_files.append(hpp_file_path)
         target_files.append(target_hpp_file_path)

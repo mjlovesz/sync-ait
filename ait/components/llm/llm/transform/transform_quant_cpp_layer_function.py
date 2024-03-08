@@ -1,12 +1,10 @@
 from llm.transform.utils import print_spelling, print_update_info
+from llm.transform.transform_quant import IN_BETA, IN_HOLDER, BIAS_SUFFIX
 
 NORM_PARAM = "NORM"
 LINEAR_PARAM = "LINEAR"
 MLP_PARAM = "MLP"
 ATTENTION_PARAM = "ATTENTION"
-IN_BETA = "IN_BETA"
-IN_HOLDER = "IN_HOLDER"
-BIAS_SUFFIX = "BIAS"
 
 
 class TransformQuantCppLayerFunction:
@@ -124,6 +122,8 @@ class TransformQuantCppLayerFunction:
         return cur_id
 
     def update_intensor_id(self, cur_id, cur_in_tensor_added):
+        insert_contents = ""
+        insert_start = insert_end = self.all_tokens[cur_id].extent.start.offset
         while cur_id < self.total_id:
             cur_token_spelling = self.all_tokens[cur_id].spelling
             if cur_token_spelling == "}":
@@ -137,7 +137,10 @@ class TransformQuantCppLayerFunction:
                 cur_id += 1
                 break
             cur_id += 1
-        return insert_contents, insert_start, insert_end, cur_id
+
+        print_update_info(insert_contents, insert_start, insert_end, cur_id)
+        self.updates.append((insert_start, insert_end, insert_contents))
+        return cur_id
 
     def insert_contents_for_attention_norm(self, param_name):
         scale_name = self.in_tensor_added_params[self.cur_param_index]
@@ -208,9 +211,7 @@ class TransformQuantCppLayerFunction:
 
         cur_id = self.seek_till_name(cur_id, node_name)
         cur_id = self.seek_till_name(cur_id, "inTensorIds")
-        insert_contents, insert_start, insert_end, cur_id = self.update_intensor_id(cur_id, IN_BETA)
-        print_update_info(insert_contents, insert_start, insert_end, cur_id)
-        self.updates.append((insert_start, insert_end, insert_contents))
+        cur_id = self.update_intensor_id(cur_id, IN_BETA)
         return cur_id
 
     def update_for_mlp_norm(self, cur_id, param_name, node_name):
@@ -232,9 +233,7 @@ class TransformQuantCppLayerFunction:
 
         cur_id = self.seek_till_name(cur_id, node_name)
         cur_id = self.seek_till_name(cur_id, "inTensorIds")
-        insert_contents, insert_start, insert_end, cur_id = self.update_intensor_id(cur_id, IN_BETA)
-        print_update_info(insert_contents, insert_start, insert_end, cur_id)
-        self.updates.append((insert_start, insert_end, insert_contents))
+        cur_id = self.update_intensor_id(cur_id, IN_BETA)
         return cur_id
 
     def update_for_mlp(self, cur_id, param_name, node_name):
@@ -248,9 +247,7 @@ class TransformQuantCppLayerFunction:
         while self.cur_intensor_enum_index < len(self.in_tensor_added_enums):  # Add all
             in_tensor_added = self.in_tensor_added_enums[self.cur_intensor_enum_index]
             self.cur_intensor_enum_index += 1
-            insert_contents, insert_start, insert_end, cur_id = self.update_intensor_id(cur_id, in_tensor_added)
-            print_update_info(insert_contents, insert_start, insert_end, cur_id)
-            self.updates.append((insert_start, insert_end, insert_contents))
+            cur_id = self.update_intensor_id(cur_id, in_tensor_added)
         return cur_id
 
     def update_for_qkv_linear(self, cur_id, param_name, node_name):
@@ -263,16 +260,12 @@ class TransformQuantCppLayerFunction:
         cur_id = self.seek_till_name(cur_id, "inTensorIds")
         in_tensor_added = self.in_tensor_added_enums[self.cur_intensor_enum_index]
         self.cur_intensor_enum_index += 1
-        insert_contents, insert_start, insert_end, cur_id = self.update_intensor_id(cur_id, in_tensor_added)
-        print_update_info(insert_contents, insert_start, insert_end, cur_id)
-        self.updates.append((insert_start, insert_end, insert_contents))
+        cur_id = self.update_intensor_id(cur_id, in_tensor_added)
 
         in_tensor_added = self.in_tensor_added_enums[self.cur_intensor_enum_index]
         if in_tensor_added.endswith(BIAS_SUFFIX):
             self.cur_intensor_enum_index += 1
-            insert_contents, insert_start, insert_end, cur_id = self.update_intensor_id(cur_id, in_tensor_added)
-            print_update_info(insert_contents, insert_start, insert_end, cur_id)
-            self.updates.append((insert_start, insert_end, insert_contents))
+            cur_id = self.update_intensor_id(cur_id, in_tensor_added)
         return cur_id
 
     def update_for_output_linear(self, cur_id, param_name, node_name):
@@ -285,15 +278,11 @@ class TransformQuantCppLayerFunction:
         cur_id = self.seek_till_name(cur_id, "inTensorIds")
         in_tensor_added = self.in_tensor_added_enums[self.cur_intensor_enum_index]
         self.cur_intensor_enum_index += 1
-        insert_contents, insert_start, insert_end, cur_id = self.update_intensor_id(cur_id, in_tensor_added)
-        print_update_info(insert_contents, insert_start, insert_end, cur_id)
-        self.updates.append((insert_start, insert_end, insert_contents))
+        cur_id = self.update_intensor_id(cur_id, in_tensor_added)
 
         in_tensor_added = self.in_tensor_added_enums[self.cur_intensor_enum_index]
         self.cur_intensor_enum_index += 1
-        insert_contents, insert_start, insert_end, cur_id = self.update_intensor_id(cur_id, in_tensor_added)
-        print_update_info(insert_contents, insert_start, insert_end, cur_id)
-        self.updates.append((insert_start, insert_end, insert_contents))
+        cur_id = self.update_intensor_id(cur_id, in_tensor_added)
         return cur_id
 
     def is_mlp_norm_node(self, cur_id):
