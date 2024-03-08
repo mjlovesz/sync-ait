@@ -1,6 +1,6 @@
 import os
 import string
-from app_analyze.utils.log_util import logger
+from llm.common.log import logger
 
 CODE_CHAR = string.printable  # For getting rid of Chinese char
 
@@ -21,8 +21,18 @@ def print_update_info(insert_contents, insert_start, insert_end, cur_id=None):
     logger.debug("Current update: " + message)
 
 
+def check_libclang_so():
+    import clang
+
+    libclang_so_path = os.path.join(os.path.dirname(clang.__file__), "native", "libclang.so")
+    if os.path.exists(libclang_so_path):
+        clang.Config.set_library_file(libclang_so_path)
+    else:
+        loger.warning(f"libclang so: {libclang_so_path} not found, may meet error lately.")
+
+
 def get_args_and_options():
-    import platform
+    import platform    
     from clang import cindex
 
     ATB_HOME_PATH = os.getenv("ATB_HOME_PATH", "")
