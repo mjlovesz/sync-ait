@@ -52,7 +52,7 @@ class TranspltCommand(BaseCommand):
             "--log-level", default="INFO", choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], help="specify log level"
         )
         parser.add_argument(
-            "--tools", default="cmake", choices=['cmake', 'python', 'llm'],
+            "--tools", default="cmake", choices=['cmake', 'python'],
             help="specify construction, currently support cmake and python"
         )
         parser.add_argument(
@@ -76,14 +76,9 @@ class TranspltCommand(BaseCommand):
 
     def handle(self, args):
         log_util.set_logger_level(args.log_level)
+        log_util.init_file_logger()
         self._set_env()
-        if args.tools == "llm":
-            from app_analyze.llm_transform import transform_quant
-
-            transform_quant.transform_quant(args.source)
-        else:
-            log_util.init_file_logger()
-            start_scan_kit(args)
+        start_scan_kit(args)
 
 
 def get_cmd_instance():
