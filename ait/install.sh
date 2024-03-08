@@ -163,8 +163,8 @@ build_om_so() {
   SITE_PACKAGES_PATH=$(python3 -c "import site; print(site.getsitepackages()[0])")
 
   g++ ${CURRENT_DIR}/components/debug/compare/msquickcmp/save_om_model/export_om_model.cpp \
-          -I ${ASCEND_TOOLKIT_HOME}/$(uname -m)-linux/include/ \
-          -L ${ASCEND_TOOLKIT_HOME}/$(uname -m)-linux/lib64 \
+          -I ${ASCEND_AICPU_PATH}/$(uname -m)-linux/include/ \
+          -L ${ASCEND_AICPU_PATH}/$(uname -m)-linux/lib64 \
           -lge_compiler \
           --std=c++11 -fPIC -shared -D_GLIBCXX_USE_CXX11_ABI=0 -o libsaveom.so
   
