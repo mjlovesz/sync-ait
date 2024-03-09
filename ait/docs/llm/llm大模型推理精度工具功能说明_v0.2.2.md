@@ -7,6 +7,26 @@ v0.2.2版本的新特性包括：
   ```
   ait llm compare -gp my_ait_dump/tensors/{PID}_{TID}/0 -mp golden_ait_dump/tensors/{PID}_{TID}/0
   ```
+- ait llm compare新增加速库算子与torch模型原生算子及自定义算子的自动映射比对，使用方法：
+
+  ```
+  ait llm compare -gp torch_dump/{PID}_npu1/0/ -mp ait_dump/tensors/{PID}_{TID}/0 --op-mapping-file xx/xxx/xx/
+  ```
+
+  其中`--op-mapping-file`参数传入算子类型映射字典文件`op_mapping_file.json`所在目录，可手动添加自定义算子映射，默认使用内置算子映射。
+
+  `op_mapping_file.json`内容示例：  
+  ```
+  {
+    "LayerNormOperation": "LayerNorm",
+    "LinearOperation": "Linear",
+    "CommonLayer_outtensor0": ["GLMBlock_output_0", "BloomBlock_output_0"],
+    "MlpGateLayerV2":["BloomMLP", "MLP"],
+    "RmsNormOperation":["RMSNorm"],
+    "SelfAttentionOperation":["CoreAttention"]
+  }
+  ```
+  字典键为atb算子类型，值为对应的torch算子类型，可为string或list类型。若tensor数不唯一，可在下划线后添加tensor文件名指定tensor映射关系。
 
 ## Dump 特性
 
