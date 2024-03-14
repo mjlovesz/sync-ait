@@ -168,9 +168,11 @@ class TransformQuant:
 
     def do_transform_quant(self, is_cpp=True):
         updates = []
-        children, contents = (
-            (self.cpp_children, self.cpp_contents) if is_cpp else (self.hpp_children, self.hpp_contents)
-        )
+        if is_cpp:
+            children, contents = self.cpp_children, self.cpp_contents
+        else:
+            children, contents = self.hpp_children, self.hpp_contents
+
         print_spelling(children, info="Children parts from cpp file: ", level="info")
         for cur_cursor in children:
             cur_spelling = cur_cursor.spelling

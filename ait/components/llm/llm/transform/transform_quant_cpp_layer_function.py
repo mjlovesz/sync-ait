@@ -30,7 +30,7 @@ class TransformQuantCppLayerFunction:
         self.is_separate_qkv, self.separate_qkv_nodes = False, []
         for param, nodes in self.atb_param_nodes.items():
             param_group = self.param_groups.get(self.atb_param_types.get(param), None)
-            if param_group == LINEAR_PARAM and len(nodes) > 1:
+            if (param_group == LINEAR_PARAM) and (len(nodes) > 1):
                 self.is_separate_qkv, self.separate_qkv_nodes = True, nodes
                 break
 
