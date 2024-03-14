@@ -12,7 +12,7 @@ v0.2.2版本的新特性包括：
   ```
   ait llm compare -gp torch_dump/{PID}_npu1/0/ -mp ait_dump/tensors/{PID}_{TID}/0/ --op-mapping-file xx/xxx/xx/
   ```
-  具体使用说明请参考[自动映射比对能力说明](./自动映射比对能力说明.md)
+  具体使用方法请参考[自动映射比对能力说明](./自动映射比对能力说明.md)
 
 ## Dump 特性
 
