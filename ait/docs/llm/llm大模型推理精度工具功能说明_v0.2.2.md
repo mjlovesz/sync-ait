@@ -10,23 +10,9 @@ v0.2.2版本的新特性包括：
 - ait llm compare新增加速库算子与torch模型原生算子及自定义算子的自动映射比对，使用方法：
 
   ```
-  ait llm compare -gp torch_dump/{PID}_npu1/0/ -mp ait_dump/tensors/{PID}_{TID}/0 --op-mapping-file xx/xxx/xx/
+  ait llm compare -gp torch_dump/{PID}_npu1/0/ -mp ait_dump/tensors/{PID}_{TID}/0/ --op-mapping-file xx/xxx/xx/
   ```
-
-  其中`--op-mapping-file`参数传入算子类型映射字典文件`op_mapping_file.json`所在目录，可手动添加自定义算子映射，默认使用内置算子映射。
-
-  `op_mapping_file.json`内容示例：  
-  ```
-  {
-    "LayerNormOperation": "LayerNorm",
-    "LinearOperation": "Linear",
-    "CommonLayer_outtensor0": ["GLMBlock_output_0", "BloomBlock_output_0"],
-    "MlpGateLayerV2":["BloomMLP", "MLP"],
-    "RmsNormOperation":["RMSNorm"],
-    "SelfAttentionOperation":["CoreAttention"]
-  }
-  ```
-  字典键为atb算子类型，值为对应的torch算子类型，可为string或list类型。若tensor数不唯一，可在下划线后添加tensor文件名指定tensor映射关系。
+  具体使用说明请参考[自动映射比对能力说明](./自动映射比对能力说明.md)
 
 ## Dump 特性
 
@@ -58,9 +44,9 @@ ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py"
 
 Dump默认落盘路径 `{DUMP_DIR}`在当前目录下，如果指定output目录，落盘路径则为指定的 `{OUTPUT_DIR}`。
 
-- tensor信息会生成在默认落盘路径的atb_temp目录下，具体路径是 `{DUMP_DIR}/{PID}_{TID}`目录下。
+- tensor信息会生成在默认落盘路径的atb_temp目录下，具体路径是 `{DUMP_DIR}/ait_dump/tensors/{PID}_{TID}`目录下。
 - layer信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/layer/{PID}`目录下。
-- model信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/model/{PID}`目录下。注：由于model有layer组合而成，因此使用model时，默认同时会落盘layer信息。
+- model信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/model/{PID}`目录下。注：由于model由layer组合而成，因此使用model时，默认同时会落盘layer信息。
 - onnx需要和layer、model配合使用，落盘位置和model、layer相同的目录。
 - cpu_profiling信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/cpu_profiling/{TIMESTAMP}/operation_statistic_{executeCount}.txt`。
 - 算子信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/operation_io_tensors/{PID}/operation_tensors_{executeCount}.csv`。
