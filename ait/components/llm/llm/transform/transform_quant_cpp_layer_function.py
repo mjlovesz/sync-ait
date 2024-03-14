@@ -27,6 +27,13 @@ class TransformQuantCppLayerFunction:
         self.norm_nodes = self.get_all_norm_nodes()
         self.need_to_check_mlp_norm = self.is_mlp_norm_node_using_attn_norm_param()
 
+        self.is_separate_qkv, self.separate_qkv_nodes = False, []
+        for param, nodes in self.atb_param_nodes.items():
+            param_group = self.param_groups.get(self.atb_param_types[param], None)
+            if param_group == LINEAR_PARAM and len(nodes) > 1:
+                self.is_separate_qkv, self.separate_qkv_nodes = True, nodes
+                break
+
     def get_atb_nodes_and_parameters(self):
         cur_id, atb_nodes, atb_node_params, atb_param_nodes = 0, [], {}, {}
         while cur_id < self.all_token_len:
@@ -54,7 +61,7 @@ class TransformQuantCppLayerFunction:
         return atb_node_params, atb_param_nodes
 
     def get_atb_parameters_type(self):
-        atb_parameters = set(self.atb_node_params.values())
+        atb_parameters = set(self.atb_param_nodes.keys())
         cur_id, atb_param_types = 0, {}
         while cur_id < self.all_token_len:
             cur_token_spelling = self.all_tokens[cur_id].spelling
@@ -268,6 +275,18 @@ class TransformQuantCppLayerFunction:
             cur_id = self.update_intensor_id(cur_id, in_tensor_added)
         return cur_id
 
+    def update_for_kv_linear(self, cur_id, param_name, node_name):
+        cur_id = self.seek_till_name(cur_id, "inTensorIds")
+        in_tensor_added = self.in_tensor_added_enums[self.cur_intensor_enum_index]
+        self.cur_intensor_enum_index += 1
+        cur_id = self.update_intensor_id(cur_id, in_tensor_added)
+
+        in_tensor_added = self.in_tensor_added_enums[self.cur_intensor_enum_index]
+        if in_tensor_added.endswith(BIAS_SUFFIX):
+            self.cur_intensor_enum_index += 1
+            cur_id = self.update_intensor_id(cur_id, in_tensor_added)
+        return cur_id
+
     def update_for_output_linear(self, cur_id, param_name, node_name):
         insert_contents = self.insert_contents_for_output_linear(param_name)
         insert_start, insert_end, cur_id = self.seek_till_node_operation_line(cur_id, node_name)
@@ -295,22 +314,30 @@ class TransformQuantCppLayerFunction:
     def is_output_linear(self, cur_token_spelling, node_name):
         return self.param_groups[cur_token_spelling] == LINEAR_PARAM and "out" in node_name.lower()
 
+    def is_kv_node_operation(self, cur_token_spelling, cur_id):
+        return cur_token_spelling in self.separate_qkv_nodes and self.all_tokens[cur_id + 2].spelling == "operation"
+
     def __call__(self):
         cur_id = 4  # starts from 4 and ends on -4, avoiding index overflow
         self.cur_param_index, self.cur_intensor_enum_index = 0, 0
         temp_atb_param_nodes = self.atb_param_nodes.copy()
-        norm_count, linear_count, is_mlp_norm = 0, 0, False
+        norm_count, linear_count, is_mlp_norm, is_kv_linear = 0, 0, False, False
 
         while cur_id < self.total_id:
             cur_token = self.all_tokens[cur_id]
             cur_token_spelling = cur_token.spelling
             if self.need_to_check_mlp_norm:
                 is_mlp_norm = self.is_mlp_norm_node(cur_id) and norm_count > 0
-            if not is_mlp_norm and cur_token_spelling not in self.param_groups:
+            if self.is_separate_qkv:
+                is_kv_linear = self.is_kv_node_operation(cur_token_spelling, cur_id)
+
+            if not is_mlp_norm and not is_kv_linear and cur_token_spelling not in self.param_groups:
                 cur_id += 1
                 continue
 
             if is_mlp_norm:
+                param_name = self.atb_node_params[cur_token_spelling]
+            elif is_kv_linear:
                 param_name = self.atb_node_params[cur_token_spelling]
             else:
                 param_name = self.all_tokens[cur_id + 1].spelling
@@ -326,6 +353,9 @@ class TransformQuantCppLayerFunction:
             if is_mlp_norm:
                 norm_count += 1
                 cur_id = self.update_for_mlp_norm(cur_id, param_name, node_name)
+            elif is_kv_linear:
+                linear_count += 1
+                cur_id = self.update_for_kv_linear(cur_id, param_name, node_name)
             elif self.param_groups[cur_token_spelling] == NORM_PARAM and norm_count == 0:
                 norm_count += 1
                 cur_id = self.update_for_attention_norm(cur_id, param_name, node_name)
@@ -335,9 +365,6 @@ class TransformQuantCppLayerFunction:
             elif self.is_output_linear(cur_token_spelling, node_name) and linear_count > 0:
                 linear_count += 1
                 cur_id = self.update_for_output_linear(cur_id, param_name, node_name)
-            elif self.param_groups[cur_token_spelling] == LINEAR_PARAM and linear_count > 0:
-                linear_count += 1
-                cur_id = self.update_for_qkv_linear(cur_id, param_name, node_name)
             elif self.param_groups[cur_token_spelling] == MLP_PARAM:
                 cur_id = self.update_for_mlp(cur_id, param_name, node_name)
             cur_id += 1

@@ -337,7 +337,8 @@ class Transform(BaseCommand):
             "--source",
             type=check_input_path_legality,
             required=True,
-            help="directory of source folder, should contain both cpp and h file",
+            help="directory of source folder, should contain both cpp and h file. "
+            "Or specify a single cpp file, will use the h file with a same name",
         )
         parser.add_argument(
             "--log-level", default="INFO", choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], help="specify log level"
