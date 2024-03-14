@@ -5,12 +5,12 @@ v0.2.2版本的新特性包括：
 - ait llm compare新增模型dtype以及bs不同时自动比对，支持传入两个dump目录进行比对，使用方法：
 
   ```
-  ait llm compare -gp my_ait_dump/tensors/{PID}_{TID}/0 -mp golden_ait_dump/tensors/{PID}_{TID}/0
+  ait llm compare -gp my_ait_dump/tensors/{device_id}_{PID}/{TID}/ -mp golden_ait_dump/tensors/{device_id}_{PID}/{TID}/
   ```
 - ait llm compare新增加速库算子与torch模型原生算子及自定义算子的自动映射比对，使用方法：
 
   ```
-  ait llm compare -gp torch_dump/{PID}_npu1/0/ -mp ait_dump/tensors/{PID}_{TID}/0/ --op-mapping-file xx/xxx/xx/
+  ait llm compare -gp torch_dump/{PID}_npu{device_id}/{TID}/ -mp ait_dump/tensors/{device_id}_{PID}/{TID}/ --op-mapping-file xx/xxx/xx/
   ```
   具体使用方法请参考[自动映射比对能力说明](./自动映射比对能力说明.md)
 
