@@ -119,7 +119,7 @@ atb_json_to_onnx(layer_topo_info, model_level)
 ##### 使用示例
 
 ```
-from llm import DumpConfig，register_hook
+from llm import DumpConfig, register_hook
 dump_config = DumpConfig(dump_path="./ait_dump")
 register_hook(model, dump_config)  # model是要dump中间tensor的模型实例，在模型初始化后添加代码
 ```
