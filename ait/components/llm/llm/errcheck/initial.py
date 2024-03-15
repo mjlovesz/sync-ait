@@ -13,38 +13,22 @@
 # limitations under the License.
 
 import os
+import subprocess
 
 from components.utils.file_open_check import FileStat
-from llm.common.constant import ATB_CUR_PID, LD_PRELOAD, ATB_PROB_LIB_WITH_ABI, ATB_PROB_LIB_WITHOUT_ABI, ATB_HOME_PATH, ASCEND_TOOLKIT_HOME, ATB_OUTPUT_DIR, ATB_CHECK_TYPE, CHECK_TYPE_MAPPING, ATB_EXIT
+from llm.common.constant import LD_PRELOAD, ATB_PROB_LIB_WITH_ABI, ATB_PROB_LIB_WITHOUT_ABI, \
+                                ASCEND_TOOLKIT_HOME, ATB_OUTPUT_DIR, ATB_CHECK_TYPE, CHECK_TYPE_MAPPING, ATB_EXIT
 from llm.common.log import logger
 from llm.dump.initial import is_use_cxx11
-        
-    
-def init_error_check(args) -> None:
-    # locate cann directory
-    cann_path = os.environ.get(ASCEND_TOOLKIT_HOME, "/usr/local/Ascend/ascend-toolkit/latest")
-    if not cann_path or not os.path.exists(cann_path):
-        raise OSError("cann_path is invalid, please install cann-toolkit and set the environment variables.")
-
-    cur_is_use_cxx11 = is_use_cxx11()
-    logger.info("Info detected from ATB so is_use_cxx11: %s", cur_is_use_cxx11)
-    
-    save_tensor_so_name = ATB_PROB_LIB_WITH_ABI if cur_is_use_cxx11 else ATB_PROB_LIB_WITHOUT_ABI
-    save_tensor_so_path = os.path.join(cann_path, "tools", "ait_backend", "dump", save_tensor_so_name)
-    if not os.path.exists(save_tensor_so_path):
-        raise OSError(f"{save_tensor_so_name} is not found in {cann_path}. Try installing the latest cann-toolkit")
-    if not FileStat(save_tensor_so_path).is_basically_legal('read', strict_permission=True):
-        raise OSError(f"{save_tensor_so_name} is illegal, group or others writable file stat is not permitted")
-
-    logger.info("Append save_tensor_so_path: %s to LD_PRELOAD", save_tensor_so_path)
-    ld_preload = os.getenv(LD_PRELOAD)
-    ld_preload = ld_preload or ""
-    os.environ[LD_PRELOAD] = save_tensor_so_path + ":" + ld_preload
-    
-    # type
+            
+            
+def handles_check_type(args) -> None:
+    """Set error check type for backend usage from user input."""
     os.environ[ATB_CHECK_TYPE] = ''.join(CHECK_TYPE_MAPPING[type_] for type_ in args.type)
-    
-    # output_dir
+
+
+def handles_output_dir(args) -> None:
+    """Set output directory for backend usage from user input."""
     output_dir = args.output
     if not output_dir:
         # set default directory to current work directory
@@ -57,9 +41,53 @@ def init_error_check(args) -> None:
             logger.warning("Specified directory does not exist. directory creating...")
             os.makedirs(output_dir, mode=750, exist_ok=True)       
     os.environ[ATB_OUTPUT_DIR] = output_dir
-
-    # exit
-    os.environ[ATB_EXIT] = '1' if args.exit else '0'
     
-    logger.info("Initialization finished. Inference processing.")
+
+def handles_exit_flag(args) -> None:
+    """Set exiting flag for backend usage from user input"""
+    os.environ[ATB_EXIT] = '1' if args.exit else '0'
+
+
+def handles_so_dir() -> None:
+    """locate and check the dependent libaries."""
+    cann_path = os.environ.get(ASCEND_TOOLKIT_HOME, "/usr/local/Ascend/ascend-toolkit/latest")
+    
+    if not cann_path or not os.path.exists(cann_path):
+        raise OSError("cann_path is invalid, please install cann-toolkit and set the environment variables.")
+
+    cur_is_use_cxx11 = is_use_cxx11()
+    logger.info("Info detected from ATB so is_use_cxx11: %s", cur_is_use_cxx11)
+    
+    save_tensor_so_name = ATB_PROB_LIB_WITH_ABI if cur_is_use_cxx11 else ATB_PROB_LIB_WITHOUT_ABI
+    
+    # .so lib should and will be built into errcheck directory in the future
+    save_tensor_so_path = os.path.join(cann_path, "tools", "ait_backend", "dump", save_tensor_so_name)
+    if not os.path.exists(save_tensor_so_path):
+        raise OSError(f"{save_tensor_so_name} is not found in {cann_path}. Try installing the latest cann-toolkit")
+    
+    if not FileStat(save_tensor_so_path).is_basically_legal('read', strict_permission=True):
+        raise OSError(f"{save_tensor_so_name} is illegal, group or others writable file stat is not permitted")
+
+    logger.info("Append save_tensor_so_path: %s to LD_PRELOAD", save_tensor_so_path)
+    ld_preload = os.getenv(LD_PRELOAD)
+    ld_preload = ld_preload or ""
+    os.environ[LD_PRELOAD] = save_tensor_so_path + ":" + ld_preload
+
+
+def handles_exec(args) -> None:
+    """handles executable subcommand from user input."""
+    
+    # According to python official document about 'subprocess.run',
+    # if the first argument 'args' has only one string,
+    # the parameter `shell`, should set to False
+    # but all of us set to False by default
+    # hence need to take care of the subcommand that is only consist of spaces
+    if not args.exec or args.exec.isspace():
+        raise ValueError("exec expected executable subcommand, got empty instead")
+    
+    logger.info("Preparing to execute the command: %s", args.exec)
+    logger.warning("Please make sure that the executable command is safe.")
+    
+    cmds = args.exec.split()
+    subprocess.run(cmds, shell=False)
     
