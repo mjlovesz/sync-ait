@@ -317,7 +317,7 @@ class ErrCheck(BaseCommand):
         )
         
     def handle(self, args, **kwargs) -> None:
-        process_error_check()       
+        process_error_check(args)       
 
      
 class Transform(BaseCommand):

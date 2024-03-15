@@ -3,7 +3,7 @@ import unittest
 from unittest import TestCase
 from unittest.mock import MagicMock
 
-from llm.errcheck.initial import handles_so_dir, handles_check_type, \
+from llm.errcheck.process import handles_so_dir, handles_check_type, \
                                  handles_exec, handles_exit_flag, handles_output_dir
 
 
@@ -50,7 +50,7 @@ class TestErrorCheck(TestCase):
         
         handles_check_type(self.args)
         
-        self.assertEqual(os.environ["ATB_CHECK_TYPE", "1"])
+        self.assertEqual(os.environ["ATB_CHECK_TYPE"], "1")
         
     # Currently, check type only supports overflow
     # there may be other features in the future
@@ -90,7 +90,7 @@ class TestErrorCheck(TestCase):
         handles_exit_flag(self.args)
         
         self.assertEqual(os.environ["ATB_EXIT"], "0")
-
+        
 
 if __name__ == "__main__":
     unittest.main()
