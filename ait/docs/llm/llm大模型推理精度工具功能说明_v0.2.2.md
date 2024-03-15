@@ -5,8 +5,14 @@ v0.2.2版本的新特性包括：
 - ait llm compare新增模型dtype以及bs不同时自动比对，支持传入两个dump目录进行比对，使用方法：
 
   ```
-  ait llm compare -gp my_ait_dump/tensors/{PID}_{TID}/0 -mp golden_ait_dump/tensors/{PID}_{TID}/0
+  ait llm compare -gp my_ait_dump/tensors/{device_id}_{PID}/{TID}/ -mp golden_ait_dump/tensors/{device_id}_{PID}/{TID}/
   ```
+- ait llm compare新增加速库算子与torch模型原生算子及自定义算子的自动映射比对，使用方法：
+
+  ```
+  ait llm compare -gp torch_dump/{PID}_npu{device_id}/{TID}/ -mp ait_dump/tensors/{device_id}_{PID}/{TID}/ --op-mapping-file xx/xxx/xx/
+  ```
+  具体使用方法请参考[自动映射比对能力说明](./自动映射比对能力说明.md)
 
 ## Dump 特性
 
@@ -38,15 +44,15 @@ ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py"
 
 Dump默认落盘路径 `{DUMP_DIR}`在当前目录下，如果指定output目录，落盘路径则为指定的 `{OUTPUT_DIR}`。
 
-- tensor信息会生成在默认落盘路径的atb_temp目录下，具体路径是 `{DUMP_DIR}/{PID}_{TID}`目录下。
+- tensor信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/tensors/{device_id}_{PID}/{TID}`目录下(使用老版本的cann包可能导致tensor落盘路径不同）。
 - layer信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/layer/{PID}`目录下。
-- model信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/model/{PID}`目录下。注：由于model有layer组合而成，因此使用model时，默认同时会落盘layer信息。
+- model信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/model/{PID}`目录下。注：由于model由layer组合而成，因此使用model时，默认同时会落盘layer信息。
 - onnx需要和layer、model配合使用，落盘位置和model、layer相同的目录。
 - cpu_profiling信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/cpu_profiling/{TIMESTAMP}/operation_statistic_{executeCount}.txt`。
 - 算子信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/operation_io_tensors/{PID}/operation_tensors_{executeCount}.csv`。
 - kernel算子信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/kernel_io_tensors/{PID}/kernel_tensors_{executeCount}.csv`。
 
-注：`{PID}`为进程号；`{TID}`为 `token_id`；`{TIMESTAMP}`为时间戳；`{executeCount}`为 `operation`运行次数。
+注：`{device_id}`为设备号；`{PID}`为进程号；`{TID}`为 `token_id`；`{TIMESTAMP}`为时间戳；`{executeCount}`为 `operation`运行次数。
 
 ### v0.2.1新增Dump 特性
 
@@ -113,7 +119,7 @@ atb_json_to_onnx(layer_topo_info, model_level)
 ##### 使用示例
 
 ```
-from llm import DumpConfig， register_hook
+from llm import DumpConfig, register_hook
 dump_config = DumpConfig(dump_path="./ait_dump")
 register_hook(model, dump_config)  # model是要dump中间tensor的模型实例，在模型初始化后添加代码
 ```
