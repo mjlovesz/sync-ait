@@ -22,6 +22,8 @@ pwd_dir=$(dirname $(readlink -f "$0"))
 cp ${pwd_dir}/../llm ${pwd_dir}/ -rf
 
 coverage run -m -p pytest testcase/*/test_*.py
+coverage run -m -p unittest testcase/test_errcheck/test_process.py
+
 ret=$?
 if [ $ret != 0 ]; then
     echo "coverage run failed! "
