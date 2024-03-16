@@ -130,27 +130,6 @@ class TransformQuantCppLayerFunction:
             cur_id -= 1
         return cur_id
 
-    def update_intensor_id(self, cur_id, cur_in_tensor_added):
-        insert_contents = ""
-        insert_start = insert_end = self.all_tokens[cur_id].extent.start.offset
-        while cur_id < self.total_id:
-            cur_token_spelling = self.all_tokens[cur_id].spelling
-            if cur_token_spelling == "}":
-                insert_start = insert_end = self.all_tokens[cur_id].extent.start.offset
-                insert_contents = ", " + cur_in_tensor_added
-                break
-            elif cur_token_spelling == IN_HOLDER:
-                insert_start = self.all_tokens[cur_id].extent.start.offset
-                insert_end = self.all_tokens[cur_id].extent.end.offset
-                insert_contents = cur_in_tensor_added
-                cur_id += 1
-                break
-            cur_id += 1
-
-        print_update_info(insert_contents, insert_start, insert_end, cur_id)
-        self.updates.append((insert_start, insert_end, insert_contents))
-        return cur_id
-
     def insert_contents_for_attention_norm(self, param_name):
         scale_name = self.in_tensor_added_params[self.cur_param_index]
         offset_name = self.in_tensor_added_params[self.cur_param_index + 1]
@@ -211,6 +190,27 @@ class TransformQuantCppLayerFunction:
         insert_contents += f"{self.indent_prefix}{param_name}.quantParam.inputScale = param.{scale_name};\n"
         insert_contents += f"{self.indent_prefix}{param_name}.quantParam.inputOffset = param.{offset_name};\n"
         return insert_contents
+
+    def update_intensor_id(self, cur_id, cur_in_tensor_added):
+        insert_contents = ""
+        insert_start = insert_end = self.all_tokens[cur_id].extent.start.offset
+        while cur_id < self.total_id:
+            cur_token_spelling = self.all_tokens[cur_id].spelling
+            if cur_token_spelling == "}":
+                insert_start = insert_end = self.all_tokens[cur_id].extent.start.offset
+                insert_contents = ", " + cur_in_tensor_added
+                break
+            elif cur_token_spelling == IN_HOLDER:
+                insert_start = self.all_tokens[cur_id].extent.start.offset
+                insert_end = self.all_tokens[cur_id].extent.end.offset
+                insert_contents = cur_in_tensor_added
+                cur_id += 1
+                break
+            cur_id += 1
+
+        print_update_info(insert_contents, insert_start, insert_end, cur_id)
+        self.updates.append((insert_start, insert_end, insert_contents))
+        return cur_id
 
     def update_for_attention_norm(self, cur_id, param_name, node_name):
         insert_contents = self.insert_contents_for_attention_norm(param_name)
