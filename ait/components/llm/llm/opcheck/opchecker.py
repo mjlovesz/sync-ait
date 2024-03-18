@@ -117,11 +117,16 @@ class OpChecker:
             execution_flag = False
 
         self.rerun = args.rerun
-        print(self.rerun)
         if self.rerun:
             execution_flag_res = OpChecker.third_party_init()
             if not execution_flag_res:
                 execution_flag = False
+            else:
+                logger_text = "Rerunning operations in atb to calculate outputs..."
+                logger.info(logger_text)
+        else:
+            logger_text = "Comparing outputs in dump data without rerunning operations in atb..."
+            logger.info(logger_text)
         return execution_flag
 
     def start_test(self, args):
