@@ -60,6 +60,7 @@ APP_ERROR DeviceManager::InitDevices(std::string configFilePath)
     }
 
     APP_ERROR ret = aclInit(aclJsonPath_.c_str());
+    aclrtSetDeviceSatMode(ACL_RT_OVERFLOW_MODE_SATURATION); // 离线推理只使用饱和模式
     if (ret != APP_ERR_OK) {
         initCounter_ = 0;
         cout << aclGetRecentErrMsg() << endl;
