@@ -21,10 +21,8 @@ from components.transplt import transplt_cmd
 from components.benchmark import benchmark_cmd
 from components.analyze import analyze_cmd
 from components.convert import convert_cmd
-from components.utils.parser import register_parser
+from components.utils.parser import register_parser, AIT_FAQ_HOME, MIND_STUDIO_LOGO
 from components.utils.file_open_check import UmaskWrapper
-
-AIT_FAQ_HOME = "https://gitee.com/ascend/ait/wikis/Home"
 
 
 def main():
@@ -32,7 +30,7 @@ def main():
                    analyze_cmd, convert_cmd, llm_cmd]
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description="ait(Ascend Inference Tools), [Powered by MindStudio].\n"
+        description=f"{MIND_STUDIO_LOGO}.\n"
         "Providing one-site debugging and optimization toolkit for inference on Ascend Devices.\n"
         f"For any issue, refer FAQ first: {AIT_FAQ_HOME}",
     )

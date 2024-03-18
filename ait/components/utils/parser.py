@@ -17,6 +17,8 @@ import logging
 import argparse
 import pkg_resources
 
+AIT_FAQ_HOME = "https://gitee.com/ascend/ait/wikis/Home"
+MIND_STUDIO_LOGO = "ait(Ascend Inference Tools), [Powered by MindStudio]"
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
@@ -39,7 +41,7 @@ class BaseCommand:
             None
         '''
         self.name = name
-        self.help_info = help_info
+        self.help_info = MIND_STUDIO_LOGO + "\n" + help_info
         if not children:
             self.children = []
         else:
