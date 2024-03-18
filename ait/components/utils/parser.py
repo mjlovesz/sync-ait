@@ -79,7 +79,7 @@ def register_parser(parser, commands):
             continue
         cmd_alias_name = [command.alias_name] if command.alias_name else []
         subparser = subparsers.add_parser(
-            command.name, formatter_class=argparse.ArgumentDefaultsHelpFormatter, help=command.help_info,
+            command.name, formatter_class=argparse.ArgumentDefaultsHelpFormatter, help=MIND_STUDIO_LOGO + "\n" + command.help_info,
             aliases=cmd_alias_name,
             description=command.help_info
         )
@@ -103,5 +103,5 @@ def load_command_instance(entry_points : str, name=None, help_info=None, derived
             logger.warning("load subcommands from entry point %s failed, \
                            lack of name or help_info or subcommand class", entry_points)
         else:
-            return derived_command(name, MIND_STUDIO_LOGO + "\n" + help_info, cmd_instances)
+            return derived_command(name, help_info, cmd_instances)
     return None
