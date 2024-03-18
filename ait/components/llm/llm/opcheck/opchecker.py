@@ -56,9 +56,9 @@ class OpChecker:
 
     @staticmethod   
     def third_party_init():
-        import llm
-
         execution_flag = True
+
+        import llm
 
         lib_path = os.environ.get("AIT_OPCHECK_LIB_PATH")
         if not lib_path:
@@ -81,7 +81,6 @@ class OpChecker:
         return execution_flag
     
     def args_init(self, args):
-        # LIB path设置
         import torch_npu
 
         execution_flag = True
