@@ -52,6 +52,7 @@ class OpChecker:
         self.precision_type = []
         utc_time = datetime.datetime.now(tz=pytz.utc)
         self.timestamp = utc_time.astimezone(pytz.timezone('Asia/Shanghai')).strftime("%Y%m%d_%H%M%S")
+        self.mode = False
 
     @staticmethod   
     def third_party_init():
@@ -114,13 +115,16 @@ class OpChecker:
             logger.error(logger_text)
             execution_flag = False
 
+        self.mode = args.mode
+        print(self.mode)
+        if self.mode:
+            execution_flag_res = OpChecker.third_party_init()
+            if not execution_flag_res:
+                execution_flag = False
         return execution_flag
 
     def start_test(self, args):
         # 0.初始化
-        execution_flag_res = OpChecker.third_party_init()
-        if not execution_flag_res:
-            return
         execution_flag_res = self.args_init(args)
         if not execution_flag_res:
             return

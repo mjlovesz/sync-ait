@@ -266,6 +266,15 @@ class OpcheckCommand(BaseCommand):
             default=0,
             help='Spicifies the NPU device to bu used.E.g.:-device 1')
 
+        parser.add_argument(
+            '--opcheck-mode',
+            '-mode',
+            required=False,
+            dest="mode",
+            action='store_true',
+            default=False,
+            help='Rerun atb operations if True. Compare outputs in dump data if False')
+        
     def handle(self, args, **kwargs):
         op = OpChecker()
         logger.info(f"===================Opcheck start====================")

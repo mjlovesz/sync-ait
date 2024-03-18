@@ -38,6 +38,7 @@ class OperationTest(unittest.TestCase):
         self.op_param = case_info['op_param']
         self.tensor_path = case_info['tensor_path']
         self.in_tensors = []
+        self.out_tensors = []
         self.out_dtype = self.case_info["out_dtype"]
         
         error1 = 'Error0.1‰'
@@ -78,17 +79,22 @@ class OperationTest(unittest.TestCase):
         return suite
     
     def setUp(self):
+        def get_tensor_path(tensor_type):
+            _tensor_path = [x for x in os.listdir(self.tensor_path) if x.startswith(tensor_type)]
+            _tensor_path.sort(key=lambda x:int(x.split(tensor_type)[1].split('.')[0]))  
+            _tensor_path = [os.path.join(self.tensor_path, x) for x in _tensor_path]
+            return _tensor_path
+
         if self.tensor_path:
             if os.path.isdir(self.tensor_path):
-                _tensor_path = [x for x in os.listdir(self.tensor_path) if x.startswith("intensor")]
-                _tensor_path.sort(key=lambda x:int(x.split('intensor')[1].split('.')[0]))  
-                _tensor_path = [os.path.join(self.tensor_path, x) for x in _tensor_path] 
-                for path in _tensor_path:
+                _in_tensor_path = get_tensor_path("intensor")
+                for path in _in_tensor_path:
                     _in_tensor = read_atb_data(path).npu()
                     self.in_tensors.append(_in_tensor)
-            elif os.path.isfile(self.tensor_path):
-                _in_tensor = read_atb_data(self.tensor_path).npu()
-                self.in_tensors.append(_in_tensor)
+                _out_tensor_path = get_tensor_path("outtensor")
+                for path in _out_tensor_path:
+                    _out_tensor = read_atb_data(path).npu()
+                    self.out_tensors.append(_out_tensor)
             else:
                 raise RuntimeError(f"{self.tensor_path} not valid")
         else:
@@ -99,9 +105,7 @@ class OperationTest(unittest.TestCase):
         if self.case_info['excuted_information'] != 'execution successful':
             self.case_info['excuted_information'] = 'execution failed'
     
-    def excute_common(self, excute_type):
-        logger_text = f"———————— {self.op_id} {self.op_name} test start ————————"
-        logger.info(logger_text)
+    def rerun_op(self, excute_type): 
         operation = torch.classes.OperationTorch.OperationTorch(self.op_name)
         if isinstance(self.op_param, dict):
             operation.set_param(json.dumps(self.op_param))
@@ -117,6 +121,15 @@ class OperationTest(unittest.TestCase):
             out_tensors = operation.execute(self.in_tensors)
         else:
             out_tensors = operation.execute(self.in_tensors)
+        return out_tensors
+
+    def excute_common(self, excute_type):
+        logger_text = f"———————— {self.op_id} {self.op_name} test start ————————"
+        logger.info(logger_text)
+        if self.mode:
+            out_tensors = self.rerun_op(excute_type)
+        else:
+            out_tensors = self.out_tensors
         golden_out_tensors = self.golden_calc(self.in_tensors)
         try:
             logger.debug("out_tensor", out_tensors[0].size())
