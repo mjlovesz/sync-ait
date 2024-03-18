@@ -41,7 +41,7 @@ class BaseCommand:
             None
         '''
         self.name = name
-        self.help_info = MIND_STUDIO_LOGO + "\n" + help_info
+        self.help_info = help_info
         if not children:
             self.children = []
         else:
@@ -103,5 +103,5 @@ def load_command_instance(entry_points : str, name=None, help_info=None, derived
             logger.warning("load subcommands from entry point %s failed, \
                            lack of name or help_info or subcommand class", entry_points)
         else:
-            return derived_command(name, help_info, cmd_instances)
+            return derived_command(name, MIND_STUDIO_LOGO + "\n" + help_info, cmd_instances)
     return None
