@@ -18,7 +18,7 @@ import argparse
 import pkg_resources
 
 AIT_FAQ_HOME = "https://gitee.com/ascend/ait/wikis/Home"
-MIND_STUDIO_LOGO = "ait(Ascend Inference Tools), [Powered by MindStudio]"
+MIND_STUDIO_LOGO = "[Powered by MindStudio]"
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
@@ -79,9 +79,9 @@ def register_parser(parser, commands):
             continue
         cmd_alias_name = [command.alias_name] if command.alias_name else []
         subparser = subparsers.add_parser(
-            command.name, formatter_class=argparse.ArgumentDefaultsHelpFormatter, help=MIND_STUDIO_LOGO + "\n" + command.help_info,
+            command.name, formatter_class=argparse.ArgumentDefaultsHelpFormatter, help=command.help_info,
             aliases=cmd_alias_name,
-            description=command.help_info
+            description=command.help_info + " " + MIND_STUDIO_LOGO
         )
         command.add_arguments(subparser)
         if command.has_handle:

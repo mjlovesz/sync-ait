@@ -30,7 +30,7 @@ def main():
                    analyze_cmd, convert_cmd, llm_cmd]
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description=f"{MIND_STUDIO_LOGO}.\n"
+        description=f"ait(Ascend Inference Tools), {MIND_STUDIO_LOGO}.\n"
         "Providing one-site debugging and optimization toolkit for inference on Ascend Devices.\n"
         f"For any issue, refer FAQ first: {AIT_FAQ_HOME}",
     )
