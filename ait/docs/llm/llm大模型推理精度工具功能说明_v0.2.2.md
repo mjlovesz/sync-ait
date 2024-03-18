@@ -13,6 +13,7 @@ v0.2.2版本的新特性包括：
   ait llm compare -gp torch_dump/{PID}_npu{device_id}/{TID}/ -mp ait_dump/tensors/{device_id}_{PID}/{TID}/ --op-mapping-file xx/xxx/xx/
   ```
   具体使用方法请参考[自动映射比对能力说明](./自动映射比对能力说明.md)
+- ait llm opcheck新增--atb-run参数，支持用户选择是否重新运行加速库单算子获得output。--atb-run参数默认为false，即不运行加速库单算子，直接对比dump数据中的output
 
 ## Dump 特性
 
@@ -163,4 +164,5 @@ ait llm opcheck -i {tensor_dir} -c {op_csv_path} -o {output_dir}
 | --operation-ids, -ids       | 选择预检指定索引的tensor，默认为空，全量算子预检。使用方式：-ids 24_1,2_3_5                                                                                             | 否       |
 | --operation-name, -opname   | 指定需要预检的算子类型，支持模糊指定，如selfattention只需要填写self。使用方式：-opname self，linear                                                                     | 否       |
 | --precision-metric, -metric | 指定需要输出的精度类型，可选范围：['abs', 'cos_sim'，'kl']，分别表示绝对误差通过率、余弦相似度、KL散度。默认为[]，即只输出相对误差通过率。使用方式：--metric kl cos_sim | 否       |
-| --device-id, -device        | 指定需要使用的NPU设备，默认为0                                                                                                                                          | 否       |
+| --device-id, -device        | 指定需要使用的NPU设备，默认为0                                                                                                                                   | 否       |
+| --atb-rerun, -rerun | 选择是否重新运行加速库单算子获得output，默认为false，即不运行加速库单算子，直接对比dump数据中的output。使用方式：-rerun | 否 |
