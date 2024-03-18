@@ -214,13 +214,23 @@ class OpChecker:
                 if p in op_name.lower():
                     return True        
             return False
+        
+    def check_path_valid(self, path):
+        if self.tensor_path and os.path.isdir(self.tensor_path):
+            return True
+        return False
 
     def if_exec_node(self, row):
+        flag0 = self.check_path_valid(row["InTensorPath"])
+        if not flag0:
+            return False
+        
         if self.ids == '' and self.opname is None:
             return True
             
         flag1 = self.check_id_range(row["Ids"])
         flag2 = self.check_name(row["RealOpName"])
+        
         if flag1 and flag2:
             return True
         
