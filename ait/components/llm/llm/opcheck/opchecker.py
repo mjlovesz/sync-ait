@@ -52,13 +52,12 @@ class OpChecker:
         self.precision_type = []
         utc_time = datetime.datetime.now(tz=pytz.utc)
         self.timestamp = utc_time.astimezone(pytz.timezone('Asia/Shanghai')).strftime("%Y%m%d_%H%M%S")
+        self.rerun = False
 
     @staticmethod   
     def third_party_init():
         execution_flag = True
 
-        # LIB path设置
-        import torch_npu
         import llm
 
         lib_path = os.environ.get("AIT_OPCHECK_LIB_PATH")
@@ -82,6 +81,8 @@ class OpChecker:
         return execution_flag
     
     def args_init(self, args):
+        import torch_npu
+
         execution_flag = True
         
         self.tensor_path = args.input
@@ -114,13 +115,21 @@ class OpChecker:
             logger.error(logger_text)
             execution_flag = False
 
+        self.rerun = args.rerun
+        if self.rerun:
+            execution_flag_res = OpChecker.third_party_init()
+            if not execution_flag_res:
+                execution_flag = False
+            else:
+                logger_text = "Rerunning operations in atb to calculate outputs..."
+                logger.info(logger_text)
+        else:
+            logger_text = "Comparing outputs in dump data without rerunning operations in atb..."
+            logger.info(logger_text)
         return execution_flag
 
     def start_test(self, args):
         # 0.初始化
-        execution_flag_res = OpChecker.third_party_init()
-        if not execution_flag_res:
-            return
         execution_flag_res = self.args_init(args)
         if not execution_flag_res:
             return
@@ -232,7 +241,7 @@ class OpChecker:
 
         case_info = {
             'op_id': op_id, 'op_name': op_name, 'op_param': op_param, 'tensor_path': tensor_path, 
-            'out_dtype':out_dtype, 'precision_type':self.precision_type
+            'out_dtype':out_dtype, 'precision_type':self.precision_type, 'rerun':self.rerun
         }
 
         if op_name == 'KvCacheOperation':
