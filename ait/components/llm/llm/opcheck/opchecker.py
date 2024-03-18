@@ -216,7 +216,7 @@ class OpChecker:
             return False
         
     def check_path_valid(self, path):
-        if self.tensor_path and os.path.isdir(self.tensor_path):
+        if path and os.path.isdir(path):
             return True
         return False
 
