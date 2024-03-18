@@ -267,10 +267,10 @@ class OpcheckCommand(BaseCommand):
             help='Spicifies the NPU device to bu used.E.g.:-device 1')
 
         parser.add_argument(
-            '--opcheck-mode',
-            '-mode',
+            '--atb-rerun',
+            '-rerun',
             required=False,
-            dest="mode",
+            dest="rerun",
             action='store_true',
             default=False,
             help='Rerun atb operations if True. Compare outputs in dump data if False')

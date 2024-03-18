@@ -40,7 +40,7 @@ class OperationTest(unittest.TestCase):
         self.in_tensors = []
         self.out_tensors = []
         self.out_dtype = self.case_info["out_dtype"]
-        self.mode = self.case_info["mode"]
+        self.rerun = self.case_info["rerun"]
         
         error1 = 'Error0.1‰'
         error2 = 'Error0.5‰'
@@ -127,7 +127,7 @@ class OperationTest(unittest.TestCase):
     def excute_common(self, excute_type):
         logger_text = f"———————— {self.op_id} {self.op_name} test start ————————"
         logger.info(logger_text)
-        if self.mode:
+        if self.rerun:
             out_tensors = self.rerun_op(excute_type)
         else:
             out_tensors = self.out_tensors

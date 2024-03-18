@@ -52,7 +52,7 @@ class OpChecker:
         self.precision_type = []
         utc_time = datetime.datetime.now(tz=pytz.utc)
         self.timestamp = utc_time.astimezone(pytz.timezone('Asia/Shanghai')).strftime("%Y%m%d_%H%M%S")
-        self.mode = False
+        self.rerun = False
 
     @staticmethod   
     def third_party_init():
@@ -116,9 +116,9 @@ class OpChecker:
             logger.error(logger_text)
             execution_flag = False
 
-        self.mode = args.mode
-        print(self.mode)
-        if self.mode:
+        self.rerun = args.rerun
+        print(self.rerun)
+        if self.rerun:
             execution_flag_res = OpChecker.third_party_init()
             if not execution_flag_res:
                 execution_flag = False
@@ -237,7 +237,7 @@ class OpChecker:
 
         case_info = {
             'op_id': op_id, 'op_name': op_name, 'op_param': op_param, 'tensor_path': tensor_path, 
-            'out_dtype':out_dtype, 'precision_type':self.precision_type, 'mode':self.mode
+            'out_dtype':out_dtype, 'precision_type':self.precision_type, 'rerun':self.rerun
         }
 
         if op_name == 'KvCacheOperation':
