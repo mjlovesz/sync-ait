@@ -56,11 +56,9 @@ class OpChecker:
 
     @staticmethod   
     def third_party_init():
-        execution_flag = True
-
-        # LIB path设置
-        import torch_npu
         import llm
+
+        execution_flag = True
 
         lib_path = os.environ.get("AIT_OPCHECK_LIB_PATH")
         if not lib_path:
@@ -83,6 +81,9 @@ class OpChecker:
         return execution_flag
     
     def args_init(self, args):
+        # LIB path设置
+        import torch_npu
+
         execution_flag = True
         
         self.tensor_path = args.input
@@ -236,7 +237,7 @@ class OpChecker:
 
         case_info = {
             'op_id': op_id, 'op_name': op_name, 'op_param': op_param, 'tensor_path': tensor_path, 
-            'out_dtype':out_dtype, 'precision_type':self.precision_type
+            'out_dtype':out_dtype, 'precision_type':self.precision_type, 'mode':self.mode
         }
 
         if op_name == 'KvCacheOperation':

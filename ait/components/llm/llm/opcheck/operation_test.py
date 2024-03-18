@@ -40,6 +40,7 @@ class OperationTest(unittest.TestCase):
         self.in_tensors = []
         self.out_tensors = []
         self.out_dtype = self.case_info["out_dtype"]
+        self.mode = self.case_info["mode"]
         
         error1 = 'Error0.1‰'
         error2 = 'Error0.5‰'
