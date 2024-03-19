@@ -15,6 +15,8 @@ v0.2.2版本的新特性包括：
   具体使用方法请参考[自动映射比对能力说明](./自动映射比对能力说明.md)
 - ait llm opcheck新增--atb-run参数，支持用户选择是否重新运行加速库单算子获得output。--atb-run参数默认为false，即不运行加速库单算子，直接对比dump数据中的output
 
+- 新增 ait llm errcheck 特性，用于推理场景下，对各种可能发生的问题进行监视（如 算子溢出）。
+
 ## Dump 特性
 
 提供基本的加速库侧算子数据 dump 功能。
@@ -166,3 +168,18 @@ ait llm opcheck -i {tensor_dir} -c {op_csv_path} -o {output_dir}
 | --precision-metric, -metric | 指定需要输出的精度类型，可选范围：['abs', 'cos_sim'，'kl']，分别表示绝对误差通过率、余弦相似度、KL散度。默认为[]，即只输出相对误差通过率。使用方式：--metric kl cos_sim | 否       |
 | --device-id, -device        | 指定需要使用的NPU设备，默认为0                                                                                                                                   | 否       |
 | --atb-rerun, -rerun | 选择是否重新运行加速库单算子获得output，默认为false，即不运行加速库单算子，直接对比dump数据中的output。使用方式：-rerun | 否 |
+
+## Errcheck 特性
+
+### 使用方式
+```sh
+ait llm errcheck --exec <command> --type <check-type> --output <output-dir> --exit
+```
+
+#### 参数说明
+|参数名| 描述 | 是否必选 |
+| :-: | :-: | :-: |
+| --exec | 指定拉起执行大模型推理脚本的命令。使用示例： --exec `bash run.sh patches/models/modeling_xxx.py`。**注：命令中不支持重定向字符，如果需要重定向输出，建议将执行命令写入shell脚本，然后启动shell脚本。**                                                                     | 是 | 
+| --type | 检测类型。目前只支持算子溢出检测 `overflow`。默认检测类型为`overflow`。使用示例：`--type overflow` | 不是 |
+| --output, -o | 指定错误信息的输出目录。默认目录为当前工作目录。 使用示例：`--output some/arbitrary/directories` | 不是 |
+| --exit | 指定在检测到错误之后是否停止继续执行。默认**不**停止继续执行。使用示例：`--exit` | 不是 | 
