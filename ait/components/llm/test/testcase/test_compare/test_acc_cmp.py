@@ -82,7 +82,7 @@ def test_metadata_path():
 @pytest.fixture(scope='module')
 def test_torch_path():
     test_torch_path = "test_acc_cmp_fake_torch"
-    with open("json/model_tree.json") as f:
+    with open("testcase/test_compare/json/model_tree.json") as f:
         torch_topo = json.load(f)
 
     if not os.path.exists(test_torch_path):
@@ -99,7 +99,7 @@ def test_torch_path():
 @pytest.fixture(scope='module')
 def test_atb_path():
     test_atb_path = "test_acc_cmp_fake_atb"
-    with open("json/Bloom7BFlashAttentionModel.json") as f:
+    with open("testcase/test_compare/json/Bloom7BFlashAttentionModel.json") as f:
         atb_topo = json.load(f)
 
     if not os.path.exists(test_atb_path):
@@ -219,6 +219,8 @@ def test_compare_metadata_given_golden_path_when_valid_then_pass(test_metadata_p
 
 def test_compare_torch_atb_given_data_path_when_valid_then_pass(test_torch_path, test_atb_path):
     torch_model_topo_file = os.path.join(test_torch_path, "1111_npu0/model_tree.json")
-    csv_save_path = atb_acc_cmp.cmp_torch_atb(torch_model_topo_file, test_torch_path, test_atb_path, 
-                                              out_path=".", mapping_file_path=".")
+    golden_path = os.path.abspath(os.path.join(test_torch_path, "1111_npu0/0/"))
+    my_path = os.path.abspath(os.path.join(test_atb_path, "ait_dump/tensors/1_2222/0/"))
+    csv_save_path = atb_acc_cmp.cmp_torch_atb(torch_model_topo_file, golden_path, my_path, out_path=".", 
+                                              mapping_file_path=".")
     assert os.path.exists(csv_save_path) and os.path.getsize(csv_save_path) > 0
