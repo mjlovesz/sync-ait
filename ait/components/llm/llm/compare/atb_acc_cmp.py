@@ -352,7 +352,7 @@ def cmp_torch_atb_model(data_info, output_path, mapping_dic):
         compared_result.extend(pair_custom_op(g_layer_all_nodes, m_layer_all_nodes,
                                               mapping_dic.get("ATB_TORCH_CUSTOM_OP_OUTPUT_MAPPING")))
 
-    save_compare_reault_to_csv(compared_result, output_path)
+    return save_compare_reault_to_csv(compared_result, output_path)
 
 
 def validate_json(json_obj):
@@ -400,7 +400,8 @@ def cmp_torch_atb(torch_model_topo_file, golden_path, my_path, output_path, mapp
         pid = ""
         msg = f"Cannot parse the right pid from my_path! my_path: {my_path}"
         logger.error(msg)
-
+    
+    csv_file_path = ""
     atb_model_topo_file_path = os.path.join(my_path, "../../..", "model", pid)
     if os.path.exists(atb_model_topo_file_path):
         atb_model_topo_name = os.listdir(atb_model_topo_file_path)[0]
@@ -413,10 +414,11 @@ def cmp_torch_atb(torch_model_topo_file, golden_path, my_path, output_path, mapp
                 "torch_tensor_path": golden_path,
                 "atb_tensor_path": my_path,
             }
-            cmp_torch_atb_model(data_info, output_path, mapping_dic)
+            csv_file_path = cmp_torch_atb_model(data_info, output_path, mapping_dic)
         else:
             msg = f"Cannot find atb model file: {atb_model_topo_file}"
             logger.error(msg)
     else:
         msg = f"Cannot find atb model file path: {atb_model_topo_file_path}"
         logger.error(msg)
+    return csv_file_path

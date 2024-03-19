@@ -79,6 +79,40 @@ def test_metadata_path():
     if os.path.exists(test_metadata_path):
         shutil.rmtree(test_metadata_path)
 
+@pytest.fixture(scope='module')
+def test_torch_path():
+    test_torch_path = "test_acc_cmp_fake_torch"
+    with open("json/model_tree.json") as f:
+        torch_topo = json.load(f)
+
+    if not os.path.exists(test_torch_path):
+        os.makedirs(os.path.join(test_torch_path, "1111_npu0/0/"), mode=0o750)
+        with open(os.path.join(test_torch_path, "1111_npu0/model_tree.json"), 'w') as ff:
+            json.dump(torch_topo, ff)
+
+    yield test_torch_path
+
+    if os.path.exists(test_torch_path):
+        shutil.rmtree(test_torch_path)
+
+
+@pytest.fixture(scope='module')
+def test_atb_path():
+    test_atb_path = "test_acc_cmp_fake_atb"
+    with open("json/Bloom7BFlashAttentionModel.json") as f:
+        atb_topo = json.load(f)
+
+    if not os.path.exists(test_atb_path):
+        os.makedirs(os.path.join(test_atb_path, "ait_dump/tensors/1_2222/0/"), mode=0o750)
+        os.makedirs(os.path.join(test_atb_path, "ait_dump/model/2222/"), mode=0o750)
+        with open(os.path.join(test_atb_path, "ait_dump/model/2222/BloomModel.json"), 'w') as ff:
+            json.dump(atb_topo, ff)
+
+    yield test_atb_path
+
+    if os.path.exists(test_atb_path):
+        shutil.rmtree(test_atb_path)  
+
 
 def test_check_tensor_given_golden_data_when_nan_then_false():
     result, message = llm.compare.cmp_utils.check_tensor(torch.zeros([2]).float() + torch.nan, torch.zeros([2]).float())
@@ -180,4 +214,11 @@ def test_compare_file_given_data_file_when_valid_then_pass(golden_data_file, tes
 
 def test_compare_metadata_given_golden_path_when_valid_then_pass(test_metadata_path):
     csv_save_path = atb_acc_cmp.compare_metadata(test_metadata_path, output_path=".")
+    assert os.path.exists(csv_save_path) and os.path.getsize(csv_save_path) > 0
+
+
+def test_compare_torch_atb_given_data_path_when_valid_then_pass(test_torch_path, test_atb_path):
+    torch_model_topo_file = os.path.join(test_torch_path, "1111_npu0/model_tree.json")
+    csv_save_path = atb_acc_cmp.cmp_torch_atb(torch_model_topo_file, test_torch_path, test_atb_path, 
+                                              out_path=".", mapping_file_path=".")
     assert os.path.exists(csv_save_path) and os.path.getsize(csv_save_path) > 0
