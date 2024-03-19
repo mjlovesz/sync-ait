@@ -225,7 +225,7 @@ def test_compare_torch_atb_given_data_path_when_valid_then_pass(test_torch_path,
     torch_model_topo_file = os.path.join(test_torch_path, "1111_npu0/model_tree.json")
     golden_path = os.path.abspath(os.path.join(test_torch_path, "1111_npu0/0/"))
     my_path = os.path.abspath(os.path.join(test_atb_path, "ait_dump/tensors/1_2222/0/"))
-    with mock.pach('get_layer_node_type', return_value="BloomLayer"):
+    with mock.patch('get_layer_node_type', return_value="BloomLayer"):
         csv_save_path = atb_acc_cmp.cmp_torch_atb(torch_model_topo_file, golden_path, my_path, output_path=".", 
                                                 mapping_file_path=".")
     assert os.path.exists(csv_save_path) and os.path.getsize(csv_save_path) > 0
