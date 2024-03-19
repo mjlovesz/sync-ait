@@ -88,7 +88,8 @@ def test_torch_path():
 
     if not os.path.exists(test_torch_path):
         os.makedirs(os.path.join(test_torch_path, "1111_npu0/0/"), mode=0o750)
-        with open(os.path.join(test_torch_path, "1111_npu0/model_tree.json"), 'w', mode=0o750) as ff:
+        _json_path = os.path.join(test_torch_path, "1111_npu0/model_tree.json")
+        with os.fdopen(os.open(_json_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'w') as ff:
             json.dump(torch_topo, ff)
 
     yield test_torch_path
@@ -106,7 +107,8 @@ def test_atb_path():
     if not os.path.exists(test_atb_path):
         os.makedirs(os.path.join(test_atb_path, "ait_dump/tensors/1_2222/0/"), mode=0o750)
         os.makedirs(os.path.join(test_atb_path, "ait_dump/model/2222/"), mode=0o750)
-        with open(os.path.join(test_atb_path, "ait_dump/model/2222/BloomModel.json"), 'w', mode=0o750) as ff:
+        _json_path = os.path.join(test_atb_path, "ait_dump/model/2222/BloomModel.json")
+        with os.fdopen(os.open(_json_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'w') as ff:
             json.dump(atb_topo, ff)
 
     yield test_atb_path
