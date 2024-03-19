@@ -171,6 +171,8 @@ ait llm opcheck -i {tensor_dir} -c {op_csv_path} -o {output_dir}
 
 ## Errcheck 特性
 
+支持推理场景下的异常检测（如：算子溢出检测）。
+
 ### 使用方式
 ```sh
 ait llm errcheck --exec <command> --type <check-type> --output <output-dir> --exit
