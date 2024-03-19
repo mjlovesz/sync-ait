@@ -1,0 +1,1778 @@
+{
+    "name": "root",
+    "type": "BloomForCausalLM",
+    "children": [
+        {
+            "name": "root.transformer",
+            "type": "BloomModel",
+            "children": [
+                {
+                    "name": "root.transformer.h",
+                    "type": "ModuleList",
+                    "children": [
+                        {
+                            "name": "root.transformer.h.0",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.0.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.0.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.0.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.0.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.0.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.0.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.0.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.0.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.0.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.0.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.1",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.1.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.1.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.1.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.1.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.1.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.1.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.1.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.1.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.1.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.1.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.2",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.2.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.2.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.2.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.2.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.2.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.2.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.2.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.2.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.2.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.2.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.3",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.3.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.3.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.3.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.3.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.3.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.3.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.3.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.3.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.3.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.3.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.4",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.4.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.4.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.4.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.4.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.4.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.4.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.4.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.4.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.4.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.4.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.5",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.5.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.5.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.5.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.5.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.5.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.5.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.5.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.5.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.5.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.5.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.6",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.6.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.6.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.6.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.6.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.6.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.6.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.6.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.6.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.6.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.6.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.7",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.7.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.7.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.7.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.7.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.7.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.7.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.7.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.7.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.7.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.7.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.8",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.8.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.8.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.8.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.8.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.8.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.8.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.8.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.8.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.8.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.8.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.9",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.9.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.9.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.9.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.9.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.9.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.9.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.9.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.9.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.9.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.9.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.10",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.10.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.10.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.10.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.10.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.10.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.10.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.10.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.10.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.10.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.10.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.11",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.11.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.11.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.11.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.11.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.11.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.11.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.11.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.11.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.11.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.11.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.12",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.12.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.12.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.12.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.12.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.12.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.12.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.12.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.12.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.12.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.12.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.13",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.13.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.13.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.13.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.13.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.13.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.13.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.13.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.13.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.13.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.13.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.14",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.14.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.14.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.14.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.14.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.14.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.14.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.14.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.14.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.14.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.14.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.15",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.15.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.15.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.15.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.15.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.15.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.15.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.15.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.15.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.15.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.15.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.16",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.16.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.16.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.16.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.16.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.16.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.16.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.16.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.16.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.16.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.16.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.17",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.17.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.17.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.17.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.17.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.17.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.17.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.17.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.17.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.17.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.17.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.18",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.18.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.18.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.18.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.18.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.18.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.18.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.18.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.18.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.18.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.18.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.19",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.19.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.19.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.19.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.19.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.19.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.19.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.19.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.19.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.19.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.19.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.20",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.20.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.20.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.20.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.20.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.20.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.20.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.20.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.20.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.20.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.20.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.21",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.21.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.21.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.21.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.21.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.21.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.21.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.21.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.21.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.21.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.21.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.22",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.22.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.22.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.22.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.22.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.22.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.22.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.22.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.22.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.22.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.22.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.23",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.23.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.23.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.23.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.23.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.23.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.23.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.23.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.23.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.23.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.23.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.24",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.24.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.24.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.24.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.24.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.24.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.24.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.24.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.24.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.24.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.24.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.25",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.25.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.25.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.25.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.25.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.25.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.25.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.25.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.25.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.25.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.25.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.26",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.26.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.26.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.26.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.26.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.26.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.26.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.26.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.26.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.26.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.26.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.27",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.27.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.27.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.27.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.27.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.27.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.27.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.27.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.27.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.27.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.27.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.28",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.28.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.28.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.28.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.28.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.28.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.28.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.28.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.28.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.28.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.28.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "root.transformer.h.29",
+                            "type": "BloomBlock",
+                            "children": [
+                                {
+                                    "name": "root.transformer.h.29.input_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.29.self_attention",
+                                    "type": "BloomAttention",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.29.self_attention.query_key_value",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.29.self_attention.attention_dropout",
+                                            "type": "Dropout",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.29.self_attention.dense",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "root.transformer.h.29.post_attention_layernorm",
+                                    "type": "LayerNorm",
+                                    "children": []
+                                },
+                                {
+                                    "name": "root.transformer.h.29.mlp",
+                                    "type": "BloomMLP",
+                                    "children": [
+                                        {
+                                            "name": "root.transformer.h.29.mlp.dense_h_to_4h",
+                                            "type": "Linear",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.29.mlp.gelu_impl",
+                                            "type": "BloomGelu",
+                                            "children": []
+                                        },
+                                        {
+                                            "name": "root.transformer.h.29.mlp.dense_4h_to_h",
+                                            "type": "Linear",
+                                            "children": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "root.transformer.word_embeddings",
+                    "type": "Embedding",
+                    "children": []
+                },
+                {
+                    "name": "root.transformer.word_embeddings_layernorm",
+                    "type": "LayerNorm",
+                    "children": []
+                },
+                {
+                    "name": "root.transformer.ln_f",
+                    "type": "LayerNorm",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "root.lm_head",
+            "type": "Linear",
+            "children": []
+        }
+    ]
+}
