@@ -22,12 +22,12 @@ with open('requirements.txt', encoding='utf-8') as f:
     required = f.read().splitlines()
 
 opchecker_lib_src = []
-for root, dirs, files in os.walk('./llm/opcheck/test_framework/'):
+for root, dirs, files in os.walk('./ait_llm/opcheck/test_framework/'):
     opchecker_lib_src.append((os.path.join("/", root), [os.path.join(root, f) for f in files]))
 
 setup(
     name='ait-llm',
-    version='0.2.2',
+    version='1.0.0',
     description='Debug tools for large language model(llm)',
     url='https://gitee.com/ascend/ait/ait/components/llm',
     packages=find_packages(),

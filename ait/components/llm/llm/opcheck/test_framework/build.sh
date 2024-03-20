@@ -18,7 +18,7 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
 export PYTORCH_INSTALL_PATH="$(python3 -c 'import torch, os; print(os.path.dirname(os.path.abspath(torch.__file__)))')"
 export PYTORCH_NPU_INSTALL_PATH="$(python3 -c 'import torch, torch_npu, os; print(os.path.dirname(os.path.abspath(torch_npu.__file__)))')"
-export AIT_LLM_INSTALL_PATH="$(python3 -c 'import llm, os; print(os.path.dirname(os.path.abspath(llm.__file__)))')"
+export AIT_LLM_INSTALL_PATH="$(python3 -c 'import ait_llm, os; print(os.path.dirname(os.path.abspath(ait_llm.__file__)))')"
 
 function fn_build_nlohmann_json()
 {

@@ -58,7 +58,7 @@ class OpChecker:
     def third_party_init():
         execution_flag = True
 
-        import llm
+        import ait_llm
 
         lib_path = os.environ.get("AIT_OPCHECK_LIB_PATH")
         if not lib_path:
