@@ -62,7 +62,7 @@ class OpChecker:
 
         lib_path = os.environ.get("AIT_OPCHECK_LIB_PATH")
         if not lib_path:
-            lib_path_dir = os.path.dirname(os.path.abspath(llm.__file__))
+            lib_path_dir = os.path.dirname(os.path.abspath(ait_llm.__file__))
             lib_path = os.path.join(lib_path_dir, "opcheck", "libopchecker.so")
         
         if os.path.exists(lib_path):
