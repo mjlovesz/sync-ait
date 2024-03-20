@@ -33,12 +33,12 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             raise e       
         score = None
         for i in range(group_num):
-            group_score = np.matmul(in_a[i * group_head: (i + 1) * group_head, :, :].astype(np.float32),
-                                    in_b[i:(i + 1), :, :].astype(np.float32)).astype(np.float16)
+            group_score = torch.matmul(in_a[i * group_head: (i + 1) * group_head, :, :].astype(torch.float32),
+                                    in_b[i:(i + 1), :, :].astype(torch.float32)).astype(torch.float16)
             if score is None:
                 score = group_score
             else:
-                score = np.concatenate((score, group_score), 0)
+                score = torch.concatenate((score, group_score), 0)
         logger.debug(score.shape)
         return score
 
@@ -53,7 +53,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
 
         heads, group_num, embed = self.op_param["headNum"], self.op_param["kvHeadNum"], 128
         q_seqlen = kv_seqlen = seq_len # crossattention时，q_seqlen != k_seqlen 
-        max_s, ntokens2 = np.max(q_seqlen), (q_seqlen * kv_seqlen).sum()
+        max_s, ntokens2 = torch.max(q_seqlen), (q_seqlen * kv_seqlen).sum()
 
         q_offset, k_offset, v_offset = 0, 0, 0
         s, _p, out = None, None, None
@@ -61,51 +61,51 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         for idx, _ in enumerate(range(batch_status)):
             q_s, kv_s = q_seqlen[idx], kv_seqlen[idx]
             q_slice = mixed_q[q_offset:q_offset + q_s][:].reshape(q_s, heads, embed)
-            q_slice = np.transpose(q_slice, (1, 0, 2))  # (heads, q_seq, embed)
+            q_slice = torch.transpose(q_slice, (1, 0, 2))  # (heads, q_seq, embed)
             k_slice = mixed_k[k_offset:k_offset + kv_s][:].reshape(kv_s, group_num, embed)
-            k_slice = np.transpose(k_slice, (1, 0, 2))
-            k_slice_t = np.transpose(k_slice, (0, 2, 1))   # get K^T (kv_heads, embed, k_seq)
+            k_slice = torch.transpose(k_slice, (1, 0, 2))
+            k_slice_t = torch.transpose(k_slice, (0, 2, 1))   # get K^T (kv_heads, embed, k_seq)
             v_slice = mixed_v[v_offset:v_offset + kv_s][:].reshape(kv_s, group_num, embed)
-            v_slice = np.transpose(v_slice, (1, 0, 2))
+            v_slice = torch.transpose(v_slice, (1, 0, 2))
             score = self.group_matmul(heads, group_num, q_slice, k_slice_t)
-            s = score.reshape([-1, ]) if s is None else np.concatenate((s, score.reshape([-1, ])), 0)
+            s = score.reshape([-1, ]) if s is None else torch.concatenate((s, score.reshape([-1, ])), 0)
             
             try:
-                score = score * np.float16(1.0 / math.sqrt(1.0 * embed))
+                score = score * torch.float16(1.0 / math.sqrt(1.0 * embed))
             except ZeroDivisionError as e:
                 raise e
 
             score = score + attention_mask[:, :q_s, :kv_s] if self.op_param["isTriuMask"] else score
-            score_max = np.max(score, axis=-1)
+            score_max = torch.max(score, axis=-1)
             score = score - score_max.reshape((heads, q_s, 1))
-            score_exp = np.exp(score.astype(np.float32))
+            score_exp = torch.exp(score.astype(torch.float32))
             if not self.op_param["isFp32"]:
-                score_sum = np.sum(score_exp.astype(np.float16), axis=-1)
-                _p = score_exp.astype(np.float16).reshape([-1, ]) if _p is None else \
-                    np.concatenate((_p, score_exp.astype(np.float16).reshape([-1, ])), 0)
+                score_sum = torch.sum(score_exp.astype(torch.float16), axis=-1)
+                _p = score_exp.astype(torch.float16).reshape([-1, ]) if _p is None else \
+                    torch.concatenate((_p, score_exp.astype(torch.float16).reshape([-1, ])), 0)
                 try:
-                    p = score_exp.astype(np.float16) / score_sum.reshape((heads, q_s, 1)).astype(np.float16)
+                    p = score_exp.astype(torch.float16) / score_sum.reshape((heads, q_s, 1)).astype(torch.float16)
                 except ZeroDivisionError as e:
                     raise e
                 out_sub = self.group_matmul(heads, group_num, p, v_slice)
             else:
-                score_sum = np.sum(score_exp, axis=-1)
-                _p = score_exp.astype(np.float16).reshape([-1, ]) if _p is None else \
-                    np.concatenate((_p, score_exp.astype(np.float16).reshape([-1, ])), 0)
-                p = score_exp.astype(np.float16)
+                score_sum = torch.sum(score_exp, axis=-1)
+                _p = score_exp.astype(torch.float16).reshape([-1, ]) if _p is None else \
+                    torch.concatenate((_p, score_exp.astype(torch.float16).reshape([-1, ])), 0)
+                p = score_exp.astype(torch.float16)
                 out_sub = self.group_matmul(heads, group_num, p, v_slice)
                 try:
-                    out_sub = out_sub / score_sum.reshape((heads, q_s, 1)).astype(np.float16)
+                    out_sub = out_sub / score_sum.reshape((heads, q_s, 1)).astype(torch.float16)
                 except ZeroDivisionError as e:
                     raise e
             out_sub = out_sub.reshape(heads, q_s, embed)
-            out_sub = np.transpose(out_sub, (1, 0, 2))
-            out_sub = np.ascontiguousarray(out_sub)
-            out = out_sub if out is None else np.concatenate((out, out_sub), 0)
+            out_sub = torch.transpose(out_sub, (1, 0, 2))
+            out_sub = torch.ascontiguousarray(out_sub)
+            out = out_sub if out is None else torch.concatenate((out, out_sub), 0)
 
         return out.astype("float16").reshape(-1, heads, 128)
 
-    def not_encoder_golden_func(self, in_tensors):
+    def undefined_golden_func(self, in_tensors):
         mixed_q, mixed_k, mixed_v, cache_k, cache_v, attention_mask, token_offset, seq_len, layerid = in_tensors[0], \
             in_tensors[1], in_tensors[2], in_tensors[3], in_tensors[4], in_tensors[5], in_tensors[6], in_tensors[7], \
             int(in_tensors[8][0])
@@ -153,12 +153,23 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
 
         out = torch.concat(context_list, dim=0)
         return out
+    
+    def decoder_golden_func(self, in_tensors):
+        pass
+
+    def pa_encoder_golden_func(self, in_tensors):
+        pass
 
     def golden_calc(self, in_tensors):
-        if self.op_param["isEncoder"]:
+        calc_type = self.op_param["calcType"]
+        if calc_type == 0:
+            out = self.undefined_golden_func(in_tensors)
+        elif calc_type == 1:
             out = self.encoder_golden_func(in_tensors)
+        elif calc_type == 2:
+            out = self.decoder_golden_func(in_tensors)
         else:
-            out = self.not_encoder_golden_func(in_tensors)
+            out = self.pa_encoder_golden_func(in_tensors)
         return [out]
 
     def test(self):
@@ -167,8 +178,13 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             logger_text = "{} is not supported! Only supports Ascend910B!".format(soc_version)
             logger.error(logger_text)
             return
+        
+        if self.op_param["calcType"] != 0 and self.op_param["calcType"] != 1:
+            logger_text = "CalcType {} is not supported!".format(self.op_param["calcType"])
+            logger.error(logger_text)
+            return            
 
-        if self.op_param["isEncoder"]:
+        if len(self.in_tensors) <= 6:
             if self.op_param["batchRunStatusEnable"]:
                 self.case_info["run_param"] = json.dumps({"seqLen": self.in_tensors[4].tolist(),
                                                         "batchRunStatus": self.in_tensors[5].tolist()})
