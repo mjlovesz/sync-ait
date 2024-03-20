@@ -4,8 +4,8 @@ import shutil
 import torch
 from torch import nn
 
-from llm import DumpConfig
-from llm import register_hook
+from ait_llm.import DumpConfig
+from ait_llm.import register_hook
 
 
 MODEL_NAME_LIST = ["root", "root.ln"]

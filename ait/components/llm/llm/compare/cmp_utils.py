@@ -7,12 +7,12 @@ import numpy as np
 import pandas as pd
 import torch
 
-from llm.common.tool import read_atb_data
-from llm.common.constant import TOKEN_ID, DATA_ID, GOLDEN_DATA_PATH, MY_DATA_PATH, CMP_FAIL_REASON, GOLDEN_DTYPE, \
+from ait_llm.common.tool import read_atb_data
+from ait_llm.common.constant import TOKEN_ID, DATA_ID, GOLDEN_DATA_PATH, MY_DATA_PATH, CMP_FAIL_REASON, GOLDEN_DTYPE, \
     GOLDEN_SHAPE, GOLDEN_MAX_VALUE, GOLDEN_MIN_VALUE, GOLDEN_MEAN_VALUE, MY_DTYPE, MY_SHAPE, MY_MAX_VALUE, MY_MIN_VALUE, \
     MY_MEAN_VALUE, CSV_GOLDEN_HEADER
-from llm.common.log import logger
-from llm.compare.cmp_algorithm import CMP_ALG_MAP
+from ait_llm.common.log import logger
+from ait_llm.compare.cmp_algorithm import CMP_ALG_MAP
 
 MIN_LAYER_NUMBER = 10
 

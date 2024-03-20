@@ -15,9 +15,9 @@ import array
 
 import torch
 
-from llm.common.constant import ATTR_END, ATTR_OBJECT_LENGTH
-from llm.common.log import logger
-from llm.common.utils import check_input_path_legality, check_data_file_size
+from ait_llm.common.constant import ATTR_END, ATTR_OBJECT_LENGTH
+from ait_llm.common.log import logger
+from ait_llm.common.utils import check_input_path_legality, check_data_file_size
 
 
 class TensorBinFile:

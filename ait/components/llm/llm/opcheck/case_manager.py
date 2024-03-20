@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-from llm.opcheck.opcheck_checkcases import OP_NAME_DICT
+from ait_llm.opcheck.opcheck_checkcases import OP_NAME_DICT
 
 
 class CaseManager:

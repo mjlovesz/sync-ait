@@ -14,7 +14,7 @@
 import os
 import time
 
-from llm.common.log import logger
+from ait_llm.common.log import logger
 
 
 def try_import_torchair():

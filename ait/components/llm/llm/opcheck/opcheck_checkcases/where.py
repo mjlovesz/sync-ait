@@ -18,7 +18,7 @@ import unittest
 import torch
 import torch_npu
 
-from llm.opcheck import operation_test
+from ait_llm.opcheck import operation_test
 
 
 class OpcheckWhereOperation(operation_test.OperationTest):

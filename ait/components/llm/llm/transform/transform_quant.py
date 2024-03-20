@@ -1,6 +1,6 @@
 import os
 import stat
-from llm.transform.utils import (
+from ait_llm.transform.utils import (
     check_libclang_so,
     filter_chinese_char,
     get_args_and_options,
@@ -8,7 +8,7 @@ from llm.transform.utils import (
     print_update_info,
     update_contents,
 )
-from llm.common.log import logger
+from ait_llm.common.log import logger
 
 USING_SCALE_BIAS_ITEMS = ["IN_QKV", "IN_QMIX", "IN_KMIX", "IN_VMIX", "IN_SELFOUTLINEAR", "IN_MLP"]
 USING_SPARSE_INDEX_ITEMS = ["IN_QKV", "IN_QMIX", "IN_KMIX", "IN_VMIX"]
@@ -198,7 +198,7 @@ class TransformQuant:
             ):
                 insert_contents, insert_start, insert_end = self.update_from_json(cur_cursor, contents)
             elif self.is_layer_function(cur_cursor):
-                from llm.transform.transform_quant_cpp_layer_function import TransformQuantCppLayerFunction
+                from ait_llm.transform.transform_quant_cpp_layer_function import TransformQuantCppLayerFunction
 
                 cur_updates = TransformQuantCppLayerFunction(
                     contents, cur_cursor, self.in_tensor_added, indent=self.indent, enable_sparse=self.enable_sparse

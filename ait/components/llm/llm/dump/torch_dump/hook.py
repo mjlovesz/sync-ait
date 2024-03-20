@@ -13,9 +13,9 @@
 # limitations under the License.
 import torch
 
-from llm.common.log import logger
-from llm.dump.torch_dump.dump_config import DumpConfig
-from llm.dump.torch_dump.dump_hook import DumpHookModule
+from ait_llm.common.log import logger
+from ait_llm.dump.torch_dump.dump_config import DumpConfig
+from ait_llm.dump.torch_dump.dump_hook import DumpHookModule
 
 
 HOOK_TYPE = ""

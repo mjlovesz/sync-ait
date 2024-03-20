@@ -20,7 +20,7 @@ import torch_npu
 import numpy as np
 import torch.distributed as dist
 
-from llm.opcheck import operation_test
+from ait_llm.opcheck import operation_test
 
 
 class OpcheckLinearParallelOperation(operation_test.OperationTest):

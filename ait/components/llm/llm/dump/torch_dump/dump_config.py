@@ -13,8 +13,8 @@
 # limitations under the License.
 import os
 
-from llm.common import utils
-from llm.common.log import logger
+from ait_llm.common import utils
+from ait_llm.common.log import logger
 
 
 def singleton(cls):

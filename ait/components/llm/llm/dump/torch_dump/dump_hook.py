@@ -18,9 +18,9 @@ import os.path
 import numpy as np
 import torch
 
-from llm.dump.torch_dump.dump_config import DumpConfig
-from llm.dump.torch_dump import hook_ops
-from llm.common.log import logger
+from ait_llm.dump.torch_dump.dump_config import DumpConfig
+from ait_llm.dump.torch_dump import hook_ops
+from ait_llm.common.log import logger
 
 
 class DumpHookModule:
@@ -141,7 +141,7 @@ def dump_module_data():
         if dump_config.token_id == 0:
             dump_config.update_module_ids(module.name)
             # 将模型树状信息保存成json文件
-            from llm.dump.torch_dump.topo import ModelTree
+            from ait_llm.dump.torch_dump.topo import ModelTree
             if not os.path.exists(dump_config.dump_dir):
                 os.makedirs(dump_config.dump_dir, mode=0o750)
             model_tree_path = os.path.join(dump_config.dump_dir, "model_tree.json")

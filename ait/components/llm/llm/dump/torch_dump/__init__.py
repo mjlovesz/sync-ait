@@ -11,5 +11,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from llm.dump.torch_dump.dump_config import DumpConfig
-from llm.dump.torch_dump.hook import register_hook
+from ait_llm.dump.torch_dump.dump_config import DumpConfig
+from ait_llm.dump.torch_dump.hook import register_hook

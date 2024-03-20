@@ -15,9 +15,9 @@
 import os
 
 from components.utils.file_open_check import FileStat
-from llm.common.constant import ATB_CUR_PID, LD_PRELOAD, ATB_PROB_LIB_WITH_ABI, ATB_PROB_LIB_WITHOUT_ABI, ATB_HOME_PATH, ASCEND_TOOLKIT_HOME, ATB_OUTPUT_DIR, ATB_CHECK_TYPE, CHECK_TYPE_MAPPING, ATB_EXIT
-from llm.common.log import logger
-from llm.dump.initial import is_use_cxx11
+from ait_llm.common.constant import ATB_CUR_PID, LD_PRELOAD, ATB_PROB_LIB_WITH_ABI, ATB_PROB_LIB_WITHOUT_ABI, ATB_HOME_PATH, ASCEND_TOOLKIT_HOME, ATB_OUTPUT_DIR, ATB_CHECK_TYPE, CHECK_TYPE_MAPPING, ATB_EXIT
+from ait_llm.common.log import logger
+from ait_llm.dump.initial import is_use_cxx11
         
     
 def init_error_check(args) -> None:

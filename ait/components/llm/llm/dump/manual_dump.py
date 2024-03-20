@@ -17,7 +17,7 @@ import numpy as np
 import torch
 
 from components.utils.file_open_check import ms_open
-from llm.common.log import logger
+from ait_llm.common.log import logger
 
 
 def dump_data(token_id=-1, data_id=-1, golden_data=None, my_path='', output_path='./'):

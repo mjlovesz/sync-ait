@@ -14,7 +14,7 @@
 import torch
 from torch.nn import functional as F
 
-from llm.common.log import logger
+from ait_llm.common.log import logger
 
 
 FLOAT_EPSILON = torch.finfo(torch.float).eps

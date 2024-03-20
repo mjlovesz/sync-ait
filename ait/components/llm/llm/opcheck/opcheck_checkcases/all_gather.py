@@ -19,7 +19,7 @@ import sys
 import torch
 import torch_npu
 
-from llm.opcheck import operation_test
+from ait_llm.opcheck import operation_test
 
 
 class OpcheckAllGatherOperation(operation_test.OperationTest):

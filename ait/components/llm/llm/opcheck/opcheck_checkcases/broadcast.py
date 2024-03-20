@@ -23,7 +23,7 @@ import torch_npu
 import torch.distributed as dist
 import torch.multiprocessing as mp
 
-from llm.opcheck import operation_test
+from ait_llm.opcheck import operation_test
 
 
 class OpcheckBroadcastOperation(operation_test.OperationTest):

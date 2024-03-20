@@ -21,9 +21,9 @@ import numpy as np
 import torch
 import torch_npu
 
-from llm.common.tool import read_atb_data
-from llm.common.log import logger
-from llm.compare.cmp_algorithm import CMP_ALG_MAP
+from ait_llm.common.tool import read_atb_data
+from ait_llm.common.log import logger
+from ait_llm.compare.cmp_algorithm import CMP_ALG_MAP
 
 
 class OperationTest(unittest.TestCase):

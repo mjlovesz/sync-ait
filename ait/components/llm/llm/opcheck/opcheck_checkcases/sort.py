@@ -20,7 +20,7 @@ import torch
 import torch_npu
 import torch.nn as nn
 
-from llm.opcheck import operation_test
+from ait_llm.opcheck import operation_test
 
 
 class OpcheckSortOperation(operation_test.OperationTest):    

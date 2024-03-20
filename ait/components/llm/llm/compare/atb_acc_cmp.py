@@ -17,11 +17,11 @@ import re
 import glob
 import json
 
-from llm.compare.cmp_utils import compare_data, read_data
-from llm.common.log import logger
-from llm.compare.cmp_utils import BasicDataInfo, fill_row_data, save_compare_reault_to_csv
-from llm.compare.op_mapping import ATB_TORCH_BUILT_IN_OP_OUTPUT_MAPPING, ATB_TORCH_CUSTOM_OP_OUTPUT_MAPPING
-from llm.dump.torch_dump.topo import ModelTree
+from ait_llm.compare.cmp_utils import compare_data, read_data
+from ait_llm.common.log import logger
+from ait_llm.compare.cmp_utils import BasicDataInfo, fill_row_data, save_compare_reault_to_csv
+from ait_llm.compare.op_mapping import ATB_TORCH_BUILT_IN_OP_OUTPUT_MAPPING, ATB_TORCH_CUSTOM_OP_OUTPUT_MAPPING
+from ait_llm.dump.torch_dump.topo import ModelTree
 
 from tqdm import tqdm
 
@@ -204,7 +204,7 @@ def search_mapping_relationships(gathered_golden_data, gathered_my_data):
 
 def search_float_quant_matches(golden_path, my_path, golden_topo_json_path, my_topo_json_path):
     matched_path_pair = []
-    from llm.dump.torch_dump.topo import TreeNode
+    from ait_llm.dump.torch_dump.topo import TreeNode
     golden_tree = ModelTree.atb_json_to_tree(golden_topo_json_path)
     my_tree = ModelTree.atb_json_to_tree(my_topo_json_path)
     

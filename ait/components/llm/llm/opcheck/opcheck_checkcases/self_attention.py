@@ -21,8 +21,8 @@ import torch
 import torch_npu
 import numpy as np
 
-from llm.opcheck import operation_test
-from llm.common.log import logger
+from ait_llm.opcheck import operation_test
+from ait_llm.common.log import logger
 
 
 class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):

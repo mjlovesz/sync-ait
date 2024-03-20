@@ -21,8 +21,8 @@ import random
 import torch
 import torch_npu
 
-from llm.opcheck import operation_test
-from llm.common.log import logger
+from ait_llm.opcheck import operation_test
+from ait_llm.common.log import logger
 
 
 class OpcheckAllReduceOperation(operation_test.OperationTest):

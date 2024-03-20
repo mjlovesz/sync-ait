@@ -20,8 +20,8 @@ import shutil
 import re
 
 from components.utils.file_open_check import FileStat
-from llm.common.log import logger
-from llm.common.constant import ATB_HOME_PATH, ATB_SAVE_TENSOR_TIME, ATB_SAVE_TENSOR_IDS, \
+from ait_llm.common.log import logger
+from ait_llm.common.constant import ATB_HOME_PATH, ATB_SAVE_TENSOR_TIME, ATB_SAVE_TENSOR_IDS, \
     ATB_SAVE_TENSOR_RUNNER, ATB_SAVE_TENSOR, ATB_SAVE_TENSOR_RANGE, \
     ATB_SAVE_TILING, LD_PRELOAD, ATB_OUTPUT_DIR, ATB_SAVE_CHILD, ATB_SAVE_TENSOR_PART, \
     ASCEND_TOOLKIT_HOME, ATB_PROB_LIB_WITH_ABI, ATB_PROB_LIB_WITHOUT_ABI, ATB_SAVE_CPU_PROFILING, \
@@ -104,7 +104,7 @@ def json_to_onnx(args):
         return
 
     with open(subprocess_info_file) as f:
-        from llm.common.json_fitter import atb_json_to_onnx
+        from ait_llm.common.json_fitter import atb_json_to_onnx
         for line in f.readlines():
             path = line.strip()
             if not os.path.exists(path):

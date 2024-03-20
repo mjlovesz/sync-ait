@@ -1,7 +1,7 @@
 import os
 import string
-from llm.common.log import logger
-from llm.common.log import set_log_level
+from ait_llm.common.log import logger
+from ait_llm.common.log import set_log_level
 
 CODE_CHAR = string.printable.replace("\r", "")  # For getting rid of Chinese char and windows `\r`
 

@@ -21,7 +21,7 @@ import torch
 import torch_npu
 import numpy as np
 
-from llm.opcheck import operation_test
+from ait_llm.opcheck import operation_test
 
 
 class OpcheckKvCacheOperation(operation_test.OperationTest):
