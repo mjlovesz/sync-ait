@@ -102,7 +102,8 @@ def wrap_torch_func(func):
         if not os.path.exists(api_dump_path):
             os.makedirs(api_dump_path)
 
-        dump_data(args, output, api_dump_path, dump_config.tensor_part)
+        if dump_config.dump_device_id is None or dump_config.dump_device_id  == dump_config.dump_device_id_str:
+            dump_data(args, output, api_dump_path, dump_config.tensor_part)
         return output
 
     return dump_api_data

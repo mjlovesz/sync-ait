@@ -30,13 +30,13 @@ def singleton(cls):
 
 @singleton
 class DumpConfig:
-    def __init__(self, dump_path=None, token_range=None,
-                 module_list=None, tensor_part=2):
+    def __init__(self, dump_path=None, token_range=None, module_list=None, tensor_part=2, dump_device_id=None):
         self.dump_path = dump_path or "./"
         self.mode = "module"
         self.token_range = token_range or [0]
         self.module_list = module_list or []
         self.tensor_part = tensor_part
+        self.dump_device_id = dump_device_id
         self.dump_flag = True
         self.token_id = 0
         self.module_ids = {}
@@ -46,10 +46,11 @@ class DumpConfig:
 
         if not self._check_args():
             raise ValueError("Invalid args of DumpConfig.")
+        self.dump_device_id_str = str(dump_device_id)
 
     def set_device_and_dump_dir(self, device):
         self.device = device
-        self.dump_dir = os.path.join(self.dump_path, 
+        self.dump_dir = os.path.join(self.dump_path,
                 "ait_dump/torch_tensors", "{}_{}".format(str(os.getpid()), str(self.device)))
         if not os.path.exists(self.dump_dir):
             os.makedirs(self.dump_dir, mode=0o750)
@@ -69,6 +70,9 @@ class DumpConfig:
             return False
         if not isinstance(self.tensor_part, int):
             logger.error("tensor_part must be int.")
+            return False
+        if self.dump_device_id is not None and not isinstance(self.dump_device_id, int):
+            logger.error("dump_device_id must be int.")
             return False
         if self.tensor_part not in [0, 1, 2]:
             logger.error("tensor_part must be 0 or 1 or 2.")
