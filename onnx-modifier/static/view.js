@@ -5,7 +5,6 @@ var zip = zip || require('./zip');
 var gzip = gzip || require('./gzip');
 var tar = tar || require('./tar');
 var json = json || require('./json');
-var xml = xml || require('./xml');
 var protobuf = protobuf || require('./protobuf');
 var flatbuffers = flatbuffers || require('./flatbuffers');
 var python = python || require('./python');
@@ -1625,18 +1624,6 @@ view.ModelContext = class {
                 }
                 break;
               }
-              case 'xml': {
-                const reader = xml.TextReader.open(stream);
-                if (reader) {
-                  const document = reader.peek();
-                  const element = document.documentElement;
-                  const namespaceURI = element.namespaceURI;
-                  const localName = element.localName;
-                  const name = namespaceURI ? namespaceURI + ':' + localName : localName;
-                  tags.set(name, element);
-                }
-                break;
-              }
             }
           } catch (error) {
             tags.clear();
@@ -2119,24 +2106,6 @@ view.ModelFactoryService = class {
         }
       }
     };
-    const xml = () => {
-      const tags = context.tags('xml');
-      if (tags.size > 0) {
-        const formats = [
-          { name: 'OpenCV storage data', tags: ['opencv_storage'] },
-          { name: 'XHTML markup', tags: ['http://www.w3.org/1999/xhtml:html'] },
-        ];
-        for (const format of formats) {
-          if (format.tags.some((tag) => tags.has(tag))) {
-            throw new view.Error('Invalid file content. File contains ' + format.name + '.', true);
-          }
-        }
-        throw new view.Error(
-          "Unsupported XML content '" + tags.keys().next().value + "' in '" + identifier + "'.",
-          !skip()
-        );
-      }
-    };
     const unknown = () => {
       stream.seek(0);
       const buffer = stream.peek(Math.min(16, stream.length));
@@ -2154,7 +2123,6 @@ view.ModelFactoryService = class {
     pbtxt();
     pb();
     flatbuffers();
-    xml();
     unknown();
   }
 
