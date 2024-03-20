@@ -83,7 +83,10 @@ pre_check_skl2onnx(){
 
 download_and_install_aclruntime() {
     ACLRUNTIME_VERSION=`pip3 show aclruntime | awk '/Version: /{print $2}'`
-    if [ "$ACLRUNTIME_VERSION" = "0.0.2" ]; then
+
+    if [ "$arg_force_reinstall" = "--force-reinstall" ]; then
+        echo "Force reinstall aclruntime"
+    elif [ "$ACLRUNTIME_VERSION" = "0.0.2" ]; then
         echo "aclruntime==0.0.2 already installed, skip"
         return
     fi
@@ -99,10 +102,10 @@ download_and_install_aclruntime() {
     WHL_NAME="aclruntime-0.0.2-cp3${PYTHON3_MINI_VERSION}-cp3${PYTHON3_MINI_VERSION}${SUB_SUFFIX}-linux_$(uname -m).whl"
     BASE_URL="https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/ait/"
     echo "WHL_NAME=$WHL_NAME, URL=${BASE_URL}${WHL_NAME}"
-    wget --no-check-certificate -c "${BASE_URL}${WHL_NAME}" && pip3 install $WHL_NAME && rm -f $WHL_NAME
+    wget --no-check-certificate -c "${BASE_URL}${WHL_NAME}" && pip3 install $WHL_NAME --force-reinstall && rm -f $WHL_NAME
     if [ $? -ne 0 ]; then
         echo "Downloading or installing from whl failed, will install from source code"
-        cd ${CURRENT_DIR}/components/benchmark/backend && pip install . && cd -
+        cd ${CURRENT_DIR}/components/benchmark/backend && pip install . --force-reinstall && cd -
     fi
 }
 
@@ -162,9 +165,21 @@ build_om_so() {
   echo "If installation failed, the usage of other components will not be affected."
   SITE_PACKAGES_PATH=$(python3 -c "import site; print(site.getsitepackages()[0])")
 
+  if [ "$ASCEND_TOOLKIT_HOME" != "" ]; then
+      toolkit_home=$ASCEND_TOOLKIT_HOME
+  else:
+      toolkit_home=$ASCEND_AICPU_PATH
+  fi
+
+  ge_dev_path=$toolkit_home/$(uname -m)-linux/
+  if [ ! -e "$ge_dev_path/include" ] || [ ! -e "$ge_dev_path/lib64" ]; then
+      echo "[WARNING] include or lib64 not found in ge_dev_path=$ge_dev_path, try installing CANN toolkit if comparing mindir and onnx models"
+      return
+  fi
+
   g++ ${CURRENT_DIR}/components/debug/compare/msquickcmp/save_om_model/export_om_model.cpp \
-          -I ${ASCEND_AICPU_PATH}/$(uname -m)-linux/include/ \
-          -L ${ASCEND_AICPU_PATH}/$(uname -m)-linux/lib64 \
+          -I ${ge_dev_path}/include \
+          -L ${ge_dev_path}/lib64 \
           -lge_compiler \
           --std=c++11 -fPIC -shared -D_GLIBCXX_USE_CXX11_ABI=0 -o libsaveom.so
   
