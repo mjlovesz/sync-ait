@@ -11,60 +11,40 @@ from llm.transform.utils import (
 from llm.common.log import logger
 
 USING_SCALE_BIAS_ITEMS = ["IN_QKV", "IN_QMIX", "IN_KMIX", "IN_VMIX", "IN_SELFOUTLINEAR", "IN_MLP"]
+USING_SPARSE_INDEX_ITEMS = ["IN_QKV", "IN_QMIX", "IN_KMIX", "IN_VMIX"]
 INTERMIDATE_PREFIX = "INTERMIDATE_"
 CPP_TEMP_FILE_NAME = "transform_quant_cpp_temp.cpp"
 HPP_TEMP_FILE_NAME = "transform_quant_cpp_temp.hpp"
 DEQSCALE_SUFFIX = "DEQSCALE"
 BIAS_SUFFIX = "BIAS"
+INDEX_SUFFIX = "INDEX"
 WEIGHT_SUFFIX = "WEIGHT"
 IN_BETA = "IN_BETA"
 IN_HOLDER = "IN_HOLDER"
 
 
-def parse_file_as_cursor(file_path):
-    from clang import cindex
-
-    file_ext = os.path.splitext(file_path)[-1]
-    temp_file = CPP_TEMP_FILE_NAME if file_ext in [".c", ".cpp"] else HPP_TEMP_FILE_NAME
-
-    contents = open(file_path).read()
-    contents = filter_chinese_char(contents)
-    args, options = get_args_and_options()
-    parser = cindex.Index.create(excludeDecls=True)
-    tu = parser.parse(temp_file, args=args, unsaved_files=[(temp_file, contents)])
-    return tu.cursor, contents
-
-
-def to_quant_file_path(file_path):
-    return os.path.join(os.path.dirname(file_path), "quant_" + os.path.basename(file_path))
-
-
-def write_to_file(file_path, contents):
-    file_permission = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP
-    with os.fdopen(os.open(file_path, os.O_CREAT | os.O_WRONLY, file_permission), "w") as ff:
-        ff.write(contents)
-
-
 class TransformQuant:
-    def __init__(self, cpp_file_path, hpp_file_path=None, indent=4):
+    def __init__(self, cpp_file_path, hpp_file_path=None, indent=4, enable_sparse=False):
         from clang import cindex
 
         if hpp_file_path is None:
             base_name = os.path.splitext(cpp_file_path)
             hpp_file_path = (base_name + ".h") if os.path.exists(base_name + ".h") else (base_name + ".hpp")
 
-        cpp_cursor, cpp_contents = parse_file_as_cursor(cpp_file_path)
+        cpp_cursor, cpp_contents = self.parse_file_as_cursor(cpp_file_path)
         cpp_children = list(next(list(cpp_cursor.get_children())[-1].get_children()).get_children())
         self.cpp_contents, self.cpp_children = cpp_contents, cpp_children
         self.cpp_file_path, self.hpp_file_path = cpp_file_path, hpp_file_path
+        self.enable_sparse = enable_sparse
 
         if os.path.exists(hpp_file_path):
-            hpp_cursor, hpp_contents = parse_file_as_cursor(hpp_file_path)
+            hpp_cursor, hpp_contents = self.parse_file_as_cursor(hpp_file_path)
             hpp_children = list(next(list(hpp_cursor.get_children())[-1].get_children()).get_children())
             self.hpp_contents, self.hpp_children = hpp_contents, hpp_children
         else:
             self.hpp_contents, self.hpp_children = "", []
 
+        # Check Enum item in cpp first, if not found, try hpp file then
         in_tensor_added = None
         for cur_cursor in cpp_children:
             if cur_cursor.kind == cindex.CursorKind.ENUM_DECL:
@@ -81,6 +61,31 @@ class TransformQuant:
             raise ValueError(message)
         self.in_tensor_added, self.indent, self.indent_prefix = in_tensor_added, indent, " " * indent
         self.CursorKind = cindex.CursorKind
+
+    @staticmethod
+    def parse_file_as_cursor(file_path):
+        from clang import cindex
+
+        file_ext = os.path.splitext(file_path)[-1]
+        temp_file = CPP_TEMP_FILE_NAME if file_ext in [".c", ".cpp"] else HPP_TEMP_FILE_NAME
+
+        contents = open(file_path).read()
+        contents = filter_chinese_char(contents)
+        args, options = get_args_and_options()
+        parser = cindex.Index.create(excludeDecls=True)
+        tu = parser.parse(temp_file, args=args, unsaved_files=[(temp_file, contents)])
+        return tu.cursor, contents
+
+    @staticmethod
+    def to_quant_file_path(file_path, enable_sparse=False):
+        prefix = "sparse_quant_" if enable_sparse else "quant_"
+        return os.path.join(os.path.dirname(file_path), prefix + os.path.basename(file_path))
+
+    @staticmethod
+    def write_to_file(file_path, contents):
+        file_permission = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP
+        with os.fdopen(os.open(file_path, os.O_CREAT | os.O_WRONLY, file_permission), "w") as ff:
+            ff.write(contents)
 
     def get_in_tensor_added(self, enum_cursor):
         added_items = []
@@ -105,6 +110,9 @@ class TransformQuant:
                 added_items.append(enum_item_spelling + "_" + DEQSCALE_SUFFIX)
                 if enum_item_spelling not in op_weight_with_bias:
                     added_items.append(enum_item_spelling + "_" + BIAS_SUFFIX)
+            # For transforming to sparse-quant model
+            if self.enable_sparse and any([ii in enum_item_spelling for ii in USING_SPARSE_INDEX_ITEMS]):
+                added_items.append(enum_item_spelling + "_" + INDEX_SUFFIX)
 
         if IN_BETA not in all_enums:
             added_items.append(IN_BETA)
@@ -137,7 +145,7 @@ class TransformQuant:
         insert_position = cursor.extent.end.offset - 1
 
         param_format = "    " + json_param_spelling + '.at("{}").get_to(' + in_param_spelling + ".{});"
-        in_tensor_added_lower = [ii.lower() for ii in self.in_tensor_added]
+        in_tensor_added_lower = [ii.lower() for ii in self.in_tensor_added if not ii.endswith(INDEX_SUFFIX)]
         insert_contents = "\n".join([param_format.format(ii, ii) for ii in in_tensor_added_lower]) + "\n"
         return insert_contents, insert_position, insert_position
 
@@ -147,7 +155,7 @@ class TransformQuant:
         for in_tensor in self.in_tensor_added:
             if in_tensor.endswith(DEQSCALE_SUFFIX):
                 insert_contents += f"{self.indent_prefix}float {in_tensor.lower()} = 1;\n"
-            else:
+            elif in_tensor.endswith(BIAS_SUFFIX):
                 insert_contents += f"{self.indent_prefix}int {in_tensor.lower()} = 0;\n"
         return insert_contents, insert_start, insert_end
 
@@ -193,7 +201,7 @@ class TransformQuant:
                 from llm.transform.transform_quant_cpp_layer_function import TransformQuantCppLayerFunction
 
                 cur_updates = TransformQuantCppLayerFunction(
-                    contents, cur_cursor, self.in_tensor_added, indent=self.indent
+                    contents, cur_cursor, self.in_tensor_added, indent=self.indent, enable_sparse=self.enable_sparse
                 )()
                 updates.extend(cur_updates)
                 continue
@@ -205,16 +213,16 @@ class TransformQuant:
 
     def __call__(self):
         cpp_contents = self.do_transform_quant(is_cpp=True)
-        target_cpp_file_path = to_quant_file_path(self.cpp_file_path)
-        write_to_file(target_cpp_file_path, cpp_contents)
+        target_cpp_file_path = self.to_quant_file_path(self.cpp_file_path, enable_sparse=self.enable_sparse)
+        self.write_to_file(target_cpp_file_path, cpp_contents)
 
         hpp_contents = self.do_transform_quant(is_cpp=False)
-        target_hpp_file_path = to_quant_file_path(self.hpp_file_path)
-        write_to_file(target_hpp_file_path, hpp_contents)
+        target_hpp_file_path = self.to_quant_file_path(self.hpp_file_path, enable_sparse=self.enable_sparse)
+        self.write_to_file(target_hpp_file_path, hpp_contents)
         return target_cpp_file_path, target_hpp_file_path
 
 
-def transform_quant(source_path):
+def transform_quant(source_path, enable_sparse=False):
     from glob import glob
 
     check_libclang_so()
@@ -236,7 +244,9 @@ def transform_quant(source_path):
     source_files, target_files = [], []
     for cpp_file_path, hpp_file_path in pairs:
         logger.info(f"cpp_file_path: {cpp_file_path}, hpp_file_path: {hpp_file_path}")
-        target_cpp_file_path, target_hpp_file_path = TransformQuant(cpp_file_path, hpp_file_path)()
+        target_cpp_file_path, target_hpp_file_path = TransformQuant(
+            cpp_file_path, hpp_file_path, enable_sparse=enable_sparse
+        )()
 
         logger.info(f"\nsource cpp file: {cpp_file_path},\ntarget cpp file: {target_cpp_file_path}")
         source_files.append(cpp_file_path)
