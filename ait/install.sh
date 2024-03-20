@@ -83,12 +83,10 @@ pre_check_skl2onnx(){
 
 download_and_install_aclruntime() {
     ACLRUNTIME_VERSION=`pip3 show aclruntime | awk '/Version: /{print $2}'`
-    ACLRUNTIME_COMMIT_ID=`pip show aclruntime | awk -F',' '/commit id/{print $2}' | awk -F': ' '{print $2}'`
-    TARGET_ACLRUNTIME_COMMIT_ID="88f"
 
     if [ "$arg_force_reinstall" = "--force-reinstall" ]; then
         echo "Force reinstall aclruntime"
-    elif [ "$ACLRUNTIME_VERSION" = "0.0.2" ] && [ "$ACLRUNTIME_COMMIT_ID" = "$TARGET_ACLRUNTIME_COMMIT_ID" ]; then
+    elif [ "$ACLRUNTIME_VERSION" = "0.0.2" ]; then
         echo "aclruntime==0.0.2 already installed, skip"
         return
     fi
