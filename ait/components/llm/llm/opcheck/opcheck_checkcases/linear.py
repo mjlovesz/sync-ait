@@ -27,26 +27,31 @@ class OpcheckLinearOperation(operation_test.OperationTest):
     def golden_flp(self, transpose_a: bool, transpose_b: bool, in_tensor_0, in_tensor_1):
         if transpose_a:
             if len(in_tensor_0.shape) == 2:
-                in_tensor_0 = torch.transpose(in_tensor_0, (1, 0))
+                in_tensor_0 = in_tensor_0.permute(1, 0)
             if len(in_tensor_0.shape) == 3:
-                in_tensor_0 = torch.transpose(in_tensor_0, (0, 2, 1))
-            in_tensor_0 = torch.ascontiguousarray(in_tensor_0)
+                in_tensor_0 = in_tensor_0.permute(0, 2, 1)
         if len(in_tensor_1.shape) == 4:
-            in_tensor_1 = torch.transpose(in_tensor_1, (0, 2, 1, 3))
+            in_tensor_1 = in_tensor_1.permute(0, 2, 1, 3)
             if in_tensor_1.shape[0] == 1:
                 in_tensor_1 = in_tensor_1.reshape(in_tensor_1.shape[1], in_tensor_1.shape[2] * in_tensor_1.shape[3])
             else:
                 in_tensor_1 = in_tensor_1.reshape(in_tensor_1.shape[0], in_tensor_1.shape[1],
                                                   in_tensor_1.shape[2] * in_tensor_1.shape[3])
-            in_tensor_1 = torch.ascontiguousarray(in_tensor_1)
         if transpose_b:
             if len(in_tensor_1.shape) == 2:
-                in_tensor_1 = torch.transpose(in_tensor_1, (1, 0))
+                in_tensor_1 = in_tensor_1.permute(1, 0)
             if len(in_tensor_1.shape) == 3:
-                in_tensor_1 = torch.transpose(in_tensor_1, (0, 2, 1))
-            in_tensor_1 = torch.ascontiguousarray(in_tensor_1)
-        golden_result = torch.matmul(in_tensor_0.astype(torch.float32), in_tensor_1.astype(torch.float32))
-        golden_result = golden_result.astype(torch.float16)
+                in_tensor_1 = in_tensor_1.permute(0, 2, 1)
+
+        if self.op_param["linearType"] == 0:
+            golden_result = torch.matmul(in_tensor_0.astype(torch.float32), in_tensor_1.astype(torch.float32))
+            golden_result = golden_result.astype(torch.float16)
+        elif self.op_param["linearType"] == 1:
+            golden_result = torch.matmul(in_tensor_0.astype(torch.float32), in_tensor_1.astype(torch.float32))
+            golden_result = golden_result.astype(torch.bfloat16)
+        else:
+            golden_result = torch.matmul(in_tensor_0.astype(torch.int32), in_tensor_1.astype(torch.int32))
+
         return golden_result
 
     def golden_calc(self, in_tensors):
