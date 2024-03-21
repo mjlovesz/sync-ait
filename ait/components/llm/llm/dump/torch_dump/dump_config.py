@@ -48,7 +48,7 @@ class DumpConfig:
             raise ValueError("Invalid args of DumpConfig.")
 
     def set_dump_device_and_dump_dir(self, device):
-        if self.dump_device_id is not None:
+        if self.dump_device_id is not None and device != "cpu":
             # Get the first position of a digit char, and cut out like cuda0 -> cuda, npu12 -> npu
             device_type = device[:max(enumerate(device), key=lambda xx: str.isdigit(xx[1]))[0]]
             dump_device_id_str = f"{device_type}{self.dump_device_id}"  # -> npu0
