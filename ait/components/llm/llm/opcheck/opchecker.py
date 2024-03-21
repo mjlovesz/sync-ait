@@ -216,9 +216,7 @@ class OpChecker:
             return False
 
     def check_path_valid(self, path):
-        if path and os.path.isdir(path):
-            return True
-        return False
+        return path and os.path.isdir(path)
     
     def if_exec_node(self, row):
         flag0 = self.check_path_valid(row["InTensorPath"])
