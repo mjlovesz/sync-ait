@@ -41,23 +41,25 @@ class DumpConfig:
         self.token_id = 0
         self.module_ids = {}
         self.cur_module_id = 0
-        self.device = "0"
         self.dump_dir = ""
 
         if not self._check_args():
             raise ValueError("Invalid args of DumpConfig.")
-        self.dump_device_id_str = str(dump_device_id)  # Default same format as self.device
+        self.dump_device_id_str = "npu" + str(dump_device_id)  # Default on npu
 
-    def set_device_and_dump_dir(self, device):
-        self.device = device
-        self.dump_dir = os.path.join(self.dump_path,
-                "ait_dump/torch_tensors", "{}_{}".format(str(os.getpid()), str(self.device)))
-        if not os.path.exists(self.dump_dir):
-            os.makedirs(self.dump_dir, mode=0o750)
+    def set_dump_flag_and_dump_dir(self, device):
         if self.dump_device_id is not None:
             # Get the first position of a digit char, and cut out like cuda0 -> cuda, npu12 -> npu
             device_type = device[:max(enumerate(device), key=lambda xx: str.isdigit(xx[1]))[0]]
-            self.dump_device_id_str = f"{device_type}{self.dump_device_id}"
+            dump_device_id_str = f"{device_type}{self.dump_device_id}"  # -> npu0
+            if device != dump_config.dump_device_id_str:
+                self.dump_flag = False
+                return
+
+        cur_dump_path = "{}_{}".format(str(self.device), str(os.getpid()))
+        self.dump_dir = os.path.join(self.dump_path, "ait_dump", "torch_tensors", cur_dump_path)
+        if not os.path.exists(self.dump_dir):
+            os.makedirs(self.dump_dir, mode=0o750)
 
     def update_module_ids(self, module_name):
         self.cur_module_id += 1

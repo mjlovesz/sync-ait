@@ -97,8 +97,6 @@ def wrap_torch_func(func):
         dump_config = DumpConfig()
         if not dump_config.dump_flag or dump_config.mode == "module":
             return output
-        if dump_config.dump_device_id is not None and dump_config.device != dump_config.dump_device_id_str:
-            return output
 
         api_dump_path = os.path.join(dump_config.dump_dir, func.__name__, str(exec_count))
         if not os.path.exists(api_dump_path):
@@ -137,8 +135,11 @@ def dump_module_data():
     def hook_func(module: torch.nn.Module, inputs, outputs):
         nonlocal exec_count
         exec_count += 1
-
         dump_config = DumpConfig()
+
+        if not dump_config.dump_flag:
+            return
+        
         if dump_config.token_id == 0:
             dump_config.update_module_ids(module.name)
             # 将模型树状信息保存成json文件
@@ -149,13 +150,10 @@ def dump_module_data():
             obj = ModelTree()
             obj.create_tree(module, dump_config.module_ids, model_tree_path)
 
-        if dump_config.mode == "api" or not dump_config.dump_flag:
+        if dump_config.mode == "api":
             return
 
         if dump_config.module_list and not isinstance(module, tuple(dump_config.module_list)):
-            return
-
-        if dump_config.dump_device_id is not None and dump_config.device != dump_config.dump_device_id_str:
             return
 
         module_name = module.name
