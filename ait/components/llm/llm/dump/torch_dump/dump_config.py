@@ -30,13 +30,13 @@ def singleton(cls):
 
 @singleton
 class DumpConfig:
-    def __init__(self, dump_path=None, token_range=None, module_list=None, tensor_part=2, dump_device_id=None):
+    def __init__(self, dump_path=None, token_range=None, module_list=None, tensor_part=2, device_id=None):
         self.dump_path = dump_path or "./"
         self.mode = "module"
         self.token_range = token_range or [0]
         self.module_list = module_list or []
         self.tensor_part = tensor_part
-        self.dump_device_id = dump_device_id
+        self.device_id = device_id
         self.is_dump_cur_device = True
         self.dump_flag = True
         self.token_id = 0
@@ -48,11 +48,11 @@ class DumpConfig:
             raise ValueError("Invalid args of DumpConfig.")
 
     def set_dump_device_and_dump_dir(self, device):
-        if self.dump_device_id is not None and device != "cpu":
+        if self.device_id is not None and device != "cpu":
             # Get the first position of a digit char, and cut out like cuda0 -> cuda, npu12 -> npu
             device_type = device[:max(enumerate(device), key=lambda xx: str.isdigit(xx[1]))[0]]
-            dump_device_id_str = f"{device_type}{self.dump_device_id}"  # -> npu0
-            if device != dump_device_id_str:
+            device_id_str = f"{device_type}{self.device_id}"  # -> npu0
+            if device != device_id_str:
                 self.is_dump_cur_device = False
                 return
 
