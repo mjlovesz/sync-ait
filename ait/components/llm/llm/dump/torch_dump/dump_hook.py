@@ -95,13 +95,12 @@ def wrap_torch_func(func):
         output = func(*args, **kwargs)
 
         dump_config = DumpConfig()
-        if not dump_config.dump_flag or dump_config.mode == "module":
+        if not dump_config.dump_flag or not dump_config.is_dump_cur_device or dump_config.mode == "module":
             return output
 
         api_dump_path = os.path.join(dump_config.dump_dir, func.__name__, str(exec_count))
         if not os.path.exists(api_dump_path):
             os.makedirs(api_dump_path)
-
         dump_data(args, output, api_dump_path, dump_config.tensor_part)
         return output
 
@@ -136,8 +135,11 @@ def dump_module_data():
     def hook_func(module: torch.nn.Module, inputs, outputs):
         nonlocal exec_count
         exec_count += 1
-
         dump_config = DumpConfig()
+
+        if not dump_config.is_dump_cur_device:
+            return
+        
         if dump_config.token_id == 0:
             dump_config.update_module_ids(module.name)
             # 将模型树状信息保存成json文件
