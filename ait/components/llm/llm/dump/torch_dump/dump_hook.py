@@ -95,7 +95,7 @@ def wrap_torch_func(func):
         output = func(*args, **kwargs)
 
         dump_config = DumpConfig()
-        if not dump_config.dump_flag or dump_config.mode == "module":
+        if not dump_config.dump_flag or not dump_config.is_dump_cur_device or dump_config.mode == "module":
             return output
 
         api_dump_path = os.path.join(dump_config.dump_dir, func.__name__, str(exec_count))
@@ -137,7 +137,7 @@ def dump_module_data():
         exec_count += 1
         dump_config = DumpConfig()
 
-        if not dump_config.dump_flag:
+        if not dump_config.is_dump_cur_device:
             return
         
         if dump_config.token_id == 0:
@@ -150,7 +150,7 @@ def dump_module_data():
             obj = ModelTree()
             obj.create_tree(module, dump_config.module_ids, model_tree_path)
 
-        if dump_config.mode == "api":
+        if dump_config.mode == "api" or not dump_config.dump_flag:
             return
 
         if dump_config.module_list and not isinstance(module, tuple(dump_config.module_list)):

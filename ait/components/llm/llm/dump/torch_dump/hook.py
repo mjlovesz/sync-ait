@@ -43,7 +43,7 @@ def register_hook(model, config: DumpConfig, hook_type="dump_data"):
         return
 
     device = get_device(model)
-    config.set_device_and_dump_dir(device)
+    config.set_dump_flag_and_dump_dir(device)
 
     if HOOK_TYPE == "dump_data":
         hook_module = DumpHookModule(model, config)

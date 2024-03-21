@@ -37,6 +37,7 @@ class DumpConfig:
         self.module_list = module_list or []
         self.tensor_part = tensor_part
         self.dump_device_id = dump_device_id
+        self.is_dump_cur_device = True
         self.dump_flag = True
         self.token_id = 0
         self.module_ids = {}
@@ -45,15 +46,14 @@ class DumpConfig:
 
         if not self._check_args():
             raise ValueError("Invalid args of DumpConfig.")
-        self.dump_device_id_str = "npu" + str(dump_device_id)  # Default on npu
 
-    def set_dump_flag_and_dump_dir(self, device):
+    def set_dump_device_and_dump_dir(self, device):
         if self.dump_device_id is not None:
             # Get the first position of a digit char, and cut out like cuda0 -> cuda, npu12 -> npu
             device_type = device[:max(enumerate(device), key=lambda xx: str.isdigit(xx[1]))[0]]
             dump_device_id_str = f"{device_type}{self.dump_device_id}"  # -> npu0
-            if device != dump_config.dump_device_id_str:
-                self.dump_flag = False
+            if device != dump_device_id_str:
+                self.is_dump_cur_device = False
                 return
 
         cur_dump_path = "{}_{}".format(str(self.device), str(os.getpid()))
