@@ -17,6 +17,9 @@ from llm.common import utils
 from llm.common.log import logger
 
 
+DEVICE_NAME_LEN = 3  # Like npu gpu cpu
+
+
 def singleton(cls):
     ins = {}
 
@@ -46,7 +49,7 @@ class DumpConfig:
 
         if not self._check_args():
             raise ValueError("Invalid args of DumpConfig.")
-        self.dump_device_id_str = str(dump_device_id)
+        self.dump_device_id_str = str(dump_device_id)  # Default same format as self.device
 
     def set_device_and_dump_dir(self, device):
         self.device = device
@@ -54,6 +57,8 @@ class DumpConfig:
                 "ait_dump/torch_tensors", "{}_{}".format(str(os.getpid()), str(self.device)))
         if not os.path.exists(self.dump_dir):
             os.makedirs(self.dump_dir, mode=0o750)
+        if self.dump_device_id is not None:
+            self.dump_device_id_str = f"{self.device[:DEVICE_NAME_LEN]}{self.dump_device_id}"
 
     def update_module_ids(self, module_name):
         self.cur_module_id += 1

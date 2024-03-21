@@ -97,13 +97,13 @@ def wrap_torch_func(func):
         dump_config = DumpConfig()
         if not dump_config.dump_flag or dump_config.mode == "module":
             return output
+        if dump_config.dump_device_id is not None and dump_config.device != dump_config.dump_device_id_str:
+            return output
 
         api_dump_path = os.path.join(dump_config.dump_dir, func.__name__, str(exec_count))
         if not os.path.exists(api_dump_path):
             os.makedirs(api_dump_path)
-
-        if dump_config.dump_device_id is None or dump_config.dump_device_id == dump_config.dump_device_id_str:
-            dump_data(args, output, api_dump_path, dump_config.tensor_part)
+        dump_data(args, output, api_dump_path, dump_config.tensor_part)
         return output
 
     return dump_api_data
@@ -153,6 +153,9 @@ def dump_module_data():
             return
 
         if dump_config.module_list and not isinstance(module, tuple(dump_config.module_list)):
+            return
+
+        if dump_config.dump_device_id is None or dump_config.device == dump_config.dump_device_id_str:
             return
 
         module_name = module.name
