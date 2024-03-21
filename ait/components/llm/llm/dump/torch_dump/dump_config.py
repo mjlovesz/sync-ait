@@ -17,9 +17,6 @@ from llm.common import utils
 from llm.common.log import logger
 
 
-DEVICE_NAME_LEN = 3  # Like npu gpu cpu
-
-
 def singleton(cls):
     ins = {}
 
@@ -58,7 +55,9 @@ class DumpConfig:
         if not os.path.exists(self.dump_dir):
             os.makedirs(self.dump_dir, mode=0o750)
         if self.dump_device_id is not None:
-            self.dump_device_id_str = f"{self.device[:DEVICE_NAME_LEN]}{self.dump_device_id}"
+            # Get the first position of a digit char, and cut out like cuda0 -> cuda, npu12 -> npu
+            device_type = device[:max(enumerate(device), key=lambda xx: str.isdigit(xx[1]))[0]]
+            self.dump_device_id_str = f"{device_type}{self.dump_device_id}"
 
     def update_module_ids(self, module_name):
         self.cur_module_id += 1
