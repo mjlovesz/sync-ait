@@ -77,8 +77,8 @@ class DumpConfig:
         if not isinstance(self.tensor_part, int):
             logger.error("tensor_part must be int.")
             return False
-        if self.dump_device_id is not None and not isinstance(self.dump_device_id, int):
-            logger.error("dump_device_id must be int.")
+        if self.device_id is not None and not isinstance(self.device_id, int):
+            logger.error("device_id must be int.")
             return False
         if self.tensor_part not in [0, 1, 2]:
             logger.error("tensor_part must be 0 or 1 or 2.")
