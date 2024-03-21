@@ -36,7 +36,7 @@ def test_hook_when_tp_default_then_save_inputs():
                                          "cpu_" + str(os.getpid()), "0", name, "output.pth")
         assert os.path.exists(except_input_path)
         assert os.path.exists(except_output_path)
-    topo_path = os.path.join(DUMP_PATH, "ait_dump/torch_tensors", str(os.getpid()) + "_cpu", "model_tree.json")
+    topo_path = os.path.join(DUMP_PATH, "ait_dump/torch_tensors", "cpu_" + str(os.getpid()), "model_tree.json")
     assert os.path.exists(topo_path)
         
     if os.path.exists(DUMP_PATH):
