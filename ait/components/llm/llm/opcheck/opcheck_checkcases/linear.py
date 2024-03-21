@@ -44,13 +44,13 @@ class OpcheckLinearOperation(operation_test.OperationTest):
                 in_tensor_1 = in_tensor_1.permute(0, 2, 1)
 
         if self.op_param["linearType"] == 0:
-            golden_result = torch.matmul(in_tensor_0.astype(torch.float32), in_tensor_1.astype(torch.float32))
-            golden_result = golden_result.astype(torch.float16)
+            golden_result = torch.matmul(in_tensor_0.to(torch.float32), in_tensor_1.to(torch.float32))
+            golden_result = golden_result.to(torch.float16)
         elif self.op_param["linearType"] == 1:
-            golden_result = torch.matmul(in_tensor_0.astype(torch.float32), in_tensor_1.astype(torch.float32))
-            golden_result = golden_result.astype(torch.bfloat16)
+            golden_result = torch.matmul(in_tensor_0.to(torch.float32), in_tensor_1.to(torch.float32))
+            golden_result = golden_result.to(torch.bfloat16)
         else:
-            golden_result = torch.matmul(in_tensor_0.astype(torch.int32), in_tensor_1.astype(torch.int32))
+            golden_result = torch.matmul(in_tensor_0.to(torch.int32), in_tensor_1.to(torch.int32))
 
         return golden_result
 
@@ -60,11 +60,11 @@ class OpcheckLinearOperation(operation_test.OperationTest):
         golden_result = self.golden_flp(transpose_a, transpose_b, in_tensors[0], in_tensors[1])
         if self.op_param["hasBias"]:
             if self.op_param["linearType"] == 0:
-                in_tensors[2] = in_tensors[2].astype(torch.float16)
+                in_tensors[2] = in_tensors[2].to(torch.float16)
             elif self.op_param["linearType"] == 1:
-                in_tensors[2] = in_tensors[2].astype(torch.bfloat16)
+                in_tensors[2] = in_tensors[2].to(torch.bfloat16)
             else:
-                in_tensors[2] = in_tensors[2].astype(torch.int32)
+                in_tensors[2] = in_tensors[2].to(torch.int32)
             golden_result = golden_result + in_tensors[2]
         golden_result = torch.tensor(golden_result).half()
         return [golden_result.npu()]
