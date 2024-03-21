@@ -56,7 +56,7 @@ class DumpConfig:
                 self.is_dump_cur_device = False
                 return
 
-        cur_dump_path = "{}_{}".format(str(self.device), str(os.getpid()))
+        cur_dump_path = "{}_{}".format(device, os.getpid())
         self.dump_dir = os.path.join(self.dump_path, "ait_dump", "torch_tensors", cur_dump_path)
         if not os.path.exists(self.dump_dir):
             os.makedirs(self.dump_dir, mode=0o750)
