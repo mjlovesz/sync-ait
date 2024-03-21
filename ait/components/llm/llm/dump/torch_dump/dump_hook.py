@@ -155,7 +155,7 @@ def dump_module_data():
         if dump_config.module_list and not isinstance(module, tuple(dump_config.module_list)):
             return
 
-        if dump_config.dump_device_id is None or dump_config.device == dump_config.dump_device_id_str:
+        if dump_config.dump_device_id is not None and dump_config.device != dump_config.dump_device_id_str:
             return
 
         module_name = module.name
