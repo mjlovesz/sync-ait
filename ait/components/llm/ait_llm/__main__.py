@@ -375,7 +375,7 @@ class LlmCommand(BaseCommand):
 
 
 def get_cmd_instance():
-    llm_help_info = "Large Language Model(ait_llm) Debugger Tools."
+    llm_help_info = "Large Language Model(llm) Debugger Tools."
     dump_cmd_instance = DumpCommand("dump", "Dump tool for ascend transformer boost", alias_name="dd")
     compare_cmd_instance = CompareCommand("compare", "Accuracy compare tool for large language model", alias_name="cc")
     opcheck_cmd_instance = OpcheckCommand("opcheck", "Operation check tool for large language model", alias_name='oo')
@@ -387,4 +387,4 @@ def get_cmd_instance():
     instances = [
         dump_cmd_instance, compare_cmd_instance, opcheck_cmd_instance, errcheck_cmd_instance, transform_cmd_instance
     ]
-    return LlmCommand("ait_llm", llm_help_info, instances)
+    return LlmCommand("llm", llm_help_info, instances)
