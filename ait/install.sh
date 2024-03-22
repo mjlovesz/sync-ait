@@ -167,7 +167,7 @@ build_om_so() {
 
   if [ "$ASCEND_TOOLKIT_HOME" != "" ]; then
       toolkit_home=$ASCEND_TOOLKIT_HOME
-  else:
+  else
       toolkit_home=$ASCEND_AICPU_PATH
   fi
 

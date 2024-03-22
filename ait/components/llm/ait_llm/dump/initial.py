@@ -25,7 +25,7 @@ from ait_llm.common.constant import ATB_HOME_PATH, ATB_SAVE_TENSOR_TIME, ATB_SAV
     ATB_SAVE_TENSOR_RUNNER, ATB_SAVE_TENSOR, ATB_SAVE_TENSOR_RANGE, \
     ATB_SAVE_TILING, LD_PRELOAD, ATB_OUTPUT_DIR, ATB_SAVE_CHILD, ATB_SAVE_TENSOR_PART, \
     ASCEND_TOOLKIT_HOME, ATB_PROB_LIB_WITH_ABI, ATB_PROB_LIB_WITHOUT_ABI, ATB_SAVE_CPU_PROFILING, \
-    ATB_CUR_PID, ATB_DUMP_SUB_PROC_INFO_SAVE_PATH
+    ATB_CUR_PID, ATB_DUMP_SUB_PROC_INFO_SAVE_PATH, ATB_DEVICE_ID, ATB_AIT_LOG_LEVEL
 
 
 def is_use_cxx11():
@@ -49,12 +49,16 @@ def init_dump_task(args):
         os.environ[ATB_SAVE_TENSOR] = "2"
     else:
         os.environ[ATB_SAVE_TENSOR] = "1"
-    
+
     os.environ[ATB_SAVE_TENSOR_TIME] = str(args.time)
     if args.ids:
         os.environ[ATB_SAVE_TENSOR_IDS] = str(args.ids)
+
     if args.opname:
         os.environ[ATB_SAVE_TENSOR_RUNNER] = str(args.opname).lower()
+    else:
+        os.environ.pop(ATB_SAVE_TENSOR_RUNNER, None)
+
     if args.output:
         if args.output.endswith('/'):
             os.environ[ATB_OUTPUT_DIR] = str(args.output)
@@ -66,7 +70,7 @@ def init_dump_task(args):
 
     if args.type:
         os.environ['ATB_DUMP_TYPE'] = "|".join(args.type)
-    
+
     if "onnx" in args.type and ("model" in args.type or "layer" in args.type):
         os.environ[ATB_DUMP_SUB_PROC_INFO_SAVE_PATH] = os.path.join(str(args.output), str(os.getpid()))
         subprocess_info_path = os.path.join(args.output, str(os.getpid()))
@@ -78,6 +82,15 @@ def init_dump_task(args):
     os.environ[ATB_SAVE_TENSOR_PART] = str(args.save_tensor_part)
     os.environ[ATB_SAVE_CPU_PROFILING] = "1" if "cpu_profiling" in args.type else "0"
     os.environ[ATB_CUR_PID] = str(os.getpid())
+
+    if args.device_id is not None:
+        os.environ[ATB_DEVICE_ID] = str(args.device_id)
+    else:
+        os.environ.pop(ATB_DEVICE_ID, None)
+
+    atb_log_level_map = {"debug": 0, "info": 1, "warning": 2, "warn": 2, "error": 3, "fatal": 4, "critical": 5}
+    cur_log_level = atb_log_level_map.get(args.log_level.lower(), 1)
+    os.environ[ATB_AIT_LOG_LEVEL] = str(cur_log_level)
 
     cann_path = os.environ.get(ASCEND_TOOLKIT_HOME, "/usr/local/Ascend/ascend-toolkit/latest")
     if not cann_path or not os.path.exists(cann_path):
@@ -172,4 +185,3 @@ def clear_dump_task(args):
         merge_cpu_profiling_data(cpu_profiling_data_path)
     else:
         return
-    

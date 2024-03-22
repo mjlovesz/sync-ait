@@ -40,6 +40,8 @@ ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py"
 | -tiling，--save-tiling         | 选择是否需要保存tiling数据，默认为false。使用方式：-tiling                                                                                                                                                                                                                                   | 否   |
 | --save-tensor-part, -stp       | 指定保存tensor的部分，0为仅intensor，1为仅outtensor，2为全部保存，默认为2。使用示例：-stp 1                                                                                                                                                                                                  | 否   |
 | -o, --output                   | 指定dump数据的输出目录，默认为'./'，使用示例：-o aasx/sss                                                                                                                                                                                                                                    | 否   |
+| -device, --device-id           | 指定dump数据的device id，默认为 None 表示不限制。如指定 --device-id 1，将跳过其他 device 的 dump                                                                                                                                                                                            | 否   |
+| -l, --log-level                | 指定log leveldump数据的device id，默认为 info，可选值 debug, info, warning, error, fatal, critical                                                                                                                                                                                        | 否   |
 
 ### Dump 落盘位置
 
@@ -104,6 +106,7 @@ atb_json_to_onnx(layer_topo_info, model_level)
 | token_range | 需要dump的token列表    | 数据类型：list。默认为[0]，只dump第0个token的数据。                                                                                      | 否       |
 | module_list | 指定要hook的module类型 | 数据类型：list，默认为[]，即dump所有module的数据。                                                                                       | 否       |
 | tensor_part | 指定要dump哪部分数据   | 数据类型：int，默认为2。当tensor_part=0时，只dump输入数据；当tensor_part=1时，只dump输出数据； 当tensor_part=2时，dump输入和输出的数据。 | 否       |
+| device_id | 指定要dump的device id  | 数据类型：int，默认为None 表示不限制 device。如指定 device_id=1，将跳过其他 device 的 dump。                                        | 否       |
 
 ##### register_hook
 

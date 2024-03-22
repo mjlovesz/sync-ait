@@ -22,8 +22,10 @@ from ait_llm.opcheck.opchecker import OpChecker
 from ait_llm.errcheck.initial import init_error_check
 from ait_llm.common.utils import str2bool, check_positive_integer, check_device_integer, safe_string, check_exec_cmd, \
     check_ids_string, check_number_list, check_output_path_legality, check_input_path_legality
-from ait_llm.common.log import set_log_level
-from ait_llm.common.log import logger
+from ait_llm.common.log import logger, set_log_level, LOG_LEVELS
+
+
+LOG_LEVELS_LOWER = [ii.lower() for ii in LOG_LEVELS.keys()]
 
 
 class DumpCommand(BaseCommand):
@@ -129,8 +131,22 @@ class DumpCommand(BaseCommand):
             choices=['model', 'layer', 'op', 'kernel', 'tensor', 'cpu_profiling', 'onnx'],
             help='dump type.')
 
+        parser.add_argument(
+            '--device-id',
+            '-device',
+            required=False,
+            dest="device_id",
+            type=check_positive_integer,
+            default=None,
+            help='Specify a single device ID for dumping data, will skip other devices.')
+
+        parser.add_argument(
+            "--log-level", "-l", default="INFO", choices=LOG_LEVELS_LOWER, help="specify log level"
+        )
+
     def handle(self, args, **kwargs):
         if args.exec:
+            set_log_level(args.log_level)
             logger.info(f"About to execute command : {args.exec}")
             logger.warning("Please ensure that your execution command is secure.")
             init_dump_task(args)
@@ -165,8 +181,8 @@ class CompareCommand(BaseCommand):
             dest="log_level",
             required=False,
             default="info",
-            type=str,
-            help='Log level, default info.')
+            choices=LOG_LEVELS_LOWER,
+            help='specify log level')
 
         parser.add_argument(
             '--output',
@@ -274,7 +290,7 @@ class OpcheckCommand(BaseCommand):
             action='store_true',
             default=False,
             help='Rerun atb operations if True. Compare outputs in dump data if False')
-        
+
     def handle(self, args, **kwargs):
         op = OpChecker()
         logger.info(f"===================Opcheck start====================")
@@ -352,9 +368,7 @@ class Transform(BaseCommand):
         parser.add_argument(
             "--enable-sparse", action='store_true', help="Enable trasforming to sparse-quant model"
         )
-        parser.add_argument(
-            "--log-level", default="INFO", choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], help="specify log level"
-        )
+        parser.add_argument("--log-level", default="info", choices=LOG_LEVELS_LOWER, help="specify log level")
 
     def handle(self, args, **kwargs) -> None:
         from ait_llm.transform import transform_quant
