@@ -54,7 +54,7 @@ class OpChecker:
         self.timestamp = utc_time.astimezone(pytz.timezone('Asia/Shanghai')).strftime("%Y%m%d_%H%M%S")
         self.rerun = False
 
-    @staticmethod   
+    @staticmethod
     def third_party_init():
         execution_flag = True
 
@@ -64,7 +64,7 @@ class OpChecker:
         if not lib_path:
             lib_path_dir = os.path.dirname(os.path.abspath(ait_llm.__file__))
             lib_path = os.path.join(lib_path_dir, "opcheck", "libopchecker.so")
-        
+
         if os.path.exists(lib_path):
             try:
                 logger.info(lib_path)
@@ -77,14 +77,14 @@ class OpChecker:
             logger_text = "libopchecker.so not found in {}".format(lib_path)
             logger.error(logger_text)
             execution_flag = False
-        
+
         return execution_flag
-    
+
     def args_init(self, args):
         import torch_npu
 
         execution_flag = True
-        
+
         self.tensor_path = args.input
         self.op_path = args.csv_path
         self.output_dir = args.output
@@ -133,16 +133,16 @@ class OpChecker:
         execution_flag_res = self.args_init(args)
         if not execution_flag_res:
             return
-        
+
         from ait_llm.opcheck.case_manager import CaseManager
         case_manager = CaseManager(self.completed_op_id_queue)
-        
+
         # 1.将csv文件中的算子信息添加到self.cases_info
         execution_flag_res = self.add_file_info_to_cases()
         if not execution_flag_res:
             return
         result_info = 'excuted_information'
-        
+
         # 2.将self.cases_info中的用例添加到case_manager
         for _, case_info in self.cases_info.items():
             if_successed_add_case = case_manager.add_case(case_info)
@@ -168,7 +168,7 @@ class OpChecker:
             logger.debug(logger_text)
             return ""
         return files[0]
-    
+
     def parse_csv_files(self):
         try:
             df = pd.read_csv(self.op_path, sep='|')
@@ -176,18 +176,18 @@ class OpChecker:
             logger_text = f"Cannot read csv file: {self.op_path}"
             logger.error(logger_text)
             df = pd.DataFrame()
-        
+
         op_name_str = "OpName"
         if op_name_str in df.columns and "OutDType" in df.columns:
-            df = df.loc[~df['OutDType'].isnull()&~df[op_name_str].isnull()]
+            df = df.loc[~df['OutDType'].isnull() & ~df[op_name_str].isnull()]
             try:
-                df['Ids'] = df[op_name_str].apply(lambda x:x.split("_", 1)[1])
-                df['RealOpName'] = df[op_name_str].apply(lambda x:x.split("_", 1)[0])
-                df['InTensorPath'] = df['Ids'].apply(lambda x:self.parse_in_tensor_path(x))
-                df['OutDTypeParse'] = df['OutDType'].apply(lambda x:x.split(";"))
+                df['Ids'] = df[op_name_str].apply(lambda x: x.split("_", 1)[1])
+                df['RealOpName'] = df[op_name_str].apply(lambda x: x.split("_", 1)[0])
+                df['InTensorPath'] = df['Ids'].apply(lambda x: self.parse_in_tensor_path(x))
+                df['OutDTypeParse'] = df['OutDType'].apply(lambda x: x.split(";"))
             except Exception as e:
                 logger_text = f"Cannot parse csv file: {self.op_path}"
-                logger.error(logger_text) 
+                logger.error(logger_text)
                 df = pd.DataFrame()
         else:
             logger_text = f"Cannot find enough info in csv file: {self.op_path}"
@@ -205,32 +205,32 @@ class OpChecker:
                 if ret:
                     return True
             return False
-    
+
     def check_name(self, op_name):
         if self.opname is None:
             return True
-        else: # 应该是LinearOps，SelfAttention
+        else:  # 应该是LinearOps，SelfAttention
             for p in self.check_patterns:
                 if p in op_name.lower():
-                    return True        
+                    return True
             return False
 
     def check_path_valid(self, path):
         return path and os.path.isdir(path)
-    
+
     def if_exec_node(self, row):
         flag0 = self.check_path_valid(row["InTensorPath"])
         if not flag0:
             return False
-        
+
         if self.ids == '' and self.opname is None:
             return True
-            
+
         flag1 = self.check_id_range(row["Ids"])
         flag2 = self.check_name(row["RealOpName"])
         if flag1 and flag2:
             return True
-        
+
         return False
 
     def add_case_to_cases_info(self, row):
@@ -247,8 +247,8 @@ class OpChecker:
         out_dtype = row["OutDTypeParse"]
 
         case_info = {
-            'op_id': op_id, 'op_name': op_name, 'op_param': op_param, 'tensor_path': tensor_path, 
-            'out_dtype':out_dtype, 'precision_type':self.precision_type, 'rerun':self.rerun
+            'op_id': op_id, 'op_name': op_name, 'op_param': op_param, 'tensor_path': tensor_path,
+            'out_dtype': out_dtype, 'precision_type': self.precision_type, 'rerun': self.rerun
         }
 
         if op_name == 'KvCacheOperation':
@@ -280,9 +280,9 @@ class OpChecker:
             logger_text = f"{self.op_path} not exists"
             logger.error(logger_text)
             execution_flag = False
-        
+
         return execution_flag
- 
+
     def excute_cases(self, case_manager):
         # 定义监控队列函数
         def watching_queue():
@@ -300,10 +300,10 @@ class OpChecker:
                     logger.info(logger_text)
 
         watching_thread = threading.Thread(target=watching_queue)
-        watching_thread.start()      
+        watching_thread.start()
         case_manager.excute_cases()
         watching_thread.join()
-    
+
     def get_optional_idx(self):
         optional_idx = []
         if 'abs' in self.precision_type:
@@ -323,14 +323,14 @@ class OpChecker:
             wb = openpyxl.Workbook()
             ws = wb.active
             required_head = [
-                'op_id', 'op_name', 'op_param', 'tensor_path', 'out_tensor_id', 'precision_standard', 
+                'op_id', 'op_name', 'op_param', 'tensor_path', 'out_tensor_id', 'precision_standard',
                 'excuted_information', 'precision_result(%)', 'max_rel_error'
             ]
             optional_head = ['abs_precision_result(%)', 'max_abs_error', 'cosine_similarity', 'kl_divergence']
             optional_head_cp = [optional_head[i] for i in optional_idx]
             ws.append(required_head + optional_head_cp)
             wb.save(self.output_path)
-            
+
         wb = openpyxl.load_workbook(self.output_path)
         ws = wb.active
 
@@ -349,7 +349,7 @@ class OpChecker:
                 cos_sim = res_detail['cos_sim']
                 kl_div = res_detail['kl_div']
                 required = [
-                    op_id, op_name, op_param, tensor_path, i, precision_standard, excuted_information, rel_pass_rate, 
+                    op_id, op_name, op_param, tensor_path, i, precision_standard, excuted_information, rel_pass_rate,
                     max_rel
                 ]
                 optional = [abs_pass_rate, max_abs, cos_sim, kl_div]
@@ -360,7 +360,7 @@ class OpChecker:
             i, precision_standard, rel_pass_rate, max_rel, abs_pass_rate, max_abs, cos_sim, kl_div = default_str, \
                 default_str, default_str, default_str, default_str, default_str, default_str, default_str
             required = [
-                op_id, op_name, op_param, tensor_path, i, precision_standard, excuted_information, rel_pass_rate, 
+                op_id, op_name, op_param, tensor_path, i, precision_standard, excuted_information, rel_pass_rate,
                 max_rel
             ]
             optional = [abs_pass_rate, max_abs, cos_sim, kl_div]
