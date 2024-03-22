@@ -113,7 +113,7 @@ download_and_install_aclruntime() {
 uninstall(){
   if [ -z $only_debug ] && [ -z $only_compare ] && [ -z $only_surgen ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ] && [ -z $only_llm ]
   then
-    pip3 uninstall ait analyze_tool aclruntime ais_bench convert_tool compare auto_optimizer msprof transplt llm ${all_uninstall}
+    pip3 uninstall ait analyze_tool aclruntime ais_bench convert_tool compare auto_optimizer msprof transplt ait_llm ${all_uninstall}
   else
     if [ ! -z $only_compare ]
     then
@@ -152,7 +152,7 @@ uninstall(){
 
     if [ ! -z $only_llm ]
     then
-      pip3 uninstall llm ${all_uninstall}
+      pip3 uninstall ait_llm ${all_uninstall}
     fi
   fi
   exit;
