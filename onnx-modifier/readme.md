@@ -28,6 +28,8 @@
 `onnx-modifier`基于流行的模型可视化工具 [Netron](https://github.com/lutzroeder/netron) 和[Electron](https://www.electronjs.org/)。希望它能给社区带来一些贡献~
 
 # 安装与运行
+onnx 当前版本要求 `onnx<=1.14.1`
+
 您可以使用我们已经打包好的程序: [已打包程序](https://gitee.com/ascend/ait/wikis/OnnxModifier/%E6%89%93%E5%8C%85%20OnnxModifier%20)
 
 

@@ -1,4 +1,4 @@
 # Python dependencies required for development
-onnx
+onnx<=1.14.1
 onnxsim
 numpy

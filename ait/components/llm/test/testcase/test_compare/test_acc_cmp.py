@@ -21,8 +21,8 @@ from unittest import mock
 import torch
 import numpy as np
 
-import llm.compare.cmp_utils
-from llm.compare import atb_acc_cmp
+import ait_llm.compare.cmp_utils
+from ait_llm.compare import atb_acc_cmp
 
 
 FILE_PERMISSION = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP
@@ -119,13 +119,13 @@ def test_atb_path():
 
 
 def test_check_tensor_given_golden_data_when_nan_then_false():
-    result, message = llm.compare.cmp_utils.check_tensor(torch.zeros([2]).float() + torch.nan, torch.zeros([2]).float())
+    result, message = ait_llm.compare.cmp_utils.check_tensor(torch.zeros([2]).float() + torch.nan, torch.zeros([2]).float())
     assert result is False and len(message) > 0 and "golden" in message.lower()
 
 
 def test_fill_row_data_given_my_path_when_valid_then_pass(golden_data_file, test_data_file):
-    data_info = llm.compare.cmp_utils.BasicDataInfo(golden_data_file, test_data_file, 0, 0)
-    row_data = llm.compare.cmp_utils.fill_row_data(data_info)
+    data_info = ait_llm.compare.cmp_utils.BasicDataInfo(golden_data_file, test_data_file, 0, 0)
+    row_data = ait_llm.compare.cmp_utils.fill_row_data(data_info)
     assert isinstance(row_data, dict) and len(row_data) == 22
     assert row_data["cosine_similarity"] == '1.000000'
     assert len(row_data["cmp_fail_reason"]) == 0
@@ -134,23 +134,23 @@ def test_fill_row_data_given_my_path_when_valid_then_pass(golden_data_file, test
 def test_fill_row_data_given_loaded_my_data_when_valid_then_pass(golden_data_file):
     golden_data = np.load(golden_data_file)
     loaded_my_data = np.zeros_like(golden_data)
-    data_info = llm.compare.cmp_utils.BasicDataInfo(golden_data_file, "test")
-    row_data = llm.compare.cmp_utils.fill_row_data(data_info, loaded_my_data=loaded_my_data)
+    data_info = ait_llm.compare.cmp_utils.BasicDataInfo(golden_data_file, "test")
+    row_data = ait_llm.compare.cmp_utils.fill_row_data(data_info, loaded_my_data=loaded_my_data)
     assert isinstance(row_data, dict) and len(row_data) == 22
     assert row_data["cosine_similarity"] == 'NaN'
     assert len(row_data["cmp_fail_reason"]) > 0
 
 
 def test_fill_row_data_given_my_path_when_dir_then_error(golden_data_file):
-    data_info = llm.compare.cmp_utils.BasicDataInfo(golden_data_file, "/")
-    row_data = llm.compare.cmp_utils.fill_row_data(data_info)
+    data_info = ait_llm.compare.cmp_utils.BasicDataInfo(golden_data_file, "/")
+    row_data = ait_llm.compare.cmp_utils.fill_row_data(data_info)
     assert isinstance(row_data, dict) and len(row_data) == 5
     assert len(row_data["cmp_fail_reason"]) > 0
 
 
 def test_fill_row_data_given_golden_data_path_when_empty_then_error(test_data_file):
-    data_info = llm.compare.cmp_utils.BasicDataInfo("", test_data_file)
-    row_data = llm.compare.cmp_utils.fill_row_data(data_info)
+    data_info = ait_llm.compare.cmp_utils.BasicDataInfo("", test_data_file)
+    row_data = ait_llm.compare.cmp_utils.fill_row_data(data_info)
     assert isinstance(row_data, dict) and len(row_data) == 5
     assert len(row_data["cmp_fail_reason"]) > 0
 
@@ -158,8 +158,8 @@ def test_fill_row_data_given_golden_data_path_when_empty_then_error(test_data_fi
 def test_fill_row_data_given_my_path_when_nan_then_error(golden_data_file):
     golden_data = np.load(golden_data_file)
     loaded_my_data = np.zeros_like(golden_data) + np.nan
-    data_info = llm.compare.cmp_utils.BasicDataInfo(golden_data_file, "test")
-    row_data = llm.compare.cmp_utils.fill_row_data(data_info, loaded_my_data=loaded_my_data)
+    data_info = ait_llm.compare.cmp_utils.BasicDataInfo(golden_data_file, "test")
+    row_data = ait_llm.compare.cmp_utils.fill_row_data(data_info, loaded_my_data=loaded_my_data)
     assert isinstance(row_data, dict) and len(row_data) == 15
     assert len(row_data["cmp_fail_reason"]) > 0
 
@@ -167,15 +167,15 @@ def test_fill_row_data_given_my_path_when_nan_then_error(golden_data_file):
 def test_fill_row_data_given_my_path_when_shape_not_match_then_error(golden_data_file):
     golden_data = np.load(golden_data_file)
     loaded_my_data = np.zeros([])
-    data_info = llm.compare.cmp_utils.BasicDataInfo(golden_data_file, "test")
-    row_data = llm.compare.cmp_utils.fill_row_data(data_info, loaded_my_data=loaded_my_data)
+    data_info = ait_llm.compare.cmp_utils.BasicDataInfo(golden_data_file, "test")
+    row_data = ait_llm.compare.cmp_utils.fill_row_data(data_info, loaded_my_data=loaded_my_data)
     assert isinstance(row_data, dict) and len(row_data) == 15
     assert len(row_data["cmp_fail_reason"]) > 0
 
 
 def test_save_compare_reault_to_csv_given_data_frame_when_valid_then_pass():
     dd = [{"aa": 11}, {"bb": 12}]
-    csv_save_path = llm.compare.cmp_utils.save_compare_reault_to_csv(dd)
+    csv_save_path = ait_llm.compare.cmp_utils.save_compare_reault_to_csv(dd)
     assert os.path.exists(csv_save_path) and os.path.getsize(csv_save_path) > 0
 
     
@@ -184,26 +184,26 @@ def test_acc_compare_given_data_file_when_valid_then_pass(golden_data_file, test
 
 
 def test_read_data_given_data_file_when_valid_npy_then_pass(golden_data_file, test_data_file):
-    data = llm.compare.cmp_utils.read_data(test_data_file)
-    golden = llm.compare.cmp_utils.read_data(golden_data_file)
+    data = ait_llm.compare.cmp_utils.read_data(test_data_file)
+    golden = ait_llm.compare.cmp_utils.read_data(golden_data_file)
     assert (data == golden).all()
 
 
 def test_read_data_when_npy(golden_data_file, test_data_file):
-    data = llm.compare.cmp_utils.read_data(test_data_file)
+    data = ait_llm.compare.cmp_utils.read_data(test_data_file)
     golden = torch.tensor(np.load(golden_data_file))
     assert torch.all(data == golden).item()
 
 
 def test_read_data_given_data_file_when_invalid_type_then_error(test_dat_path):
     with pytest.raises(TypeError):
-        llm.compare.cmp_utils.read_data(test_dat_path)
+        ait_llm.compare.cmp_utils.read_data(test_dat_path)
 
 
 def test_compare_data_given_data_file_when_valid_then_pass(golden_data_file, test_data_file):
-    test_data = llm.compare.cmp_utils.read_data(test_data_file)
-    golden_data = llm.compare.cmp_utils.read_data(golden_data_file)
-    res = llm.compare.cmp_utils.compare_data(test_data, golden_data)
+    test_data = ait_llm.compare.cmp_utils.read_data(test_data_file)
+    golden_data = ait_llm.compare.cmp_utils.read_data(golden_data_file)
+    res = ait_llm.compare.cmp_utils.compare_data(test_data, golden_data)
     assert res == {'cosine_similarity': '1.000000', 'max_relative_error': 0.0, 'mean_relative_error': 0.0,
                    'kl_divergence': 0.0, 'max_absolute_error': 0.0, 'mean_absolute_error': 0.0,
                    'relative_euclidean_distance': 0.0, 'cmp_fail_reason': ''}
@@ -225,7 +225,7 @@ def test_compare_torch_atb_given_data_path_when_valid_then_pass(test_torch_path,
     torch_model_topo_file = os.path.join(test_torch_path, "1111_npu0/model_tree.json")
     golden_path = os.path.abspath(os.path.join(test_torch_path, "1111_npu0/0/"))
     my_path = os.path.abspath(os.path.join(test_atb_path, "ait_dump/tensors/1_2222/0/"))
-    with mock.patch('llm.dump.torch_dump.topo.TreeNode.get_layer_node_type', return_value="BloomLayer"):
+    with mock.patch('ait_llm.dump.torch_dump.topo.TreeNode.get_layer_node_type', return_value="BloomLayer"):
         csv_save_path = atb_acc_cmp.cmp_torch_atb(torch_model_topo_file, golden_path, my_path, output_path=".", 
                                                 mapping_file_path=".")
     assert os.path.exists(csv_save_path) and os.path.getsize(csv_save_path) > 0
