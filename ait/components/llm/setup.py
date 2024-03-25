@@ -50,6 +50,6 @@ setup(
     include_package_data=True,
     python_requires='>=3.7',
     entry_points={
-        'llm_sub_task': ['ait_llm=ait_llm.__main__:get_cmd_instance'],
+        'llm_sub_task': ['llm=ait_llm.__main__:get_cmd_instance'],
     },
 )
