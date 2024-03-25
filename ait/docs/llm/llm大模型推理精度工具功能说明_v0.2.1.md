@@ -148,7 +148,7 @@ ait llm opcheck -i {tensor_dir} -c {op_csv_path} -o {output_dir}
 
 | 参数名                      | 描述                                                                                                                                                                    | 是否必选 |
 | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| --input, -i                 | tensor数据路径，为文件夹，由ait llm dump --type tensor落盘，示例：OUTPUT_DIR/PID_TID/0/                                                                                 | 是       |
+| --input, -i                 | tensor数据路径，为文件夹，由ait llm dump --type tensor落盘，示例：OUTPUT_DIR/{device_id}_{PID}/{TID}/                                                                                 | 是       |
 | --csv-path, -c              | 算子信息csv文件路径，为单个数据文件路径，由ait llm dump --type op落盘，示例：OUTPUT_DIR/ait_dump/operation_io_tensors/PID/operation_tensors_0.csv                       | 是       |
 | --output, -o                | 输出文件的保存路径，为文件夹，示例：xx/xxx/xx                                                                                                                           | 否       |
 | --operation-ids, -ids       | 选择预检指定索引的tensor，默认为空，全量算子预检。使用方式：-ids 24_1,2_3_5                                                                                             | 否       |
