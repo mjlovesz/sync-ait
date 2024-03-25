@@ -73,7 +73,7 @@ Dump默认落盘路径 `{DUMP_DIR}`在当前目录下，如果指定output目录
 #### 拓扑信息转onnx可视化模型：
 
 ```python
-from llm.common.json_fitter import atb_json_to_onnx
+from ait_llm.common.json_fitter import atb_json_to_onnx
 
 model_level = 1   # 可视化模型的节点深度，按需填写，比如填写为1，则表示生成深度为1的可视化模型，不填默认生成最大深度可视化模型
 layer_topo_info = "./XXX_layer.json"   # dump出来的layer拓扑信息或者model拓扑信息
@@ -122,7 +122,7 @@ register_hook(model, dump_config)  # model是要dump中间tensor的模型实例�
 ### 使用方式
 
 ```
-ait llm compare --golden-path golden_data.bin --my-path my-path.bin
+ait ait_llm compare --golden-path golden_data.bin --my-path my-path.bin
 ```
 
 #### 参数说明
