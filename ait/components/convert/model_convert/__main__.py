@@ -98,7 +98,8 @@ def get_cmd_instance():
     aoe_cmd = ModelConvertCommand(name="aoe", help_info="Convert onnx to om by aoe.", backend="aoe")
     convert_cmd = ConvertCommand(
         name="convert",
-        help_info="convert tool converts the model from ONNX to OM. It supports atc, aoe and aie.",
+        help_info="convert tool converts the model from ONNX, TensorFlOW, Caffe and MindSpore to OM. \
+                   It supports atc, aoe and aie.",
         children=[atc_cmd, aoe_cmd, aie_cmd]
     )
     return convert_cmd
