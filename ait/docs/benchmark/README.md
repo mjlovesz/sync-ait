@@ -37,6 +37,7 @@ benchmark推理功能可以通过配置不同的参数，来应对各种测试�
 | --output-dirname      | 推理结果保存子目录。设置该值时输出结果将保存到*output/output_dirname*目录下。  配合output参数使用，单独使用无效。 例如：--output */output* --output_dirname *output_dirname*            | 否       |
 | --outfmt              | 输出数据的格式。取值为：“NPY”、“BIN”、“TXT”，默认为”BIN“。  配合output参数使用，单独使用无效。 例如：--output */output* --outfmt NPY。                                           | 否       |
 | --debug               | 调试开关。可打印model的desc信息和其他详细执行信息。1或true（开启）、0或false（关闭），默认关闭。                                                                                  | 否       |
+| --run-mode | 推理执行前的数据加载方式：可取值：array（将数据转换成host侧的ndarray，再调用推理接口推理），files（将文件直接加载进device内，再调用推理接口推理），tensor（将数据加载进device内，再调用推理接口推理），full（将数据转换成host侧的ndarray，再将ndarray格式数据加载进device内，再调用推理接口推理），默认为array。 | 否 |
 | --display-all-summary | 是否显示所有的汇总信息，包含h2d和d2h信息。1或true（开启）、0或false（关闭），默认关闭。                                                                                        | 否       |
 | --loop                | 推理次数。默认值为1，取值范围为大于0的正整数。  profiler参数配置为true时，推荐配置为1。                                                                                        | 否       |
 | --warmup-count        | 推理预热次数。默认值为1，取值范围为大于等于0的整数。配置为0则表示不预热。                                                                                                      | 否       |
@@ -57,7 +58,7 @@ benchmark推理功能可以通过配置不同的参数，来应对各种测试�
 | --auto-set-dymdims-mode  | 自动设置动态Dims模式。1或true（开启）、0或false（关闭），默认关闭。<br/>针对动态档位Dims模型，根据输入的文件的信息，自动设置Shape参数，注意输入数据只能为npy文件，因为bin文件不能读取Shape信息。<br/>配合input参数使用，单独使用无效。<br/>例如：--input 1.npy --auto-set-dymdims-mode 1 | 否       |
 | --auto-set-dymshape-mode | 自动设置动态Shape模式。取值为：1或true（开启）、0或false（关闭），默认关闭。<br>针对动态Shape模型，根据输入的文件的信息，自动设置Shape参数，注意输入数据只能为npy文件，因为bin文件不能读取Shape信息。<br>配合input参数使用，单独使用无效。<br/>例如：--input 1.npy --auto-set-dymshape-mode 1 | 否       |
 | --profiler               | profiler开关。1或true（开启）、0或false（关闭），默认关闭。<br>profiler数据在--output参数指定的目录下的profiler文件夹内。配合--output参数使用，单独使用无效。不能与--dump同时开启。<br/>若环境配置了AIT_NO_MSPROF_MODE=1，则使用--profiler参数采集性能数据时调用的是acl.json文件。 | 否       |
-| --profiler-rename        | 调用profiler落盘文件文件名修改开关。1或true（开启）、0或false（关闭），默认开启。配合--profiler参数使用，单独使用无效。|否|
+| --profiler-rename        | 调用profiler落盘文件文件名修改开关，开启后落盘的文件名包含模型名称信息。1或true（开启）、0或false（关闭），默认开启。配合--profiler参数使用，单独使用无效。|否|
 | --dump                   | dump开关。1或true（开启）、0或false（关闭），默认关闭。<br>dump数据在--output参数指定的目录下的dump文件夹内。配合--output参数使用，单独使用无效。不能与--profiler同时开启。 | 否       |
 | --acl-json-path          | acl.json文件路径，须指定一个有效的json文件。该文件内可配置profiler或者dump。当配置该参数时，--dump和--profiler参数无效。json文件中配置了profiler则默认解析成msprof命令执行profiling，若环境配置了AIT_NO_MSPROF_MODE=1，则采用acl.json配置文件的方式采集性能数据。 | 否       |
 | --batch-size             | 模型batchsize。不输入该值将自动推导。当前推理模块根据模型输入和文件输出自动进行组Batch。参数传递的batchszie有且只用于结果吞吐率计算。自动推导逻辑为尝试获取模型的batchsize时，首先获取第一个参数的最高维作为batchsize； 如果是动态Batch的话，更新为动态Batch的值；如果是动态dims和动态Shape更新为设置的第一个参数的最高维。如果自动推导逻辑不满足要求，请务必传入准确的batchsize值，以计算出正确的吞吐率。 | 否       |
@@ -65,8 +66,8 @@ benchmark推理功能可以通过配置不同的参数，来应对各种测试�
 | --aipp-config            |带有动态aipp配置的om模型在推理前需要配置的AIPP具体参数，以.config文件路径形式传入。当om模型带有动态aipp配置时，此参数为必填参数；当om模型不带有动态aipp配置时，配置此参数不影响正常推理。|否|
 | --backend                |指定trtexec开关。需要指定为trtexec。配合--perf参数使用，单独使用无效。|否|
 | --perf                   |调用trtexec开关。1或true（开启）、0或false（关闭），默认关闭。配合--backend参数使用，单独使用无效。|否|
-| --energy-consumption     |能耗采集开关。1或true（开启）、0或false（关闭），默认关闭。需要配合--npu-id参数使用，默认npu-id为0。|否|
-| --npu-id                 |指定npu-id，默认值为0。需要通过npu-smi info命令获取指定device说对应的npu id。配合--energy-consumption参数使用，单独使用无效。|否|
+| --energy-consumption     |能耗采集开关。1或true（开启）、0或false（关闭），默认关闭。需要配合--npu-id参数使用，默认npu id为0。|否|
+| --npu-id                 |指定npu id，默认值为0。需要通过npu-smi info命令获取指定device所对应的npu id。配合--energy-consumption参数使用，单独使用无效。|否|
 | --pipeline               |指定pipeline开关，用于开启多线程推理功能。1或true（开启）、0或false（关闭），默认关闭。|否|
 | --dump-npy               |指定dump-npy开关，用于开启dump结果自动转换功能。1或true（开启）、0或false（关闭），默认关闭。需要配合--output和--dump/--acl-json-path参数使用，单独使用无效。|否|
 | --threads                |指定threads开关，用于设置多计算线程推理时计算线程的数量。默认值为1，取值范围为大于0的正整数。需要配合--pipeline 1参数使用，单独使用无效。|否|
