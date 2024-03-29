@@ -58,8 +58,8 @@ class BenchmarkCommand(BaseCommand):
             default=None,
             help="Actual output directory name. \
                 Used with parameter output, cannot be used alone. \
-                The inference result is output to subdirectory named by output_dirname \
-                under  output path. such as --output_dirname 'tmp', \
+                The inference result is output to subdirectory named by output dirname \
+                under  output path. such as --output-dirname 'tmp', \
                 the final inference results are output to the folder of  {$output}/tmp"
         )
         parser.add_argument(
@@ -93,7 +93,7 @@ class BenchmarkCommand(BaseCommand):
             dest="dym_batch",
             type=check_positive_integer,
             default=0,
-            help="Dynamic batch size param，such as --dymBatch 2"
+            help="Dynamic batch size param，such as --dym-batch 2"
         )
         parser.add_argument(
             '-dhw',
@@ -101,7 +101,7 @@ class BenchmarkCommand(BaseCommand):
             dest="dym_hw",
             type=check_dym_string,
             default=None,
-            help="Dynamic image size param, such as --dymHW \"300,500\""
+            help="Dynamic image size param, such as --dym-hw \"300,500\""
         )
         parser.add_argument(
             '-dd',
@@ -109,7 +109,7 @@ class BenchmarkCommand(BaseCommand):
             dest="dym_dims",
             type=check_dym_string,
             default=None,
-            help="Dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\""
+            help="Dynamic dims param, such as --dym-dims \"data:1,600;img_info:1,600\""
         )
         parser.add_argument(
             '-ds',
@@ -117,7 +117,7 @@ class BenchmarkCommand(BaseCommand):
             dest="dym_shape",
             type=check_dym_string,
             default=None,
-            help="Dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\""
+            help="Dynamic shape param, such as --dym-shape \"data:1,600;img_info:1,600\""
         )
         parser.add_argument(
             '-outsize',
@@ -141,7 +141,7 @@ class BenchmarkCommand(BaseCommand):
             dest='auto_set_dymdims_mode',
             type=str2bool,
             default=False,
-            help="Auto_set_dymdims_mode"
+            help="Auto set dymdims mode"
         )
         parser.add_argument(
             '--batch-size',
@@ -185,7 +185,7 @@ class BenchmarkCommand(BaseCommand):
             dest='output_batchsize_axis',
             type=check_nonnegative_integer,
             default=0,
-            help="Splitting axis number when outputing tensor results, such as --output_batchsize_axis 1"
+            help="Splitting axis number when outputing tensor results, such as --output-batchsize-axis 1"
         )
         parser.add_argument(
             '-rm',
@@ -218,7 +218,7 @@ class BenchmarkCommand(BaseCommand):
             dest="dym_shape_range",
             type=check_dym_range_string,
             default=None,
-            help='Dynamic shape range, such as --dym_shape_range "data:1,600~700;img_info:1,600-700"'
+            help='Dynamic shape range, such as --dym-shape-range "data:1,600~700;img_info:1,600-700"'
         )
         parser.add_argument(
             '-aipp',
