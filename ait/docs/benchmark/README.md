@@ -33,8 +33,8 @@ benchmark推理功能可以通过配置不同的参数，来应对各种测试�
 | --om-model            | 需要进行推理的OM离线模型文件。                                                                                                                            | 是       |
 | --input               | 模型需要的输入。可指定输入文件所在目录或直接指定输入文件。支持输入文件格式为“NPY”、“BIN”。可输入多个文件或目录，文件或目录之间用“,”隔开。具体输入文件请根据模型要求准备。  若不配置该参数，会自动构造输入数据，输入数据类型由--pure-data-type参数决定。 | 否       |
 | --pure-data-type      | 纯推理数据类型。取值为：“zero”、“random”，默认值为"zero"。 未配置模型输入文件时，工具自动构造输入数据。设置为zero时，构造全为0的纯推理数据；设置为random时，为每一个输入生成一组随机数据。                               | 否       |
-| --output              | 推理结果保存目录。配置后会创建“日期+时间”的子目录，保存输出结果。如果指定output_dirname参数，输出结果将保存到子目录output_dirname下。不配置输出目录时，仅打印输出结果，不保存输出结果。                                 | 否       |
-| --output-dirname      | 推理结果保存子目录。设置该值时输出结果将保存到*output/output_dirname*目录下。  配合output参数使用，单独使用无效。 例如：--output */output* --output_dirname *output_dirname*            | 否       |
+| --output              | 推理结果保存目录。配置后会创建“日期+时间”的子目录，保存输出结果。如果指定output-dirname参数，输出结果将保存到子目录output dirname下。不配置输出目录时，仅打印输出结果，不保存输出结果。                                 | 否       |
+| --output-dirname      | 推理结果保存子目录。设置该值时输出结果将保存到*output/output_dirname*目录下。  配合output参数使用，单独使用无效。 例如：--output */output* --output-dirname *output_dirname*            | 否       |
 | --outfmt              | 输出数据的格式。取值为：“NPY”、“BIN”、“TXT”，默认为”BIN“。  配合output参数使用，单独使用无效。 例如：--output */output* --outfmt NPY。                                           | 否       |
 | --debug               | 调试开关。可打印model的desc信息和其他详细执行信息。1或true（开启）、0或false（关闭），默认关闭。                                                                                  | 否       |
 | --run-mode | 推理执行前的数据加载方式：可取值：array（将数据转换成host侧的ndarray，再调用推理接口推理），files（将文件直接加载进device内，再调用推理接口推理），tensor（将数据加载进device内，再调用推理接口推理），full（将数据转换成host侧的ndarray，再将ndarray格式数据加载进device内，再调用推理接口推理），默认为array。 | 否 |
