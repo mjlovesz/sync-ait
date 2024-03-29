@@ -30,6 +30,7 @@ class OpcheckLinearOperation(operation_test.OperationTest):
                 in_tensor_0 = in_tensor_0.permute(1, 0)
             if len(in_tensor_0.shape) == 3:
                 in_tensor_0 = in_tensor_0.permute(0, 2, 1)
+                
         if len(in_tensor_1.shape) == 4:
             in_tensor_1 = in_tensor_1.permute(0, 2, 1, 3)
             if in_tensor_1.shape[0] == 1:
@@ -42,16 +43,8 @@ class OpcheckLinearOperation(operation_test.OperationTest):
                 in_tensor_1 = in_tensor_1.permute(1, 0)
             if len(in_tensor_1.shape) == 3:
                 in_tensor_1 = in_tensor_1.permute(0, 2, 1)
-
-        if self.op_param["linearType"] == 0:
-            golden_result = torch.matmul(in_tensor_0.to(torch.float32), in_tensor_1.to(torch.float32))
-            golden_result = golden_result.to(torch.float16)
-        elif self.op_param["linearType"] == 1:
-            golden_result = torch.matmul(in_tensor_0.to(torch.float32), in_tensor_1.to(torch.float32))
-            golden_result = golden_result.to(torch.bfloat16)
-        else:
-            golden_result = torch.matmul(in_tensor_0.to(torch.int32), in_tensor_1.to(torch.int32))
-
+        
+        golden_result = torch.matmul(in_tensor_0, in_tensor_1)
         return golden_result
 
     def golden_calc(self, in_tensors):
@@ -59,12 +52,6 @@ class OpcheckLinearOperation(operation_test.OperationTest):
         transpose_b = self.op_param["transposeB"]
         golden_result = self.golden_flp(transpose_a, transpose_b, in_tensors[0], in_tensors[1])
         if self.op_param["hasBias"]:
-            if self.op_param["linearType"] == 0:
-                in_tensors[2] = in_tensors[2].to(torch.float16)
-            elif self.op_param["linearType"] == 1:
-                in_tensors[2] = in_tensors[2].to(torch.bfloat16)
-            else:
-                in_tensors[2] = in_tensors[2].to(torch.int32)
             golden_result = golden_result + in_tensors[2]
         golden_result = torch.tensor(golden_result).half()
         return [golden_result.npu()]

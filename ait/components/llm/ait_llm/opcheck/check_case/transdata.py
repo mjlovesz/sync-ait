@@ -21,11 +21,7 @@ import torch_npu
 from ait_llm.opcheck import operation_test
 
 
-class OpcheckTransdataOperation(operation_test.OperationTest):
-    def __init__(self):
-        self.align_int8 = 32
-        self.default_align = 16
-    
+class OpcheckTransdataOperation(operation_test.OperationTest):    
     @staticmethod
     def round_up(self, x, align):
         if align == 0:
@@ -46,21 +42,24 @@ class OpcheckTransdataOperation(operation_test.OperationTest):
 
     @staticmethod
     def golden_nd_to_nz_3d(self, in_tensors):
+        align_int8 = 32
+        default_align = 16
+
         aux_dims = [0, 0, 0, 0]
         aux_dims[0] = in_tensors[0].size(0)
-        aux_dims[1] = self.round_up(in_tensors[0].size(1), self.default_align)
+        aux_dims[1] = self.round_up(in_tensors[0].size(1), default_align)
  
         pad_dims = [0, 0, 0, 0]  
-        pad_dims[3] = self.round_up(in_tensors[0].size(1), self.default_align) - in_tensors[0].size(1)
+        pad_dims[3] = self.round_up(in_tensors[0].size(1), default_align) - in_tensors[0].size(1)
  
         if in_tensors[0].dtype == torch.int8:
-            aux_dims[2] = self.round_up(in_tensors[0].size(2), self.align_int8) // self.align_int8
-            aux_dims[3] = self.align_int8
-            pad_dims[1] = self.round_up(in_tensors[0].size(2), self.align_int8) - in_tensors[0].size(2)
+            aux_dims[2] = self.round_up(in_tensors[0].size(2), align_int8) // align_int8
+            aux_dims[3] = align_int8
+            pad_dims[1] = self.round_up(in_tensors[0].size(2), align_int8) - in_tensors[0].size(2)
         else:
-            aux_dims[2] = self.round_up(in_tensors[0].size(2), self.default_align) // self.default_align
-            aux_dims[3] = self.default_align
-            pad_dims[1] = self.round_up(in_tensors[0].size(2), self.default_align) - in_tensors[0].size(2)
+            aux_dims[2] = self.round_up(in_tensors[0].size(2), default_align) // default_align
+            aux_dims[3] = default_align
+            pad_dims[1] = self.round_up(in_tensors[0].size(2), default_align) - in_tensors[0].size(2)
         
         return self.custom_transpose(
                     self.custom_reshape(
@@ -72,21 +71,24 @@ class OpcheckTransdataOperation(operation_test.OperationTest):
  
     @staticmethod
     def golden_nd_to_nz_2d(self, in_tensors):
+        align_int8 = 32
+        default_align = 16
+        
         aux_dims = [0, 0, 0, 0]
         aux_dims[0] = 1
-        aux_dims[1] = self.round_up(in_tensors[0].size(0), self.default_align)
+        aux_dims[1] = self.round_up(in_tensors[0].size(0), default_align)
  
         pad_dims = [0, 0, 0, 0]  
-        pad_dims[3] = self.round_up(in_tensors[0].size(0), self.default_align) - in_tensors[0].size(0)
+        pad_dims[3] = self.round_up(in_tensors[0].size(0), default_align) - in_tensors[0].size(0)
  
         if in_tensors[0].dtype == torch.int8:
-            aux_dims[2] = self.round_up(in_tensors[0].size(1), self.align_int8) // self.align_int8
-            aux_dims[3] = self.align_int8
-            pad_dims[1] = self.round_up(in_tensors[0].size(1), self.align_int8) - in_tensors[0].size(1)
+            aux_dims[2] = self.round_up(in_tensors[0].size(1), align_int8) // align_int8
+            aux_dims[3] = align_int8
+            pad_dims[1] = self.round_up(in_tensors[0].size(1), align_int8) - in_tensors[0].size(1)
         else:
-            aux_dims[2] = self.round_up(in_tensors[0].size(1), self.default_align) // self.default_align
-            aux_dims[3] = self.default_align
-            pad_dims[1] = self.round_up(in_tensors[0].size(1), self.default_align) - in_tensors[0].size(1)
+            aux_dims[2] = self.round_up(in_tensors[0].size(1), default_align) // default_align
+            aux_dims[3] = default_align
+            pad_dims[1] = self.round_up(in_tensors[0].size(1), default_align) - in_tensors[0].size(1)
         
         return self.custom_transpose(
                     self.custom_reshape(
