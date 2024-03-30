@@ -40,7 +40,7 @@ def get_ge_dump_config(dump_path="ait_ge_dump", dump_mode="all", fusion_switch_f
     # Generate GE mapping graph
     config.debug.graph_dump.type = "txt"
     if hasattr(config.debug.graph_dump, "_path"):  # interface changed since 8.0.RC1.b080
-        config.debug.graph_dump._path = dump_path
+        setattr(config.debug.graph_dump, "_path", dump_path)
     else:
         config.debug.graph_dump.path = dump_path
 
