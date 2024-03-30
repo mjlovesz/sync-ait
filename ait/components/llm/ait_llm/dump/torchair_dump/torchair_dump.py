@@ -39,7 +39,11 @@ def get_ge_dump_config(dump_path="ait_ge_dump", dump_mode="all", fusion_switch_f
 
     # Generate GE mapping graph
     config.debug.graph_dump.type = "txt"
-    config.debug.graph_dump.path = dump_path
+    if hasattr(config.debug.graph_dump, "_path"):  # interface changed since 8.0.RC1.b080
+        setattr(config.debug.graph_dump, "_path", dump_path)
+    else:
+        config.debug.graph_dump.path = dump_path
+
     if fusion_switch_file is not None:
         if not os.path.exists(fusion_switch_file):
             raise FileNotFoundError(f'fusion_switch_file: {fusion_switch_file} not found')
