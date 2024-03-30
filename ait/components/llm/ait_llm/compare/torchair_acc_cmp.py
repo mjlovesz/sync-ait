@@ -39,7 +39,7 @@ def set_msaccucmp_path_from_cann():
     if not cann_path:
         raise OSError("CANN toolkit in not installed or not set, try installing the latest CANN toolkit.")
 
-    cann_path = cann_path.split(":")[0]  # Could be multiple split by :
+    cann_path = cann_path.split(":")[0]  # Could be multiple split by :, should use the first one
     msaccucmp_path = os.path.join(cann_path, "tools", "operator_cmp", "compare")
     if not os.path.exists(msaccucmp_path):
         raise OSError(f"{msaccucmp_path} not exists, try installing the latest CANN toolkit.")
