@@ -102,9 +102,9 @@ class OpcheckActivationOperation(operation_test.OperationTest):
         scale = self.op_param.get("scale", None)
         dim = self.op_param.get("dim", None)
         if activation_type == 6:
-            golden_result = OpcheckActivationOperation.swigluforward_golden(in_tensors[0], dim)
+            golden_result = OpcheckActivationOperation.golden_func[activation_type](in_tensors[0], dim)
         elif activation_type == 7:
-            golden_result = OpcheckActivationOperation.swiglubackward_golden(in_tensors, dim)
+            golden_result = OpcheckActivationOperation.golden_func[activation_type](in_tensors, dim)
         else:
             golden_result = OpcheckActivationOperation.golden_func[activation_type](in_tensors[0], scale)
         return [golden_result]
