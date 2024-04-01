@@ -14,6 +14,7 @@
 
 import torch
 import torch_npu
+import torch.nn.fucntional as F
 
 from ait_llm.opcheck import operation_test
 from ait_llm.common.log import logger
@@ -54,6 +55,35 @@ class ActivationGolden:
     def log_golden(in_tensors, _):
         float_result = torch.log(in_tensors)
         return float_result.half() if in_tensors.dtype == torch.float16 else float_result
+    
+    @staticmethod
+    def swigluforward_golden(in_tensors, dim):
+        dtype = in_tensors.dtype
+        float_in_tensors = in_tensors.float()
+        a, b = float_in_tensors.chunk(2, dim)
+        a = a.to(torch.float32)
+        b = b.to(torch.float32)
+        float_result = F.silu(a) * b
+        return float_result.to(dtype)
+    
+    def swish(x):
+        return x * torch.sigmoid(x)
+    
+    def swish_grad(x):
+        return torch.sigmoid(x) + x * (1 - torch.sigmoid(x)) * torch.sigmoid(x)
+    
+    @staticmethod
+    def swiglubackward_golden(in_tensors, dim):
+        dtype = in_tensors[1].dtype
+        tensor_y_grad = in_tensors[1].float()
+        x = in_tensors[1].float()
+        a, b = x.chunk(2, dim)
+        a = a.to(torch.float32)
+        b = b.to(torch.float32)
+        y1 = b * tensor_y_grad * ActivationGolden.swish_grad(a)
+        y2 = tensor_y_grad * ActivationGolden.swish(a)
+        y = torch.cat((y1, y2), dim)
+        return y.to(dtype)        
 
 
 class OpcheckActivationOperation(operation_test.OperationTest):
@@ -62,19 +92,26 @@ class OpcheckActivationOperation(operation_test.OperationTest):
         2: ActivationGolden.gelu_golden,
         3: ActivationGolden.fast_gelu_golden,
         4: ActivationGolden.swish_golden,
-        5: ActivationGolden.log_golden
+        5: ActivationGolden.log_golden,
+        6: ActivationGolden.swigluforward_golden,
+        7: ActivationGolden.swiglubackward_golden,
     } 
 
     def golden_calc(self, in_tensors):
         activation_type = self.op_param.get("activationType", None)
-        scale = self.op_param.get("scale", None)         
-        golden_result = OpcheckActivationOperation.golden_func[activation_type](in_tensors[0], scale)
+        scale = self.op_param.get("scale", None)
+        dim = self.op_param.get("dim", None)
+        if activation_type == 6:
+            golden_result = OpcheckActivationOperation.swigluforward_golden(in_tensors[0], dim)
+        elif activation_type == 7:
+            golden_result = OpcheckActivationOperation.swiglubackward_golden(in_tensors, dim)
+        else:
+            golden_result = OpcheckActivationOperation.golden_func[activation_type](in_tensors[0], scale)
         return [golden_result]
 
     def test(self):
         activation_type = self.op_param.get("activationType", None)
-        scale = self.op_param.get("scale", None)
-        if not activation_type or not scale:
+        if not activation_type:
             msg = "Cannot get golden data because opParam is not correctly set!"
             logger.error(msg)
             return
