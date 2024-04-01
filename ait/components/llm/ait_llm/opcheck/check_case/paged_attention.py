@@ -12,14 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-import math
-import os
-import random
-import sys
-import unittest
-import collections
-import numpy as np
 import torch
 import torch_npu
 
@@ -28,11 +20,7 @@ from ait_llm.opcheck import operation_test
 
 class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
-        if 'isSupportAlibi' in self.op_param:
-            is_support_alibi = self.op_param["isSupportAlibi"]
-        else:
-            is_support_alibi = False
-        
+        is_support_alibi = self.op_param.get("isSupportAlibi", False)
         if is_support_alibi:
             return [in_tensors[6]]
         else:

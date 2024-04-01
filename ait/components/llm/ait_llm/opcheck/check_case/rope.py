@@ -12,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-import os
-import unittest
 import torch
 import torch_npu
 
 from ait_llm.opcheck import operation_test
+from ait_llm.common.log import logger
 
 
 class OpcheckUnpadRopeOperation(operation_test.OperationTest):
@@ -145,15 +143,21 @@ class OpcheckUnpadRopeOperation(operation_test.OperationTest):
         return [q_embed, k_embed]
 
     def golden_calc(self, in_tensors):
-        if self.op_param['rotaryCoeff'] == 4:
+        rotary_coeff = self.op_param.get('rotaryCoeff', None)
+        if rotary_coeff == 4:
             if in_tensors[4].size()[0] == 3:
                 return self.golden_func1(in_tensors)
             else:
                 return self.golden_func2(in_tensors)
-        elif self.op_param['rotaryCoeff'] == 64:
+        elif rotary_coeff == 64:
             return self.golden_func3(in_tensors)
         else:
             return self.golden_func4(in_tensors)
 
     def test(self):
+        rotary_coeff = self.op_param.get('rotaryCoeff', None)
+        if not rotary_coeff:
+            msg = "Cannot get golden data because layerType is not correctly set!"
+            logger.error(msg)
+            return      
         self.execute()

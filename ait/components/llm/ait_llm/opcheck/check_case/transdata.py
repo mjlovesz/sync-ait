@@ -12,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-import os
-import unittest
 import torch
 import torch_npu
 
 from ait_llm.opcheck import operation_test
+from ait_llm.common.log import logger
 
 
 class OpcheckTransdataOperation(operation_test.OperationTest):    
@@ -105,22 +103,28 @@ class OpcheckTransdataOperation(operation_test.OperationTest):
         aux_dims[1] = in_tensors[0].size(2)
         aux_dims[2] = in_tensors[0].size(1) * in_tensors[0].size(3)
         
-        
         return self.custom_reshape(
                     self.custom_transpose(in_tensors[0], 1, 2),
                     aux_dims
                 )[:, :out_crops[0], :out_crops[1]]
 
     def golden_calc(self, in_tensors):
-        if self.op_param["transdataType"] == 2:
+        transdata_type = self.op_param.get("transdataType", None)
+        if transdata_type == 2:
             if len(in_tensors[0].size()) == 3:
                 golden_result = self.golden_nd_to_nz_3d(in_tensors)
             else:
                 golden_result = self.golden_nd_to_nz_2d(in_tensors)
         else:
-            golden_result = self.golden_nz_to_nd(in_tensors, self.op_param["outCrops"])
+            out_crops = self.op_param.get("outCrops", None)
+            golden_result = self.golden_nz_to_nd(in_tensors, out_crops)
  
         return [golden_result]
 
     def test(self):
+        transdata_type = self.op_param.get("transdataType", None)
+        if not transdata_type:
+            msg = "Cannot get golden data because opParam is not correctly set!"
+            logger.error(msg)
+            return
         self.execute()

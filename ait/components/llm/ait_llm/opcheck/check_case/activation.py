@@ -16,6 +16,7 @@ import torch
 import torch_npu
 
 from ait_llm.opcheck import operation_test
+from ait_llm.common.log import logger
 
 
 class ActivationGolden:
@@ -65,10 +66,16 @@ class OpcheckActivationOperation(operation_test.OperationTest):
     } 
 
     def golden_calc(self, in_tensors):
-        activation_type = self.op_param["activationType"]
-        scale = self.op_param["scale"]
+        activation_type = self.op_param.get("activationType", None)
+        scale = self.op_param.get("scale", None)         
         golden_result = OpcheckActivationOperation.golden_func[activation_type](in_tensors[0], scale)
         return [golden_result]
 
     def test(self):
+        activation_type = self.op_param.get("activationType", None)
+        scale = self.op_param.get("scale", None)
+        if not activation_type or not scale:
+            msg = "Cannot get golden data because opParam is not correctly set!"
+            logger.error(msg)
+            return
         self.execute()

@@ -12,22 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-import os
-import unittest
-import numpy as np
 import torch
 import torch_npu
 import torch.nn as nn
 
 from ait_llm.opcheck import operation_test
+from ait_llm.common.log import logger
 
 
 class OpcheckRopeGradOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         # x,128*32-->reshape x,32,128
-        cos_list = [in_tensors[2][:x, :] for x in self.op_param['qSeqLen']]
-        sin_list = [in_tensors[3][:x, :] for x in self.op_param['qSeqLen']]
+        qseqlen = self.op_param.get('qSeqLen', None)
+        cos_list = [in_tensors[2][:x, :] for x in qseqlen]
+        sin_list = [in_tensors[3][:x, :] for x in qseqlen]
         cos = torch.cat(cos_list, dim=0)
         sin = torch.cat(sin_list, dim=0)
         sin1 = sin[:, :64]
@@ -44,4 +42,9 @@ class OpcheckRopeGradOperation(operation_test.OperationTest):
         return [q_grad, k_grad]
 
     def test(self):
+        qseqlen = self.op_param.get('qSeqLen', None)
+        if not qseqlen:
+            msg = "Cannot get golden data because layerType is not correctly set!"
+            logger.error(msg)
+            return
         self.execute()
