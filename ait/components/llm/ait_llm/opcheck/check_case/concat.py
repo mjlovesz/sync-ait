@@ -29,7 +29,7 @@ class OpcheckConcatOperation(operation_test.OperationTest):
     def test(self):
         concat_dim = self.op_param.get("concatDim", None)
         if not concat_dim:
-            msg = "Cannot get golden data because opParam is not correctly set!"
+            msg = "Cannot get golden data because concatDim is not correctly set!"
             logger.error(msg)
             return
         self.execute()

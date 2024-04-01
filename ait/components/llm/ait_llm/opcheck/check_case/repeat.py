@@ -28,7 +28,7 @@ class OpcheckRepeatOperation(operation_test.OperationTest):
     def test(self):
         multiples = self.op_param.get("multiples", None)
         if not multiples:
-            msg = "Cannot get golden data because layerType is not correctly set!"
+            msg = "Cannot get golden data because multiples is not correctly set!"
             logger.error(msg)
             return
         self.execute()

@@ -157,7 +157,7 @@ class OpcheckUnpadRopeOperation(operation_test.OperationTest):
     def test(self):
         rotary_coeff = self.op_param.get('rotaryCoeff', None)
         if not rotary_coeff:
-            msg = "Cannot get golden data because layerType is not correctly set!"
+            msg = "Cannot get golden data because rotaryCoeff is not correctly set!"
             logger.error(msg)
             return
         self.execute()

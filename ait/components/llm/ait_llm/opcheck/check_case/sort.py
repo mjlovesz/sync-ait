@@ -29,7 +29,7 @@ class OpcheckSortOperation(operation_test.OperationTest):
     def test_3d_float(self):
         num = self.param.get("num", None)
         if num is None:
-            msg = "Cannot get golden data because opParam is not correctly set!"
+            msg = "Cannot get golden data because num is not correctly set!"
             logger.error(msg)
             return
         self.execute()

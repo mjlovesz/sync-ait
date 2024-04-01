@@ -44,7 +44,7 @@ class OpcheckRopeGradOperation(operation_test.OperationTest):
     def test(self):
         qseqlen = self.op_param.get('qSeqLen', None)
         if not qseqlen:
-            msg = "Cannot get golden data because layerType is not correctly set!"
+            msg = "Cannot get golden data because qSeqLen is not correctly set!"
             logger.error(msg)
             return
         self.execute()

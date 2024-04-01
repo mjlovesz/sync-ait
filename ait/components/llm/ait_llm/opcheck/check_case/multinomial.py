@@ -45,7 +45,7 @@ class OpcheckMultinomialOperation(operation_test.OperationTest):
         samples = self.op_param.get("numSamples", None)
         rand_seed = self.op_param.get("randSeed", None)
         if not samples or not rand_seed:
-            msg = "Cannot get golden data because layerType is not correctly set!"
+            msg = "Cannot get golden data because opParam is not correctly set!"
             logger.error(msg)
             return
         self.execute()

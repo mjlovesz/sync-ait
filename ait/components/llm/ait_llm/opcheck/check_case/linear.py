@@ -58,7 +58,7 @@ class OpcheckLinearOperation(operation_test.OperationTest):
         transpose_a = self.op_param.get("transposeA", None)
         transpose_b = self.op_param.get("transposeB", None)
         if not transpose_a or not transpose_b:
-            msg = "Cannot get golden data because layerType is not correctly set!"
+            msg = "Cannot get golden data because opParam is not correctly set!"
             logger.error(msg)
             return
         self.execute()
