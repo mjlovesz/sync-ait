@@ -24,4 +24,4 @@ class OpcheckAllGatherOperation(operation_test.OperationTest):
         return [golden_result]        
 
     def test_all_gather(self):
-        self.excute()
+        self.execute()
