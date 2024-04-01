@@ -35,7 +35,9 @@ class OpcheckStridedBatchMatmulOperation(operation_test.OperationTest):
         trans_b = self.op_param.get("trans_b", None)
         m, n, k = self.op_param.get("m", None), self.op_param.get("n", None), self.op_param.get("k", None)
         lda, ldb, ldc = self.op_param.get("lda", None), self.op_param.get("ldb", None), self.op_param.get("ldc", None)
-        stridea, strideb, stridec = self.op_param.get("strideA", None), self.op_param.get("strideB", None), self.op_param.get("strideC", None)
+        stridea = self.op_param.get("strideA", None)
+        strideb = self.op_param.get("strideB", None)
+        stridec = self.op_param.get("strideC", None)
 
         c = torch.zeros(sum([m[i] * n[i] for i in range(batch)]) * head_num, dtype=torch.float16, device=a.device)
 
@@ -70,9 +72,4 @@ class OpcheckStridedBatchMatmulOperation(operation_test.OperationTest):
         return [c]
 
     def test_add_bmm1(self):
-        batch = self.op_param.get("batch", None)
-        head_num = self.op_param.get("head_num", None)
-        trans_a = self.op_param.get("trans_a", None)
-        trans_b = self.op_param.get("trans_b", None)
-        m, n, k = self.op_param.get("m", None), self.op_param.get("n", None), self.op_param.get("k", None)
         self.execute()

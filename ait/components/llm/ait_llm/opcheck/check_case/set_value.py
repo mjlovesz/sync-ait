@@ -34,5 +34,5 @@ class OpcheckSetValueOperation(operation_test.OperationTest):
         if not starts or not ends:
             msg = "Cannot get golden data because opParam is not correctly set!"
             logger.error(msg)
-            return    
+            return
         self.execute()

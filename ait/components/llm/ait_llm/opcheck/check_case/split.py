@@ -32,5 +32,5 @@ class OpcheckAddOperation(operation_test.OperationTest):
         if not split_num or not split_dim:
             msg = "Cannot get golden data because opParam is not correctly set!"
             logger.error(msg)
-            return            
+            return
         self.execute()

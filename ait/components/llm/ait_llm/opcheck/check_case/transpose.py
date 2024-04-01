@@ -30,5 +30,5 @@ class OpcheckTransposeOperation(operation_test.OperationTest):
         if not perm:
             msg = "Cannot get golden data because opParam is not correctly set!"
             logger.error(msg)
-            return  
+            return
         self.execute()

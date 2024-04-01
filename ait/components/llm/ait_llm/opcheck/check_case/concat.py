@@ -31,5 +31,5 @@ class OpcheckConcatOperation(operation_test.OperationTest):
         if not concat_dim:
             msg = "Cannot get golden data because opParam is not correctly set!"
             logger.error(msg)
-            return               
+            return
         self.execute()

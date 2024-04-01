@@ -42,5 +42,5 @@ class OpcheckFastSoftMaxOperation(operation_test.OperationTest):
         if not seq_len_list or not head_num_imm:
             msg = "Cannot get golden data because opParam is not correctly set!"
             logger.error(msg)
-            return            
+            return
         self.execute()

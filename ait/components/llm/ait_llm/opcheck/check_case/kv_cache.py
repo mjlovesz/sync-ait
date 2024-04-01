@@ -31,5 +31,5 @@ class OpcheckKvCacheOperation(operation_test.OperationTest):
         if not inplace_idx:
             msg = "Cannot get golden data because inplace_idx is not correctly set!"
             logger.error(msg)
-            return   
+            return
         self.execute_inplace()

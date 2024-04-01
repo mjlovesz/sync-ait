@@ -30,5 +30,5 @@ class OpcheckCumsumOperation(operation_test.OperationTest):
         if not axes:
             msg = "Cannot get golden data because opParam is not correctly set!"
             logger.error(msg)
-            return             
+            return
         self.execute()

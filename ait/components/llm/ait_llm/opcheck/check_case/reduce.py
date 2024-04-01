@@ -34,5 +34,5 @@ class OpcheckReduceOperation(operation_test.OperationTest):
         if not op_type or not axis:
             msg = "Cannot get golden data because layerType is not correctly set!"
             logger.error(msg)
-            return             
+            return
         self.execute()

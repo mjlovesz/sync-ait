@@ -85,5 +85,5 @@ class OpcheckAllReduceOperation(operation_test.OperationTest):
         if not all_reduce_type or not backend:
             msg = "Cannot get golden data because opParam is not correctly set!"
             logger.error(msg)
-            return            
+            return
         self.execute()

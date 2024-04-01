@@ -32,5 +32,5 @@ class OpcheckBroadcastOperation(operation_test.OperationTest):
         if not rank_root:
             msg = "Cannot get golden data because opParam is not correctly set!"
             logger.error(msg)
-            return            
+            return
         self.execute()
