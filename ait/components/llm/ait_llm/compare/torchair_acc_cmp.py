@@ -17,6 +17,7 @@ import sys
 import re
 
 from ait_llm.common.log import logger
+from ait_llm.common.utils import safe_string
 from ait_llm.compare.cmp_utils import BasicDataInfo, fill_row_data, save_compare_reault_to_csv
 
 GE_GRAPH_FILE_PREFIX = "dynamo_original_graph_"
@@ -38,6 +39,8 @@ def set_msaccucmp_path_from_cann():
     cann_path = os.environ.get("TOOLCHAIN_HOME", os.environ.get("ASCEND_TOOLKIT_HOME", ""))
     if not cann_path:
         raise OSError("CANN toolkit in not installed or not set, try installing the latest CANN toolkit.")
+    cann_path = safe_string(cann_path)
+    cann_path = cann_path.split(":")[0]  # Could be multiple split by :, should use the first one
 
     msaccucmp_path = os.path.join(cann_path, "tools", "operator_cmp", "compare")
     if not os.path.exists(msaccucmp_path):
