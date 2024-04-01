@@ -14,7 +14,7 @@
 
 import torch
 import torch_npu
-import torch.nn.fucntional as F
+import torch.nn.functional as F
 
 from ait_llm.opcheck import operation_test
 from ait_llm.common.log import logger
