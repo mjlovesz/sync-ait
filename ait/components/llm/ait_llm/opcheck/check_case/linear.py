@@ -48,7 +48,6 @@ class OpcheckLinearOperation(operation_test.OperationTest):
         has_bias = self.op_param.get("hasBias", False)
         if has_bias:
             golden_result = golden_result + in_tensors[2]
-        golden_result = torch.tensor(golden_result).half()
         return [golden_result]
 
     def test(self):
