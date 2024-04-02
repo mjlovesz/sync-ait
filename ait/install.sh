@@ -177,10 +177,11 @@ build_om_so() {
       return
   fi
 
+  COMPILE_OPTIONS="-Wl,-z,relro,-z,now,-z,noexecstack -s -fstack-protector-all -ftrapv"
   g++ ${CURRENT_DIR}/components/debug/compare/msquickcmp/save_om_model/export_om_model.cpp \
           -I ${ge_dev_path}/include \
           -L ${ge_dev_path}/lib64 \
-          -lge_compiler \
+          -lge_compiler $COMPILE_OPTIONS \
           --std=c++11 -fPIC -shared -D_GLIBCXX_USE_CXX11_ABI=0 -o libsaveom.so
   
   if [ ! -f "${CURRENT_DIR}/libsaveom.so" ]
