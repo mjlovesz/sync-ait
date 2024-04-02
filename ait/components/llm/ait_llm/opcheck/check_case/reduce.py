@@ -31,7 +31,7 @@ class OpcheckReduceOperation(operation_test.OperationTest):
     def test(self):
         op_type = self.op_param.get('reduceType', None)
         axis = self.op_param.get('axis', None)
-        if not op_type or not axis:
+        if op_type is None or axis is None:
             msg = "Cannot get golden data because opParam is not correctly set!"
             logger.error(msg)
             return

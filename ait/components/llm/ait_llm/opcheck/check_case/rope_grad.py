@@ -43,7 +43,7 @@ class OpcheckRopeGradOperation(operation_test.OperationTest):
 
     def test(self):
         qseqlen = self.op_param.get('qSeqLen', None)
-        if not qseqlen:
+        if qseqlen is None:
             msg = "Cannot get golden data because qSeqLen is not correctly set!"
             logger.error(msg)
             return

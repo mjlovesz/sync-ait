@@ -56,7 +56,7 @@ class OpcheckToppOperation(operation_test.OperationTest):
     def test(self):
         rand_seed = self.op_param.get('rand_seed', None)
         topk = self.op_param.get('topk', None)
-        if not rand_seed or not topk:
+        if rand_seed is None or topk is None:
             msg = "Cannot get golden data because opParam is not correctly set!"
             logger.error(msg)
             return

@@ -28,7 +28,7 @@ class OpcheckKvCacheOperation(operation_test.OperationTest):
 
     def test(self):
         inplace_idx = self.case_info.get("inplace_idx", None)
-        if not inplace_idx:
+        if inplace_idx is None:
             msg = "Cannot get golden data because inplace_idx is not correctly set!"
             logger.error(msg)
             return

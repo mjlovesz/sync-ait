@@ -32,7 +32,7 @@ class OpcheckElewiseSubOperation(operation_test.OperationTest):
     def test_2d_half(self):
         seq_len = self.op_param.get("seqLen", None)
         head_num = self.op_param.get("headNum", None)
-        if not seq_len or not head_num:
+        if seq_len is None or head_num is None:
             msg = "Cannot get golden data because opParam is not correctly set!"
             logger.error(msg)
             return

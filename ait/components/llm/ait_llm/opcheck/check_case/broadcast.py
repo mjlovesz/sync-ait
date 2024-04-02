@@ -29,7 +29,7 @@ class OpcheckBroadcastOperation(operation_test.OperationTest):
 
     def test_broadcast(self):
         rank_root = self.op_param.get('rankRoot', None)
-        if not rank_root:
+        if rank_root is None:
             msg = "Cannot get golden data because rankRoot is not correctly set!"
             logger.error(msg)
             return

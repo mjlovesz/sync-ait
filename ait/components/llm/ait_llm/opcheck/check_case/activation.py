@@ -111,7 +111,7 @@ class OpcheckActivationOperation(operation_test.OperationTest):
 
     def test(self):
         activation_type = self.op_param.get("activationType", None)
-        if not activation_type:
+        if activation_type is None:
             msg = "Cannot get golden data because activationType is not correctly set!"
             logger.error(msg)
             return

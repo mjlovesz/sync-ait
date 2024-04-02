@@ -82,7 +82,7 @@ class OpcheckAllReduceOperation(operation_test.OperationTest):
         logger.debug(logger_text2)
         logger.debug(logger_text3)
 
-        if not all_reduce_type or not backend:
+        if all_reduce_type is None or backend is None:
             msg = "Cannot get golden data because opParam is not correctly set!"
             logger.error(msg)
             return

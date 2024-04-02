@@ -39,7 +39,7 @@ class OpcheckSliceOperation(operation_test.OperationTest):
     def test(self):
         offset_list = self.op_param.get('offsets', None)
         size_list = self.op_param.get('size', None)
-        if not offset_list or not size_list:
+        if offset_list is None or size_list is None:
             msg = "Cannot get golden data because opParam is not correctly set!"
             logger.error(msg)
             return

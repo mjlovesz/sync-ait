@@ -33,7 +33,7 @@ class OpcheckAsStridedOperation(operation_test.OperationTest):
         stride = self.op_param.get('stride', None)
         offset = self.op_param.get('offset', None)
 
-        if not size or not stride or not offset:
+        if size is None or stride is None or offset is None:
             msg = "Cannot get golden data because opParam is not correctly set!"
             logger.error(msg)
             return

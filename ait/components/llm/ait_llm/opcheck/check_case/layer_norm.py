@@ -82,7 +82,7 @@ class OpcheckLayerNormOperation(operation_test.OperationTest):
 
     def test(self):
         layer_type = self.op_param.get('layerType', None)
-        if not layer_type:
+        if layer_type is None:
             msg = "Cannot get golden data because layerType is not correctly set!"
             logger.error(msg)
             return

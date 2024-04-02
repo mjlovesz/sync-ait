@@ -31,7 +31,7 @@ class OpcheckSetValueOperation(operation_test.OperationTest):
     def test(self):
         starts = self.op_param.get("starts", None)
         ends = self.op_param.get("ends", None)
-        if not starts or not ends:
+        if starts is None or ends is None:
             msg = "Cannot get golden data because opParam is not correctly set!"
             logger.error(msg)
             return

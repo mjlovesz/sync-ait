@@ -123,7 +123,7 @@ class OpcheckTransdataOperation(operation_test.OperationTest):
 
     def test(self):
         transdata_type = self.op_param.get("transdataType", None)
-        if not transdata_type:
+        if transdata_type is None:
             msg = "Cannot get golden data because transdataType is not correctly set!"
             logger.error(msg)
             return

@@ -27,7 +27,7 @@ class OpcheckRepeatOperation(operation_test.OperationTest):
 
     def test(self):
         multiples = self.op_param.get("multiples", None)
-        if not multiples:
+        if multiples is None:
             msg = "Cannot get golden data because multiples is not correctly set!"
             logger.error(msg)
             return
