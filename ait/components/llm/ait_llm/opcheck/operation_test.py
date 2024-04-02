@@ -139,7 +139,7 @@ class OperationTest(unittest.TestCase):
             logger_text = "The output is abnormal. Please check! Exception: {}".format(e)
             logger.debug(logger_text)
 
-        if self.op_param == "AllGatherOperation" and out_tensors[0].size() != golden_out_tensors[0].size():
+        if self.op_param == "AllGatherOperation":
             rank_root = self.op_param.get("rankRoot", 0)
             out_tensors[0] = out_tensors[0][rank_root]
 
