@@ -35,12 +35,12 @@ class OpChecker:
             'op_name': string
             'op_param': dict
             'tensor_path': string
-            'out_dtype: list
         '''
         self.csv_data = {}
         self.cases_info = {}
         self.completed_op_id_queue = queue.Queue()
         self.special_cases = ['KvCacheOperation', 'ReshapeAndCacheOperation', 'SelfAttentionOperation']
+        self.base_path = ''
         self.tensor_path = ''
         self.op_path = ''
         self.output_dir = ''
@@ -79,15 +79,33 @@ class OpChecker:
             execution_flag = False
 
         return execution_flag
+    
+    def get_base_path(self, cur_path):
+        _sep = os.path.sep
+        dirseg = cur_path.split(_sep)
+        if len(dirseg) >= 4 and dirseg[-3] == 'tensors' and dirseg[-4] == 'ait_dump':
+            return cur_path
+        elif cur_path == os.path.dirname(cur_path):
+            return None
+        else:
+            return self.get_base_path(os.path.dirname(cur_path))
 
     def args_init(self, args):
         import torch_npu
 
         execution_flag = True
-
-        self.tensor_path = args.input
-        self.op_path = args.csv_path
-        self.output_dir = args.output
+          
+        try:
+            self.tensor_path = os.path.realpath(args.input)
+        except FileNotFoundError as e:
+            logger_text = "File not found: {}".format(e)
+            logger.error(logger_text)
+            execution_flag = False
+            return execution_flag
+        
+        self.base_path = self.get_base_path(self.tensor_path)
+        self.op_path = os.path.realpath(args.csv_path)
+        self.output_dir = os.path.realpath(args.output) 
         self.output_path = os.path.join(self.output_dir, f"opcheck_result_{self.timestamp}.xlsx")
         self.ids = args.ids
         if self.ids != '':
@@ -137,13 +155,18 @@ class OpChecker:
         from ait_llm.opcheck.case_manager import CaseManager
         case_manager = CaseManager(self.completed_op_id_queue)
 
-        # 1.将csv文件中的算子信息添加到self.cases_info
-        execution_flag_res = self.add_file_info_to_cases()
+        # # 1.将csv文件中的算子信息添加到self.cases_info
+        # execution_flag_res = self.add_file_info_to_cases()
+        # if not execution_flag_res:
+        #     return
+        
+        # 1.遍历tensor_path，将算子信息添加到self.cases_info
+        execution_flag_res = self.add_op_info_to_cases()
         if not execution_flag_res:
-            return
-        result_info = 'excuted_information'
+             return        
 
         # 2.将self.cases_info中的用例添加到case_manager
+        result_info = 'excuted_information'
         for _, case_info in self.cases_info.items():
             if_successed_add_case = case_manager.add_case(case_info)
             if if_successed_add_case:
@@ -159,6 +182,56 @@ class OpChecker:
             if v[result_info] == 'addition failed':
                 v['res_detail'] = []
                 self.write_op_result_to_csv(v)
+
+    def parse_op_id_name(self, dirpath):
+        _sep = os.path.sep
+        basename= os.path.basename(dirpath)
+        op_name = basename.split('_')[-1]
+        rel_path = os.path.relpath(dirpath, self.base_path)
+        op_id = '_'.join([x.split('_')[0] for x in rel_path.split(_sep)])
+        return op_id, op_name
+
+    def add_op_info_to_cases(self, dirpath):
+        tensor_path = os.path.join(dirpath, 'after')
+        
+        json_path = os.path.join(dirpath, 'op_param.json')
+        try:
+            with open(json_path, 'r') as f:
+                op_param = json.load(f)
+        except TypeError:
+            logger_text = f"Cannot loads json file to json! Json file: {json_path}"
+            logger.debug(logger_text)
+            
+        op_id, op_name = self.parse_op_id_name(dirpath)
+
+        case_info = {
+            'op_id': op_id, 'op_name': op_name, 'op_param': op_param, 'tensor_path': tensor_path, 
+            'precision_type': self.precision_type, 'rerun': self.rerun
+        }
+
+        if op_name == 'KvCacheOperation':
+            case_info['inplace_idx'] = [2]
+            self.cases_info[op_id] = case_info
+        elif op_name == 'ReshapeAndCacheOperation':
+            case_info['inplace_idx'] = [2, 3]
+            self.cases_info[op_id] = case_info
+        elif op_name == 'SelfAttentionOperation':
+            self.cases_info[op_id] = case_info
+        else:
+            self.cases_info[op_id] = case_info        
+
+    def walk_tensor_path(self, tensor_path):
+        for dirpath, dirnames, filenames in os.walk(tensor_path):
+            if 'after' in dirnames and 'op_param.json' in filenames:
+                self.add_case_to_cases_info(dirpath)
+            for dirname in dirnames:
+                if dirname != 'after':
+                    self.walk_tensor_path(os.path.join(dirpath, dirname))
+
+    def add_op_info_to_cases(self):
+        for dirpath, dirnames, filenames in os.walk(self.tensor_path):
+            if 'after' in dirnames and 'op_param.json' in filenames:
+                self.add_case_to_cases_info(dirpath)
 
     def parse_in_tensor_path(self, ids):
         in_tensor_path = os.path.join(self.tensor_path, '_*/'.join(ids.split("_")) + '_*', "after")
