@@ -22,7 +22,7 @@ NAN = 'NaN'
 
 
 def cosine_similarity(golden_data: torch.Tensor, my_data: torch.Tensor):
-    result = torch.cosine_similarity(golden_data.double(), my_data.double(), dim=0)  # Torch can handle all zero data
+    result = torch.cosine_similarity(golden_data.double(), my_data.double(), dim=0).item()  # Torch handle zero data
     return round(result, 10), ''  # Thunc to keeping only 10 decimals
 
 
