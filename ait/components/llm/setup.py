@@ -26,9 +26,9 @@ for root, dirs, files in os.walk('components/llm/ait_llm/opcheck/test_framework/
     opchecker_lib_src.append((os.path.join("/", root), [os.path.join(root, f) for f in files]))
 
 setup(
-    name='ait-ait_llm',
+    name='ait-llm',
     version='1.0',
-    description='Debug tools for large language model(ait_llm)',
+    description='Debug tools for large language model(llm)',
     url='https://gitee.com/ascend/ait/ait/components/llm',
     packages=find_packages(),
     license='Apache-2.0',
@@ -50,6 +50,6 @@ setup(
     include_package_data=True,
     python_requires='>=3.7',
     entry_points={
-        'llm_sub_task': ['ait_llm=ait_llm.__main__:get_cmd_instance'],
+        'llm_sub_task': ['llm=ait_llm.__main__:get_cmd_instance'],
     },
 )
