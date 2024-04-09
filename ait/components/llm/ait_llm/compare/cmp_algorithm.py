@@ -22,21 +22,11 @@ NAN = 'NaN'
 
 
 def cosine_similarity(golden_data: torch.Tensor, my_data: torch.Tensor):
-    my_data_norm = torch.norm(my_data, dim=-1, keepdim=True, p=2)
-    golden_data_norm = torch.norm(golden_data, dim=-1, keepdim=True, p=2)
-    if my_data_norm <= FLOAT_EPSILON and golden_data_norm < FLOAT_EPSILON:
-        return "1.0", ''
-    elif my_data_norm ** 0.5 <= FLOAT_EPSILON:
-        message = 'Cannot compare by Cosine Similarity. All the values in my_data are zeros.'
-        logger.warning(message)
-        return NAN, message
-    elif golden_data_norm ** 0.5 <= FLOAT_EPSILON:
-        message = 'Cannot compare by Cosine Similarity. All the values in golden_data are zeros.'
-        logger.warning(message)
-        return NAN, message
+    if torch.all(golden_data == 0) and torch.all(my_data == 0):
+        return 1.0, ''  # both are all 0, return similarity 1
 
-    result = torch.cosine_similarity(golden_data, my_data, dim=0)
-    return '{:.6f}'.format(result), ''
+    result = torch.cosine_similarity(golden_data.double(), my_data.double(), dim=0).item()  # Torch handle zero data
+    return round(result, 10), ''  # Trunc to keeping only 10 decimals
 
 
 def max_relative_error(golden_data: torch.Tensor, my_data: torch.Tensor):
@@ -76,15 +66,8 @@ def mean_absolute_error(golden_data: torch.Tensor, my_data: torch.Tensor):
 
 
 def kl_divergence(golden_data: torch.Tensor, my_data: torch.Tensor):
-    try:
-        norm_xx = (my_data - my_data.min()) / (my_data.max() - my_data.min()) + FLOAT_EPSILON
-        norm_yy = (golden_data - golden_data.min()) / (golden_data.max() - golden_data.min()) + FLOAT_EPSILON
-    except ZeroDivisionError as e:
-        return "", "The max value and min value of my_data or golden_data is equal."
-
-    norm_xx /= norm_xx.sum()
-    norm_yy /= norm_yy.sum()
-    return (norm_xx * (norm_xx / norm_yy).log()).sum().item(), ""
+    result = F.kl_div(F.log_softmax(my_data, dim=-1), F.softmax(golden_data, dim=-1), reduction="sum").item()
+    return max(result, 0), ""
 
 
 def relative_euclidean_distance(golden_data: torch.Tensor, my_data: torch.Tensor):
