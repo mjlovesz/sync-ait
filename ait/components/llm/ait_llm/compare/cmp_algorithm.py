@@ -36,7 +36,7 @@ def cosine_similarity(golden_data: torch.Tensor, my_data: torch.Tensor):
         return NAN, message
 
     result = torch.cosine_similarity(golden_data, my_data, dim=0)
-    return min(result.item(), 1), ''
+    return '{:.6f}'.format(result), ''
 
 
 def max_relative_error(golden_data: torch.Tensor, my_data: torch.Tensor):
