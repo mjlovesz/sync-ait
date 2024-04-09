@@ -22,21 +22,8 @@ NAN = 'NaN'
 
 
 def cosine_similarity(golden_data: torch.Tensor, my_data: torch.Tensor):
-    my_data_norm = torch.norm(my_data, dim=-1, keepdim=True, p=2)
-    golden_data_norm = torch.norm(golden_data, dim=-1, keepdim=True, p=2)
-    if my_data_norm <= FLOAT_EPSILON and golden_data_norm < FLOAT_EPSILON:
-        return "1.0", ''
-    elif my_data_norm ** 0.5 <= FLOAT_EPSILON:
-        message = 'Cannot compare by Cosine Similarity. All the values in my_data are zeros.'
-        logger.warning(message)
-        return NAN, message
-    elif golden_data_norm ** 0.5 <= FLOAT_EPSILON:
-        message = 'Cannot compare by Cosine Similarity. All the values in golden_data are zeros.'
-        logger.warning(message)
-        return NAN, message
-
-    result = torch.cosine_similarity(golden_data, my_data, dim=0)
-    return '{:.6f}'.format(result), ''
+    result = torch.cosine_similarity(golden_data.double(), my_data.double(), dim=0)  # Torch can handle all zero data
+    return round(result, 10), ''  # Thunc to keeping only 10 decimals
 
 
 def max_relative_error(golden_data: torch.Tensor, my_data: torch.Tensor):
