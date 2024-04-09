@@ -36,7 +36,7 @@ def cosine_similarity(golden_data: torch.Tensor, my_data: torch.Tensor):
         return NAN, message
 
     result = torch.cosine_similarity(golden_data, my_data, dim=0)
-    return '{:.6f}'.format(result), ''
+    return min(result.item(), 1), ''
 
 
 def max_relative_error(golden_data: torch.Tensor, my_data: torch.Tensor):
@@ -76,8 +76,8 @@ def mean_absolute_error(golden_data: torch.Tensor, my_data: torch.Tensor):
 
 
 def kl_divergence(golden_data: torch.Tensor, my_data: torch.Tensor):
-    result = F.kl_div(F.log_softmax(my_data, dim=-1), F.softmax(golden_data, dim=-1), reduction="sum")
-    return result.item(), ""
+    result = F.kl_div(F.log_softmax(my_data, dim=-1), F.softmax(golden_data, dim=-1), reduction="sum").item()
+    return max(result, 0), ""
 
 
 def relative_euclidean_distance(golden_data: torch.Tensor, my_data: torch.Tensor):
