@@ -19,7 +19,7 @@ import subprocess
 from components.utils.parser import BaseCommand
 from ait_llm.dump.initial import init_dump_task, clear_dump_task
 from ait_llm.opcheck.opchecker import OpChecker
-from ait.components.llm.ait_llm.errcheck.process import process_error_check
+from ait_llm.errcheck.process import process_error_check
 from ait_llm.common.utils import str2bool, check_positive_integer, check_device_integer, safe_string, check_exec_cmd, \
     check_ids_string, check_number_list, check_output_path_legality, check_input_path_legality
 from ait_llm.common.log import logger, set_log_level, LOG_LEVELS
