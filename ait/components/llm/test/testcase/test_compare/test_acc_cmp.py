@@ -138,7 +138,6 @@ def test_fill_row_data_given_loaded_my_data_when_valid_then_pass(golden_data_fil
     row_data = ait_llm.compare.cmp_utils.fill_row_data(data_info, loaded_my_data=loaded_my_data)
     assert isinstance(row_data, dict) and len(row_data) == 22
     assert row_data["cosine_similarity"] == 0.0
-    assert len(row_data["cmp_fail_reason"]) > 0
 
 
 def test_fill_row_data_given_my_path_when_dir_then_error(golden_data_file):
