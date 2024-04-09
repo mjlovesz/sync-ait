@@ -76,8 +76,8 @@ class OpcheckAllReduceOperation(operation_test.OperationTest):
         backend = self.op_param.get('backend', None)
 
         logger_text1 = f"backend: {backend}, allreduceType: {all_reduce_type}"
-        logger_text2 = "env: {}".format(os.getenv("LCCL_DETERMINISTIC"))
-        logger_text3 = "env: {}".format(os.getenv("HCCL_DETERMINISTIC"))
+        logger_text2 = "env: {}".format(os.getenv("LCCL_DETERMINISTIC", ""))
+        logger_text3 = "env: {}".format(os.getenv("HCCL_DETERMINISTIC", ""))
         logger.debug(logger_text1)
         logger.debug(logger_text2)
         logger.debug(logger_text3)
