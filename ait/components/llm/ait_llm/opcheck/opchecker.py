@@ -102,9 +102,9 @@ class OpChecker:
         _sep = os.path.sep
         dirseg = cur_path.split(_sep)
         if len(dirseg) >= 4 and dirseg[-3] == 'tensors' and dirseg[-4] == 'ait_dump':
-            return True, cur_path
+            return cur_path
         elif cur_path == os.path.dirname(cur_path):
-            return False, None
+            return None
         else:
             return self.get_base_path(os.path.dirname(cur_path))
 
@@ -119,11 +119,13 @@ class OpChecker:
             logger.error(logger_text)
             return input_path, base_path, ret
         
-        ret, base_path = self.get_base_path(input_path)
-        if not ret:
+        base_path = self.get_base_path(input_path)
+        if base_path is None:
             logger_text = f"input path is not in ait_dump tensors directory: {input_path}"
             logger.error(logger_text)
-
+            return input_path, base_path, ret
+        
+        ret = True
         return input_path, base_path, ret
 
     def args_init(self, args):
