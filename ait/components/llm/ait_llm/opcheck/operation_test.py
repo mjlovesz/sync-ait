@@ -39,7 +39,6 @@ class OperationTest(unittest.TestCase):
         self.tensor_path = case_info['tensor_path']
         self.in_tensors = []
         self.out_tensors = []
-        self.out_dtype = self.case_info["out_dtype"]
         self.rerun = self.case_info["rerun"]
         
         error1 = 'Error0.1‰'
@@ -240,16 +239,15 @@ class OperationTest(unittest.TestCase):
 
         try:
             self.assertEqual(len(out_tensors), len(golden_out_tensors))
-            self.assertEqual(len(out_tensors), len(self.out_dtype))
         except AssertionError as e:
             flag = False
             logger.debug(e)
 
         tensor_count = len(out_tensors)
         for i in range(tensor_count):
-            p_s = self.precision_standard.get(self.out_dtype[i], [])
+            p_s = self.precision_standard.get(out_tensors[i].dtype, [])
             if len(p_s) != 2:
-                raise RuntimeError(f"{self.out_dtype[i]} not supported!")
+                raise RuntimeError(f"{out_tensors[i].dtype} not supported!")
             etol = self.erol_dict.get(p_s[0], 0.001)
             err_rate = p_s[1]
             ps_standard = f"{err_rate}%(error<{etol})"
