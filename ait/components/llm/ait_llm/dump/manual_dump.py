@@ -18,6 +18,7 @@ import torch
 
 from components.utils.file_open_check import ms_open
 from ait_llm.common.log import logger
+from ait_llm.common.utils import check_input_path_legality, check_output_path_legality
 
 
 def dump_data(token_id=-1, data_id=-1, golden_data=None, my_path='', output_path='./'):
@@ -34,6 +35,8 @@ def dump_data(token_id=-1, data_id=-1, golden_data=None, my_path='', output_path
     elif my_path == '':
         logger.warning('Please check whether my_path passed in are correct')
         return
+    check_input_path_legality(my_path)
+    check_output_path_legality(output_path)
 
     if golden_data is not None:
         cur_pid = os.getpid()
