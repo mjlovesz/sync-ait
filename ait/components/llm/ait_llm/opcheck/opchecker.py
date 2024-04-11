@@ -102,31 +102,29 @@ class OpChecker:
         _sep = os.path.sep
         dirseg = cur_path.split(_sep)
         if len(dirseg) >= 4 and dirseg[-3] == 'tensors' and dirseg[-4] == 'ait_dump':
-            return cur_path
+            return True, cur_path
         elif cur_path == os.path.dirname(cur_path):
-            return None
+            return False, None
         else:
             return self.get_base_path(os.path.dirname(cur_path))
 
-    def check_input_legality(self, input):
+    def check_input_legality(self, input_path):
         ret = False
-        base_path = ""
+        base_path = None
 
         try:
-            input = os.path.realpath(input)
+            input_path = os.path.realpath(input_path)
         except FileNotFoundError as e:
-            logger_text = f"Input path not found: {input}. Error info: {e}"
+            logger_text = f"Input path not found: {input_path}. Error info: {e}"
             logger.error(logger_text)
-            return input, base_path, ret
+            return input_path, base_path, ret
         
-        base_path = self.get_base_path(input)
-        if base_path is None:
-            logger_text = f"Input path is not in ait_dump tensors directory: {input}"
+        ret, base_path = self.get_base_path(input_path)
+        if not ret:
+            logger_text = f"input path is not in ait_dump tensors directory: {input_path}"
             logger.error(logger_text)
-            return input, base_path, ret
 
-        ret = True
-        return input, base_path, ret
+        return input_path, base_path, ret
 
     def args_init(self, args):
         import torch_npu
@@ -212,7 +210,7 @@ class OpChecker:
 
     def parse_op_id_name(self, dirpath):
         _sep = os.path.sep
-        basename= os.path.basename(dirpath)
+        basename = os.path.basename(dirpath)
         try:
             op_name = basename.split('_')[-1]
         except IndexError as e:
@@ -253,14 +251,7 @@ class OpChecker:
                     return True
             return False
 
-    def check_path_valid(self, path):
-        return path and os.path.isdir(path)
-
     def if_exec_node(self, case_info):
-        flag0 = self.check_path_valid(case_info.get("tensor_path", None))
-        if not flag0:
-            return False
-
         if self.ids == '' and self.opname is None:
             return True
 
