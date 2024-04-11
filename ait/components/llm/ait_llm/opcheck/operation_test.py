@@ -49,15 +49,11 @@ class OperationTest(unittest.TestCase):
         error6 = 'Error+/-1'
 
         self.precision_standard = {
-            'ACL_DOUBLE': [error1, 99.99], 'ACL_UINT32': [error1, 99.99], 'ACL_INT64': [error1, 99.99], 
-            'ACL_FLOAT': [error1, 99.99], 'ACL_INT32': [error1, 99.99], 'ACL_UINT64': [error1, 99.99], 
-            'ACL_FLOAT16': [error3, 99.9], 'ACL_BF16': [error4, 99.6], 'ACL_INT8': [error6, 99.9], 
-            'ACL_UINT8': [error6, 99], 'ACL_INT16': [error6, 99.9], 'ACL_UINT16': [error6, 99.9], 
-            'ACL_BOOL': [error1, 100], 'double': [error1, 99.99], 'uint32': [error1, 99.99], 
-            'int64': [error1, 99.99], 'float': [error1, 99.99], 'int32': [error1, 99.99], 
-            'uint64': [error1, 99.99], 'float16': [error3, 99.9], 'bf16': [error4, 99.6], 
-            'int8': [error6, 99.9], 'uint8': [error6, 99], 'int16': [error6, 99.9], 
-            'uint16': [error6, 99.9], 'bool': [error1, 100]
+            'torch.double': [error1, 99.99], 'torch.uint32': [error1, 99.99], 'torch.int64': [error1, 99.99], 
+            'torch.float': [error1, 99.99], 'torch.int32': [error1, 99.99], 'torch.uint64': [error1, 99.99], 
+            'torch.float16': [error3, 99.9], 'torch.bf16': [error4, 99.6], 'torch.int8': [error6, 99.9], 
+            'torch.uint8': [error6, 99], 'torch.int16': [error6, 99.9], 'torch.uint16': [error6, 99.9], 
+            'torch.bool': [error1, 100]
         }
 
         self.erol_dict = {
@@ -245,9 +241,10 @@ class OperationTest(unittest.TestCase):
 
         tensor_count = len(out_tensors)
         for i in range(tensor_count):
-            p_s = self.precision_standard.get(out_tensors[i].dtype, [])
+            out_dtype = str(out_tensors[i].dtype)
+            p_s = self.precision_standard.get(out_dtype, [])
             if len(p_s) != 2:
-                raise RuntimeError(f"{out_tensors[i].dtype} not supported!")
+                raise RuntimeError(f"{out_dtype} not supported!")
             etol = self.erol_dict.get(p_s[0], 0.001)
             err_rate = p_s[1]
             ps_standard = f"{err_rate}%(error<{etol})"
