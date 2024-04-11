@@ -60,23 +60,41 @@ class OpChecker:
 
         import ait_llm
 
-        lib_path = os.environ.get("AIT_OPCHECK_LIB_PATH")
-        if not lib_path:
-            lib_path_dir = os.path.dirname(os.path.abspath(ait_llm.__file__))
-            lib_path = os.path.join(lib_path_dir, "opcheck", "libopchecker.so")
+        # lib_path = os.environ.get("AIT_OPCHECK_LIB_PATH", "")
+        # if not lib_path:
+        #     lib_path_dir = os.path.dirname(os.path.abspath(ait_llm.__file__))
+        #     lib_path = os.path.join(lib_path_dir, "opcheck", "libopchecker.so")
 
-        if os.path.exists(lib_path):
+        # if os.path.exists(lib_path):
+        #     try:
+        #         logger.info(lib_path)
+        #         torch.classes.load_library(lib_path)
+        #     except OSError as e:
+        #         logger_text = "Failed to load libopchecker.so, please check. Error: {}".format(e)
+        #         logger.error(logger_text)
+        #         execution_flag = False
+        # else:
+        #     logger_text = "libopchecker.so not found in {}".format(lib_path)
+        #     logger.error(logger_text)
+        #     execution_flag = False
+
+        speed_home_path = os.environ.get("ATB_SPEED_HOME_PATH", "")
+        if not speed_home_path:
+            execution_flag = False
+
+        libatb_speed_torch_path = os.path.join(speed_home_path, "lib", "libatb_speed_torch.so")
+        if os.path.exists(libatb_speed_torch_path):
             try:
-                logger.info(lib_path)
-                torch.classes.load_library(lib_path)
+                logger.info(libatb_speed_torch_path)
+                torch.classes.load_library(libatb_speed_torch_path)
             except OSError as e:
-                logger_text = "Failed to load libopchecker.so, please check. Error: {}".format(e)
+                logger_text = "Failed to load libatb_speed_torch.so, please check. Error: {}".format(e)
                 logger.error(logger_text)
                 execution_flag = False
         else:
-            logger_text = "libopchecker.so not found in {}".format(lib_path)
+            logger_text = "libatb_speed_torch.so not found in {}".format(speed_home_path)
             logger.error(logger_text)
-            execution_flag = False
+            execution_flag = False        
 
         return execution_flag
 
