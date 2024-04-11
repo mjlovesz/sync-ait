@@ -229,14 +229,6 @@ class OpcheckCommand(BaseCommand):
             help='input directory.E.g:--input OUTPUT_DIR/PID_TID/0/')
 
         parser.add_argument(
-            '--csv-path',
-            '-c',
-            dest="csv_path",
-            required=True,
-            type=check_input_path_legality,
-            help='csv file path.E.g:--csv-path OUTPUT_DIR/ait_dump/operation_io_tensors/PID/operation_tensors_0.csv')
-
-        parser.add_argument(
             '--output',
             '-o',
             dest="output",
