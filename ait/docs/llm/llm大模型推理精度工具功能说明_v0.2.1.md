@@ -99,7 +99,7 @@ atb_json_to_onnx(layer_topo_info, model_level)
 
 接口说明：给模型添加hook，用于dump数据
 
-接口原型：register_hook(model, config, hook_name=”dump_data”)
+接口原型：register_hook(model, config, hook_type=”dump_data”)
 
 | 参数名    | 含义           | 使用说明                                                | 是否必填 |
 | --------- | -------------- | ------------------------------------------------------- | -------- |
