@@ -27,6 +27,7 @@ class ActivationGolden:
 
     @staticmethod
     def gelu_golden(in_tensors, _):
+        in_tensors = in_tensors.float()
         try:
             float_result = 0.5 * in_tensors * (1 + torch.nn.functional.tanh(torch.sqrt(2 / torch.pi) * 
                                                     (in_tensors + 0.044715 * torch.pow(in_tensors, 3))))
@@ -36,6 +37,7 @@ class ActivationGolden:
 
     @staticmethod
     def fast_gelu_golden(in_tensors, _):
+        in_tensors = in_tensors.float()
         try:
             float_result = in_tensors * torch.exp(0.851 * (in_tensors - torch.abs(in_tensors))) / (1 + 
                             torch.exp(-1.702 * torch.abs(in_tensors)))
@@ -54,6 +56,7 @@ class ActivationGolden:
 
     @staticmethod
     def log_golden(in_tensors, _):
+        in_tensors = in_tensors.float()
         float_result = torch.log(in_tensors)
         return float_result.half() if in_tensors.dtype == torch.float16 else float_result
     
