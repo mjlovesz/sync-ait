@@ -33,40 +33,31 @@ class OpcheckRmsNormOperation(operation_test.OperationTest):
         
         quant_type = cur_param.get('quantType', None)
         eps = cur_param.get('epsilon', 1e-5)
-        x = in_tensors[0]
-        gamma = in_tensors[1]
+        x = in_tensors[0].float()
+        gamma = in_tensors[1].float()
         gamma = gamma.view(1, -1)
         if layertype == 2 and quant_type == 2:
-            x = x + in_tensors[1]
-            gamma = in_tensors[2]
+            x = x + in_tensors[1].float()
+            gamma = in_tensors[2].float()
         if layertype == 3 or (layertype == 2 and quant_type == 0):
             idx = 1
             if 'hasBias' in cur_param.keys():
-                x = x + in_tensors[idx]
+                x = x + in_tensors[idx].float()
                 idx += 1
-            x = x + in_tensors[idx]
+            x = x + in_tensors[idx].float()
             idx += 1
-            gamma = in_tensors[idx]
+            gamma = in_tensors[idx].float()
         gamma_size = float(gamma.size(-1))
         try:
             norm = torch.sum(x / gamma_size * x, dim=-1, keepdim=True) + eps
             golden_output = x * gamma / torch.sqrt(norm)
         except ZeroDivisionError as e:
             raise e
-
-        def rms_norm_quant(golden_output, beta):
-            quant_scale = cur_param.get('quantInputScale', 1)
-            quant_offset = cur_param.get('quantInputOffset', 0)
-            golden_output = golden_output + beta
-            try:
-                golden_output = golden_output / quant_scale + quant_offset
-            except ZeroDivisionError as e:
-                raise e
-            golden_output = torch.clamp(golden_output, -128, 127)
-            golden_result_quant = torch.round(golden_output)
-            return golden_result_quant
         
         def rms_norm_quant_with_tensor(golden_output, beta, scale, offset):
+            golden_output = golden_output.float()
+            beta = beta.float()
+            scale = scale.half()
             golden_output = golden_output + beta
             try:
                 golden_output = golden_output / scale + offset
@@ -74,16 +65,16 @@ class OpcheckRmsNormOperation(operation_test.OperationTest):
                 raise e
             golden_output = torch.clamp(golden_output, -128, 127)
             golden_result_quant = torch.round(golden_output)
-            return golden_result_quant
+            return golden_result_quant.type(torch.int8)
     
         if layertype == 2 and quant_type == 2:
             golden_result = [rms_norm_quant_with_tensor(golden_output, in_tensors[3], in_tensors[4], in_tensors[5]), x]
         elif layertype == 1 and quant_type == 2:
             golden_result = [rms_norm_quant_with_tensor(golden_output, in_tensors[2], in_tensors[3], in_tensors[4])]
         elif layertype == 2 and quant_type == 0:
-            golden_result = [golden_result, x]
+            golden_result = [golden_result.half(), x.half()]
         else:
-            golden_result = [golden_output]
+            golden_result = [golden_output.half()]
 
         return golden_result
 
