@@ -81,9 +81,9 @@ class OpcheckRmsNormOperation(operation_test.OperationTest):
         elif layertype == 1 and quant_type == 2:
             golden_result = [rms_norm_quant_with_tensor(golden_output, in_tensors[2], in_tensors[3], in_tensors[4])]
         elif layertype == 2 and quant_type == 0:
-            golden_result = [golden_result.half(), x.half()]
+            golden_result = [golden_result, x]
         else:
-            golden_result = [golden_output.half()]
+            golden_result = [golden_output]
 
         return golden_result
 
