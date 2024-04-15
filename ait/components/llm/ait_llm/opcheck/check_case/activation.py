@@ -41,15 +41,16 @@ class ActivationGolden:
                             torch.exp(-1.702 * torch.abs(in_tensors)))
         except ZeroDivisionError as e:
             raise e
-        return float_result.half() if in_tensors.dtype == torch.float16 else float_result
+        return float_result.half()
 
     @staticmethod
     def swish_golden(in_tensors, scale):
+        in_tensors = in_tensors.float()
         try:
             float_result = in_tensors / (1 + torch.exp(-in_tensors * scale))
         except ZeroDivisionError as e:
             raise e
-        return float_result.half() if in_tensors.dtype == torch.float16 else float_result
+        return float_result.half()
 
     @staticmethod
     def log_golden(in_tensors, _):
