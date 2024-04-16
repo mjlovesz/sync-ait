@@ -52,9 +52,9 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         q_scale, qk_scale, head_num, head_size = self.op_param.get("qScale", 1.0), self.op_param.get("qkScale", 1.0), \
             self.op_param.get("headNum", 32), 128
         
-        print(mixed_q.size)
-        print(mixed_k.size)
-        print(mixed_v.size)
+        print(mixed_q.size())
+        print(mixed_k.size())
+        print(mixed_v.size())
         
         offset = 0
         context_list = []
