@@ -71,7 +71,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             cur_q = (cur_q * q_scale).view(cur_seqlen, head_num, head_size).transpose(0, 1)
             cur_k = cur_k.view(cur_token_offset, head_num, head_size).permute(1, 2, 0)
             cur_qk = torch.bmm(cur_q, cur_k) # [head_num, seqlen, token_offset]
-            if self.op_param.get("isClamp", False):
+            if self.op_param.get("clampType", 0):
                 clamp_min = self.op_param.get("clampMin", 0.0)
                 clamp_max = self.op_param.get("clampMax", 0.0)
                 cur_qk = torch.clamp(cur_qk, clamp_min, clamp_max)
@@ -79,9 +79,8 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
                 cur_qk = cur_qk + attention_mask[i, :cur_seqlen, :cur_token_offset]
             else:
                 cur_qk = cur_qk + attention_mask[:cur_seqlen, :cur_token_offset]
-            cur_qk = cur_qk.type(torch.float64) * qk_scale
-            cur_qk = torch.nn.functional.softmax(cur_qk.type(torch.float64), dim=-1).type(cur_q.dtype)
-
+            cur_qk = cur_qk * qk_scale
+            cur_qk = torch.nn.functional.softmax(cur_qk, dim=-1)
             cur_v = cur_v.view(cur_token_offset, head_num, head_size).transpose(0, 1)
             cur_context = torch.bmm(cur_qk, cur_v).transpose(0, 1).contiguous().view(cur_seqlen, head_num * head_size)
             context_list.append(cur_context)
@@ -101,7 +100,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         else:
             batch_status = len(seq_len)
 
-        heads, group_num, embed = self.op_param["headNum"], self.op_param["kvHeadNum"], 128
+        heads, group_num, embed = self.op_param.get("headNum", 32), self.op_param.get("kvHeadNum", 32), mixed_k.size(-1)
         q_seqlen = kv_seqlen = seq_len # crossattention时，q_seqlen != k_seqlen
 
         q_offset, k_offset, v_offset = 0, 0, 0
@@ -109,50 +108,47 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
 
         for idx in range(batch_status):
             q_s, kv_s = q_seqlen[idx], kv_seqlen[idx]
-            q_slice = mixed_q[q_offset:q_offset + q_s][:].reshape(q_s, heads, embed)
-            q_slice = torch.transpose(q_slice, (1, 0, 2))  # (heads, q_seq, embed)
-            k_slice = mixed_k[k_offset:k_offset + kv_s][:].reshape(kv_s, group_num, embed)
-            k_slice = torch.transpose(k_slice, (1, 0, 2))
-            k_slice_t = torch.transpose(k_slice, (0, 2, 1))   # get K^T (kv_heads, embed, k_seq)
-            v_slice = mixed_v[v_offset:v_offset + kv_s][:].reshape(kv_s, group_num, embed)
-            v_slice = torch.transpose(v_slice, (1, 0, 2))
+            q_slice = mixed_q[q_offset:q_offset + q_s][:].view(q_s, heads, embed)
+            q_slice = torch.permute(q_slice, (1, 0, 2))  # (heads, q_seq, embed)
+            k_slice = mixed_k[k_offset:k_offset + kv_s][:].view(kv_s, group_num, embed)
+            k_slice = torch.permute(k_slice, (1, 0, 2))
+            k_slice_t = torch.permute(k_slice, (0, 2, 1))   # get K^T (kv_heads, embed, k_seq)
+            v_slice = mixed_v[v_offset:v_offset + kv_s][:].view(kv_s, group_num, embed)
+            v_slice = torch.permute(v_slice, (1, 0, 2))
             score = self.group_matmul(heads, group_num, q_slice, k_slice_t)
-            s = score.reshape([-1, ]) if s is None else torch.concatenate((s, score.reshape([-1, ])), 0)
+            s = score.view(-1) if s is None else torch.cat((s, score.view(-1)), 0)
             
             try:
-                score = score * torch.float16(1.0 / math.sqrt(1.0 * embed))
+                score = score * (1.0 / math.sqrt(1.0 * embed))
             except ZeroDivisionError as e:
                 raise e
 
-            score = score + attention_mask[:, :q_s, :kv_s] if self.op_param["isTriuMask"] else score
+            score = score + attention_mask[:, :q_s, :kv_s] if self.op_param.get("isTriuMask", False) else score
             score_max = torch.max(score, axis=-1)
-            score = score - score_max.reshape((heads, q_s, 1))
-            score_exp = torch.exp(score.astype(torch.float32))
-            if not self.op_param["isFp32"]:
-                score_sum = torch.sum(score_exp.astype(torch.float16), axis=-1)
-                _p = score_exp.astype(torch.float16).reshape([-1, ]) if _p is None else \
-                    torch.concatenate((_p, score_exp.astype(torch.float16).reshape([-1, ])), 0)
+            score = score - score_max.view((heads, q_s, 1))
+            score_exp = torch.exp(score)
+            if not self.op_param.get("isFp32", True):
+                score_sum = torch.sum(score_exp, axis=-1)
+                _p = score_exp.view(-1) if _p is None else torch.cat((_p, score_exp.view(-1)), 0)
                 try:
-                    p = score_exp.astype(torch.float16) / score_sum.reshape((heads, q_s, 1)).astype(torch.float16)
+                    p = score_exp / score_sum.view(heads, q_s, 1)
                 except ZeroDivisionError as e:
                     raise e
                 out_sub = self.group_matmul(heads, group_num, p, v_slice)
             else:
                 score_sum = torch.sum(score_exp, axis=-1)
-                _p = score_exp.astype(torch.float16).reshape([-1, ]) if _p is None else \
-                    torch.concatenate((_p, score_exp.astype(torch.float16).reshape([-1, ])), 0)
-                p = score_exp.astype(torch.float16)
+                _p = score_exp.view(-1) if _p is None else torch.cat((_p, score_exp.view(-1)), 0)
+                p = score_exp
                 out_sub = self.group_matmul(heads, group_num, p, v_slice)
                 try:
-                    out_sub = out_sub / score_sum.reshape((heads, q_s, 1)).astype(torch.float16)
+                    out_sub = out_sub / score_sum.view(heads, q_s, 1)
                 except ZeroDivisionError as e:
                     raise e
-            out_sub = out_sub.reshape(heads, q_s, embed)
-            out_sub = torch.transpose(out_sub, (1, 0, 2))
-            out_sub = torch.ascontiguousarray(out_sub)
-            out = out_sub if out is None else torch.concatenate((out, out_sub), 0)
+            out_sub = out_sub.view(heads, q_s, embed)
+            out_sub = torch.permute(out_sub, (1, 0, 2))
+            out = out_sub if out is None else torch.cat((out, out_sub), 0)
 
-        return out.astype("float16").reshape(-1, heads, 128)
+        return out.view(-1, heads, embed)
     
     def decoder_golden_func(self, in_tensors):
         return self.undefined_golden_func(in_tensors)
