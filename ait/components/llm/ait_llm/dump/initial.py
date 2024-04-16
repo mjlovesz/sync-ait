@@ -21,23 +21,27 @@ import re
 
 from components.utils.file_open_check import FileStat
 from ait_llm.common.log import logger
+from ait_llm.common.utils import safe_string
 from ait_llm.common.constant import ATB_HOME_PATH, ATB_SAVE_TENSOR_TIME, ATB_SAVE_TENSOR_IDS, \
     ATB_SAVE_TENSOR_RUNNER, ATB_SAVE_TENSOR, ATB_SAVE_TENSOR_RANGE, \
     ATB_SAVE_TILING, LD_PRELOAD, ATB_OUTPUT_DIR, ATB_SAVE_CHILD, ATB_SAVE_TENSOR_PART, \
     ASCEND_TOOLKIT_HOME, ATB_PROB_LIB_WITH_ABI, ATB_PROB_LIB_WITHOUT_ABI, ATB_SAVE_CPU_PROFILING, \
-    ATB_CUR_PID, ATB_DUMP_SUB_PROC_INFO_SAVE_PATH, ATB_DEVICE_ID, ATB_AIT_LOG_LEVEL
+    ATB_CUR_PID, ATB_DUMP_SUB_PROC_INFO_SAVE_PATH, ATB_DEVICE_ID, ATB_AIT_LOG_LEVEL, ATB_DUMP_TYPE
 
 
 def is_use_cxx11():
     atb_home_path = os.environ.get(ATB_HOME_PATH, "")
     if not atb_home_path or not os.path.exists(atb_home_path):
         raise OSError("ATB_HOME_PATH from atb is required, but it is empty or invalid.")
+    atb_home_path = safe_string(atb_home_path)
     lib_atb_path = os.path.join(atb_home_path, "lib", "libatb.so")
     if not os.path.exists(lib_atb_path):
         raise OSError(f"{lib_atb_path} not exists, please make sure atb is compiled correctly")
 
     result_code, abi_result = subprocess.getstatusoutput(f"nm -D {lib_atb_path} | grep Probe | grep cxx11")
-    if result_code != 0:
+    if result_code == 1 and len(abi_result) == 0:  # Execute succesfully but not found
+        return False
+    elif result_code != 0:
         logger.warning("Detecting abi status from atb so failed, will regard it as False")
         return False
     else:
@@ -53,11 +57,13 @@ def init_dump_task(args):
     os.environ[ATB_SAVE_TENSOR_TIME] = str(args.time)
     if args.ids:
         os.environ[ATB_SAVE_TENSOR_IDS] = str(args.ids)
+    else:
+        os.environ.pop(ATB_SAVE_TENSOR_IDS, None)  # Ensure none is set
 
     if args.opname:
         os.environ[ATB_SAVE_TENSOR_RUNNER] = str(args.opname).lower()
     else:
-        os.environ.pop(ATB_SAVE_TENSOR_RUNNER, None)
+        os.environ.pop(ATB_SAVE_TENSOR_RUNNER, None)  # Ensure none is set
 
     if args.output:
         if args.output.endswith('/'):
@@ -67,14 +73,20 @@ def init_dump_task(args):
         if "tensor" in args.type:
             atb_dump_path = os.path.join(args.output, 'ait_dump', 'tensors')
             os.makedirs(atb_dump_path, exist_ok=True)
+    else:
+        os.environ.pop(ATB_OUTPUT_DIR, None)  # Ensure none is set
 
     if args.type:
-        os.environ['ATB_DUMP_TYPE'] = "|".join(args.type)
+        os.environ[ATB_DUMP_TYPE] = "|".join(args.type)
+    else:
+        os.environ.pop(ATB_DUMP_TYPE, None)  # Ensure none is set
 
     if "onnx" in args.type and ("model" in args.type or "layer" in args.type):
         os.environ[ATB_DUMP_SUB_PROC_INFO_SAVE_PATH] = os.path.join(str(args.output), str(os.getpid()))
         subprocess_info_path = os.path.join(args.output, str(os.getpid()))
         os.makedirs(subprocess_info_path, exist_ok=True)
+    else:
+        os.environ.pop(ATB_DUMP_SUB_PROC_INFO_SAVE_PATH, None)  # Ensure none is set
 
     os.environ[ATB_SAVE_CHILD] = "1" if args.child else "0"
     os.environ[ATB_SAVE_TENSOR_RANGE] = str(args.range)
@@ -86,7 +98,7 @@ def init_dump_task(args):
     if args.device_id is not None:
         os.environ[ATB_DEVICE_ID] = str(args.device_id)
     else:
-        os.environ.pop(ATB_DEVICE_ID, None)
+        os.environ.pop(ATB_DEVICE_ID, None)  # Ensure none is set
 
     atb_log_level_map = {"debug": 0, "info": 1, "warning": 2, "warn": 2, "error": 3, "fatal": 4, "critical": 5}
     cur_log_level = atb_log_level_map.get(args.log_level.lower(), 1)
@@ -106,8 +118,7 @@ def init_dump_task(args):
         raise OSError(f"{save_tensor_so_name} is illegal, group or others writable file stat is not permitted")
 
     logger.info(f"Append save_tensor_so_path: {save_tensor_so_path} to LD_PRELOAD")
-    ld_preload = os.getenv(LD_PRELOAD)
-    ld_preload = ld_preload or ""
+    ld_preload = os.getenv(LD_PRELOAD) or ""
     os.environ[LD_PRELOAD] = save_tensor_so_path + ":" + ld_preload
 
 

@@ -15,6 +15,7 @@ import os
 import time
 
 from ait_llm.common.log import logger
+from ait_llm.common.utils import check_output_path_legality
 
 
 def try_import_torchair():
@@ -33,13 +34,18 @@ def get_ge_dump_config(dump_path="ait_ge_dump", dump_mode="all", fusion_switch_f
     from torchair.configs.compiler_config import CompilerConfig
 
     config = CompilerConfig()
+    check_output_path_legality(dump_path)
     dump_path = os.path.join(dump_path, "dump_" + time.strftime('%Y%m%d_%H%M%S'))  # Timestamp like '20240222_095519'
     if not os.path.exists(dump_path):
         os.makedirs(dump_path, mode=0o750)
 
     # Generate GE mapping graph
     config.debug.graph_dump.type = "txt"
-    config.debug.graph_dump.path = dump_path
+    if hasattr(config.debug.graph_dump, "_path"):  # interface changed since 8.0.RC1.b080
+        setattr(config.debug.graph_dump, "_path", dump_path)
+    else:
+        config.debug.graph_dump.path = dump_path
+
     if fusion_switch_file is not None:
         if not os.path.exists(fusion_switch_file):
             raise FileNotFoundError(f'fusion_switch_file: {fusion_switch_file} not found')
