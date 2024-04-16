@@ -106,9 +106,8 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             batch_status = len(seq_len)
 
         heads, group_num, embed = self.op_param["headNum"], self.op_param["kvHeadNum"], 128
-        q_seqlen = kv_seqlen = seq_len # crossattention时，q_seqlen != k_seqlen 
-        max_s, ntokens2 = torch.max(q_seqlen), (q_seqlen * kv_seqlen).sum()
-
+        q_seqlen = kv_seqlen = seq_len # crossattention时，q_seqlen != k_seqlen
+        
         q_offset, k_offset, v_offset = 0, 0, 0
         s, _p, out = None, None, None
 
