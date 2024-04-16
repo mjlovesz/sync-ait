@@ -43,13 +43,19 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         mixed_q, mixed_k, mixed_v, cache_k, cache_v, attention_mask, token_offset, seq_len, layerid = in_tensors[0], \
             in_tensors[1], in_tensors[2], in_tensors[3], in_tensors[4], in_tensors[5], in_tensors[6], in_tensors[7], \
             int(in_tensors[8][0])
-            
-        if self.op_param["batchRunStatusEnable"]:
+        
+        batch_run_status_enable = self.op_param.get("batchRunStatusEnable", False)
+        if batch_run_status_enable:
             batch_status = in_tensors[9]
         else:
             batch_status = len(seq_len)
-        q_scale, qk_scale, head_num, head_size = self.op_param["qScale"], self.op_param["qkScale"], \
-            self.op_param["headNum"], 8
+        q_scale, qk_scale, head_num, head_size = self.op_param.get("qScale", 1.0), self.op_param.get("qkScale", 1.0), \
+            self.op_param.get("headNum", 32), 128
+        
+        print(mixed_q.size)
+        print(mixed_k.size)
+        print(mixed_v.size)
+        
         offset = 0
         context_list = []
 
@@ -69,9 +75,9 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             cur_q = (cur_q * q_scale).view(cur_seqlen, head_num, head_size).transpose(0, 1)
             cur_k = cur_k.view(cur_token_offset, head_num, head_size).permute(1, 2, 0)
             cur_qk = torch.bmm(cur_q, cur_k) # [head_num, seqlen, token_offset]
-            if self.op_param["isClamp"]:
-                clamp_min = self.op_param["clampMin"]
-                clamp_max = self.op_param["clampMax"]
+            if self.op_param.get("isClamp", False):
+                clamp_min = self.op_param.get("clampMin", 0.0)
+                clamp_max = self.op_param.get("clampMax", 0.0)
                 cur_qk = torch.clamp(cur_qk, clamp_min, clamp_max)
             if attention_mask.ndim == 3: # masked_fill
                 cur_qk = cur_qk + attention_mask[i, :cur_seqlen, :cur_token_offset]
