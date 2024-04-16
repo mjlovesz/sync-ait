@@ -50,11 +50,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         else:
             batch_status = len(seq_len)
         q_scale, qk_scale, head_num, head_size = self.op_param.get("qScale", 1.0), self.op_param.get("qkScale", 1.0), \
-            self.op_param.get("headNum", 32), 128
-        
-        print(mixed_q.size())
-        print(mixed_k.size())
-        print(mixed_v.size())
+            self.op_param.get("headNum", 32), mixed_k.size(-1)
         
         offset = 0
         context_list = []
@@ -84,7 +80,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             else:
                 cur_qk = cur_qk + attention_mask[:cur_seqlen, :cur_token_offset]
             cur_qk = cur_qk * qk_scale
-            cur_qk = torch.nn.functional.softmax(cur_qk.type(torch.float32), dim=-1).type(torch.float16)
+            cur_qk = torch.nn.functional.softmax(cur_qk, dim=-1)
 
             cur_v = cur_v.view(cur_token_offset, head_num, head_size).transpose(0, 1)
             cur_context = torch.bmm(cur_qk, cur_v).transpose(0, 1).contiguous().view(cur_seqlen, head_num * head_size)
@@ -107,7 +103,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
 
         heads, group_num, embed = self.op_param["headNum"], self.op_param["kvHeadNum"], 128
         q_seqlen = kv_seqlen = seq_len # crossattention时，q_seqlen != k_seqlen
-        
+
         q_offset, k_offset, v_offset = 0, 0, 0
         s, _p, out = None, None, None
 
