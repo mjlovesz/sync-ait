@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import ctypes
 import torch
 import torch_npu
-import ctypes
 
 from ait_llm.opcheck import operation_test
 from ait_llm.common.log import logger

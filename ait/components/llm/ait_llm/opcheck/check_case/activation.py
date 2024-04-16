@@ -70,9 +70,11 @@ class ActivationGolden:
         float_result = F.silu(a) * b
         return float_result.to(dtype)
     
+    @staticmethod
     def swish(x):
         return x * torch.sigmoid(x)
     
+    @staticmethod
     def swish_grad(x):
         return torch.sigmoid(x) + x * (1 - torch.sigmoid(x)) * torch.sigmoid(x)
     

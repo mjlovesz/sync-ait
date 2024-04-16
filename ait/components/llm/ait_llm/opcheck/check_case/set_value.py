@@ -24,7 +24,7 @@ class OpcheckSetValueOperation(operation_test.OperationTest):
         starts = self.op_param.get("starts", None)
         ends = self.op_param.get("ends", None)
         golden_result = [in_tensors[0].clone(), in_tensors[1].clone()]
-        for i in range(len(starts)):
+        for i, _ in enumerate(starts):
             golden_result[0][starts[i]:ends[i]].copy_(in_tensors[1])
         return golden_result
 
