@@ -79,8 +79,8 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
                 cur_qk = cur_qk + attention_mask[i, :cur_seqlen, :cur_token_offset]
             else:
                 cur_qk = cur_qk + attention_mask[:cur_seqlen, :cur_token_offset]
-            cur_qk = cur_qk * qk_scale
-            cur_qk = torch.nn.functional.softmax(cur_qk, dim=-1)
+            cur_qk = cur_qk.type(torch.float32) * qk_scale.type(torch.float32)
+            cur_qk = torch.nn.functional.softmax(cur_qk.type(torch.float32), dim=-1).type(torch.float16)
 
             cur_v = cur_v.view(cur_token_offset, head_num, head_size).transpose(0, 1)
             cur_context = torch.bmm(cur_qk, cur_v).transpose(0, 1).contiguous().view(cur_seqlen, head_num * head_size)
