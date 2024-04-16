@@ -39,11 +39,62 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         logger.debug(score.shape)
         return score
 
+    def undefined_golden_func(self, in_tensors):
+        mixed_q, mixed_k, mixed_v, cache_k, cache_v, attention_mask, token_offset, seq_len, layerid = in_tensors[0], \
+            in_tensors[1], in_tensors[2], in_tensors[3], in_tensors[4], in_tensors[5], in_tensors[6], in_tensors[7], \
+            int(in_tensors[8][0])
+            
+        if self.op_param["batchRunStatusEnable"]:
+            batch_status = in_tensors[9]
+        else:
+            batch_status = len(seq_len)
+        q_scale, qk_scale, head_num, head_size = self.op_param["qScale"], self.op_param["qkScale"], \
+            self.op_param["headNum"], 8
+        offset = 0
+        context_list = []
+
+        for i in range(batch_status):
+            cur_seqlen = seq_len[i]
+            cur_token_offset = token_offset[i]
+            cur_token_offset_start = cur_token_offset - cur_seqlen
+            next_offset = offset + cur_seqlen
+            cur_q = mixed_q[offset:next_offset]
+            cur_k = mixed_k[offset:next_offset]
+            cur_v = mixed_v[offset:next_offset]
+            if cur_token_offset_start > 0:
+                past_k = cache_k[layerid, i, :cur_token_offset_start, :]
+                past_v = cache_v[layerid, i, :cur_token_offset_start, :]
+                cur_k = torch.concat([past_k, cur_k], dim=0)
+                cur_v = torch.concat([past_v, cur_v], dim=0)
+            cur_q = (cur_q * q_scale).view(cur_seqlen, head_num, head_size).transpose(0, 1)
+            cur_k = cur_k.view(cur_token_offset, head_num, head_size).permute(1, 2, 0)
+            cur_qk = torch.bmm(cur_q, cur_k) # [head_num, seqlen, token_offset]
+            if self.op_param["isClamp"]:
+                clamp_min = self.op_param["clampMin"]
+                clamp_max = self.op_param["clampMax"]
+                cur_qk = torch.clamp(cur_qk, clamp_min, clamp_max)
+            if attention_mask.ndim == 3: # masked_fill
+                cur_qk = cur_qk + attention_mask[i, :cur_seqlen, :cur_token_offset]
+            else:
+                cur_qk = cur_qk + attention_mask[:cur_seqlen, :cur_token_offset]
+            cur_qk = cur_qk * qk_scale
+            cur_qk = torch.nn.functional.softmax(cur_qk.type(torch.float32), dim=-1).type(torch.float16)
+
+            cur_v = cur_v.view(cur_token_offset, head_num, head_size).transpose(0, 1)
+            cur_context = torch.bmm(cur_qk, cur_v).transpose(0, 1).contiguous().view(cur_seqlen, head_num * head_size)
+            context_list.append(cur_context)
+
+            offset = next_offset
+
+        out = torch.concat(context_list, dim=0)
+        return out
+    
     def encoder_golden_func(self, in_tensors):
         mixed_q, mixed_k, mixed_v, attention_mask, seq_len = in_tensors[0], in_tensors[1], in_tensors[2], \
             in_tensors[3], in_tensors[4]
         
-        if self.op_param["batchRunStatusEnable"]:
+        batch_run_status_enable = self.op_param.get("batchRunStatusEnable", False)
+        if batch_run_status_enable:
             batch_status = in_tensors[5]
         else:
             batch_status = len(seq_len)
@@ -55,7 +106,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         q_offset, k_offset, v_offset = 0, 0, 0
         s, _p, out = None, None, None
 
-        for idx, _ in enumerate(range(batch_status)):
+        for idx in range(batch_status):
             q_s, kv_s = q_seqlen[idx], kv_seqlen[idx]
             q_slice = mixed_q[q_offset:q_offset + q_s][:].reshape(q_s, heads, embed)
             q_slice = torch.transpose(q_slice, (1, 0, 2))  # (heads, q_seq, embed)
@@ -101,97 +152,59 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             out = out_sub if out is None else torch.concatenate((out, out_sub), 0)
 
         return out.astype("float16").reshape(-1, heads, 128)
-
-    def undefined_golden_func(self, in_tensors):
-        mixed_q, mixed_k, mixed_v, cache_k, cache_v, attention_mask, token_offset, seq_len, layerid = in_tensors[0], \
-            in_tensors[1], in_tensors[2], in_tensors[3], in_tensors[4], in_tensors[5], in_tensors[6], in_tensors[7], \
-            int(in_tensors[8][0])
-        if self.op_param["batchRunStatusEnable"]:
-            batch_status = in_tensors[9]
-        else:
-            batch_status = len(seq_len)
-        q_scale, qk_scale, head_num, head_size = self.op_param["qScale"], self.op_param["qkScale"], \
-            self.op_param["headNum"], self.op_param["headDim"]
-        offset = 0
-        context_list = []
-
-        for i, _ in enumerate(range(batch_status)):
-            cur_seqlen = seq_len[i]
-            cur_token_offset = token_offset[i]
-            cur_token_offset_start = cur_token_offset - cur_seqlen
-            next_offset = offset + cur_seqlen
-            cur_q = mixed_q[offset:next_offset]
-            cur_k = mixed_k[offset:next_offset]
-            cur_v = mixed_v[offset:next_offset]
-            if cur_token_offset_start > 0:
-                past_k = cache_k[layerid, i, :cur_token_offset_start, :]
-                past_v = cache_v[layerid, i, :cur_token_offset_start, :]
-                cur_k = torch.concat([past_k, cur_k], dim=0)
-                cur_v = torch.concat([past_v, cur_v], dim=0)
-            cur_q = (cur_q * q_scale).view(cur_seqlen, head_num, head_size).transpose(0, 1)
-            cur_k = cur_k.view(cur_token_offset, head_num, head_size).permute(1, 2, 0)
-            cur_qk = torch.bmm(cur_q, cur_k) # [head_num, seqlen, token_offset]
-            if self.op_param["isClamp"]:
-                clamp_min = self.op_param["clampMin"]
-                clamp_max = self.op_param["clampMax"]
-                cur_qk = torch.clamp(cur_qk, clamp_min, clamp_max)
-            if attention_mask.ndim == 3: # masked_fill
-                cur_qk = cur_qk + attention_mask[i, :cur_seqlen, :cur_token_offset]
-            else:
-                cur_qk = cur_qk + attention_mask[:cur_seqlen, :cur_token_offset]
-            cur_qk = cur_qk * qk_scale
-            cur_qk = torch.nn.functional.softmax(cur_qk.type(torch.float32), dim=-1).type(torch.float16)
-
-            cur_v = cur_v.view(cur_token_offset, head_num, head_size).transpose(0, 1)
-            cur_context = torch.bmm(cur_qk, cur_v).transpose(0, 1).contiguous().view(cur_seqlen, head_num * head_size)
-            context_list.append(cur_context)
-
-            offset = next_offset
-
-        out = torch.concat(context_list, dim=0)
-        return out
     
     def decoder_golden_func(self, in_tensors):
-        pass
+        return self.undefined_golden_func(in_tensors)
 
     def pa_encoder_golden_func(self, in_tensors):
-        pass
+        return self.encoder_golden_func(in_tensors)
 
     def golden_calc(self, in_tensors):
-        calc_type = self.op_param["calcType"]
+        calc_type = self.op_param.get("calcType", 0)
         if calc_type == 0:
+            logger_text = f"CalcType: {calc_type}. Undefined calcType!"
+            logger.debug(logger_text)
             out = self.undefined_golden_func(in_tensors)
         elif calc_type == 1:
+            logger_text = f"CalcType: {calc_type}. Using encoder of FlashAttention!"
+            logger.debug(logger_text)
             out = self.encoder_golden_func(in_tensors)
         elif calc_type == 2:
+            logger_text = f"CalcType: {calc_type}. Using decoder of FlashAttention!"
+            logger.debug(logger_text)
             out = self.decoder_golden_func(in_tensors)
         else:
+            logger_text = f"CalcType: {calc_type}. Using encoder of PageAttention!"
+            logger.debug(logger_text)
             out = self.pa_encoder_golden_func(in_tensors)
         return [out]
 
     def test(self):
         soc_version = self.get_soc_version()
         if soc_version != 'Ascend910B':
-            logger_text = "{} is not supported! Only supports Ascend910B!".format(soc_version)
+            logger_text = f"{soc_version} is not supported! Only supports Ascend910B!"
             logger.error(logger_text)
             return
         
-        if self.op_param["calcType"] != 0 and self.op_param["calcType"] != 1:
-            logger_text = "CalcType {} is not supported!".format(self.op_param["calcType"])
-            logger.error(logger_text)
-            return            
+        batch_run_status_enable = self.op_param.get("batchRunStatusEnable", False)
 
         if len(self.in_tensors) <= 6:
-            if self.op_param["batchRunStatusEnable"]:
+            if batch_run_status_enable:
+                batch_run_status = self.in_tensors[5].tolist()
+                logger_text = f"Enabling batchRunStatus: {batch_run_status}"
+                logger.debug(logger_text)
                 self.case_info["run_param"] = json.dumps({"seqLen": self.in_tensors[4].tolist(),
-                                                        "batchRunStatus": self.in_tensors[5].tolist()})
+                                                        "batchRunStatus": batch_run_status})
             else:
                 self.case_info["run_param"] = json.dumps({"seqLen": self.in_tensors[4].tolist()})
         else:
-            if self.op_param["batchRunStatusEnable"]:
+            if batch_run_status_enable:
+                batch_run_status = self.in_tensors[9].tolist()
+                logger_text = f"Enabling batchRunStatus: {batch_run_status}"
+                logger.debug(logger_text)
                 self.case_info['run_param'] = json.dumps({"tokenOffset": self.in_tensors[6].tolist(), 
                                                         "seqLen": self.in_tensors[7].tolist(),
-                                                        "batchRunStatus": self.in_tensors[9].tolist()})
+                                                        "batchRunStatus": batch_run_status})
             else:
                 self.case_info["run_param"] = json.dumps({"tokenOffset": self.in_tensors[6].tolist(), 
                                                         "seqLen": self.in_tensors[7].tolist()})
