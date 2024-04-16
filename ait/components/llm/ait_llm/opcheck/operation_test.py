@@ -49,10 +49,10 @@ class OperationTest(unittest.TestCase):
         error6 = 'Error+/-1'
 
         self.precision_standard = {
-            'torch.double': [error1, 99.99], 'torch.uint32': [error1, 99.99], 'torch.int64': [error1, 99.99], 
-            'torch.float': [error1, 99.99], 'torch.int32': [error1, 99.99], 'torch.uint64': [error1, 99.99], 
-            'torch.float16': [error3, 99.9], 'torch.bf16': [error4, 99.6], 'torch.int8': [error6, 99.9], 
-            'torch.uint8': [error6, 99], 'torch.int16': [error6, 99.9], 'torch.uint16': [error6, 99.9], 
+            'torch.double': [error1, 99.99], 'torch.uint32': [error1, 99.99], 'torch.int64': [error1, 99.99],
+            'torch.float': [error1, 99.99], 'torch.int32': [error1, 99.99], 'torch.uint64': [error1, 99.99],
+            'torch.float16': [error3, 99.9], 'torch.bf16': [error4, 99.6], 'torch.int8': [error6, 99.9],
+            'torch.uint8': [error6, 99], 'torch.int16': [error6, 99.9], 'torch.uint16': [error6, 99.9],
             'torch.bool': [error1, 100]
         }
 
@@ -73,7 +73,7 @@ class OperationTest(unittest.TestCase):
         for name in testnames:
             suite.addTest(optest_class(name, case_info=case_info, excuted_ids=excuted_ids))
         return suite
-    
+
     def setUp(self):
         def get_tensor_path(tensor_type):
             _tensor_path = [x for x in os.listdir(self.tensor_path) if x.startswith(tensor_type)]
@@ -95,12 +95,12 @@ class OperationTest(unittest.TestCase):
                 raise RuntimeError(f"{self.tensor_path} not valid")
         else:
             raise RuntimeError(f"{self.tensor_path} not valid")
-    
+
     def tearDown(self):
         self.excuted_ids.put(self.op_id)
         if self.case_info['excuted_information'] != 'execution successful':
             self.case_info['excuted_information'] = 'execution failed'
-    
+
     def rerun_op(self, excute_type): 
         operation = torch.classes.OperationTorch.OperationTorch(self.op_name)
         if isinstance(self.op_param, dict):
@@ -158,7 +158,7 @@ class OperationTest(unittest.TestCase):
             logger.debug(logger_text)
             raise e
         return rel_pass_rate
-    
+
     def get_max_rel_error(self, out, golden):
         out, golden = out.reshape(-1).float().cpu(), golden.reshape(-1).float().cpu()
         max_rel_error, _ = CMP_ALG_MAP["max_relative_error"](golden, out)
@@ -179,11 +179,11 @@ class OperationTest(unittest.TestCase):
     def get_cos_similarity(self, out, golden):
         cos_sim, _ = CMP_ALG_MAP["cosine_similarity"](golden, out)
         return cos_sim
-    
+
     def get_kl_divergence(self, out, golden):
         kl, _ = CMP_ALG_MAP["kl_divergence"](golden, out)
         return kl
-    
+
     def get_other_precisions(self, out, golden, etol):
         precision_type = self.case_info['precision_type']
         default_str = 'NaN'
@@ -221,7 +221,7 @@ class OperationTest(unittest.TestCase):
             raise RuntimeError(f"{device_name} is not supported")
         device_count = torch.npu.device_count()
         current_device = torch.npu.current_device()
-        logger_text = "Device Properties: device_name: {}, soc_version: {}, device_count: {}, current_device: {}"\
+        logger_text = "Device Properties: device_name: {}, soc_version: {}, device_count: {}, current_device: {}" \
                     .format(device_name, soc_version, device_count, current_device)
         logger.debug(logger_text)
         return soc_version

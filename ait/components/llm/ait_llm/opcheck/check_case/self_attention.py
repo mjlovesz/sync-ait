@@ -89,7 +89,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
 
         out = torch.concat(context_list, dim=0)
         return out
-    
+
     def encoder_golden_func(self, in_tensors):
         mixed_q, mixed_k, mixed_v, attention_mask, seq_len = in_tensors[0], in_tensors[1], in_tensors[2], \
             in_tensors[3], in_tensors[4]
@@ -149,7 +149,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             out = out_sub if out is None else torch.cat((out, out_sub), 0)
 
         return out.view(-1, heads, embed)
-    
+
     def decoder_golden_func(self, in_tensors):
         return self.undefined_golden_func(in_tensors)
 
@@ -199,11 +199,11 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
                 batch_run_status = self.in_tensors[9].tolist()
                 logger_text = f"Enabling batchRunStatus: {batch_run_status}"
                 logger.debug(logger_text)
-                self.case_info['run_param'] = json.dumps({"tokenOffset": self.in_tensors[6].tolist(), 
+                self.case_info['run_param'] = json.dumps({"tokenOffset": self.in_tensors[6].tolist(),
                                                         "seqLen": self.in_tensors[7].tolist(),
                                                         "batchRunStatus": batch_run_status})
             else:
-                self.case_info["run_param"] = json.dumps({"tokenOffset": self.in_tensors[6].tolist(), 
+                self.case_info["run_param"] = json.dumps({"tokenOffset": self.in_tensors[6].tolist(),
                                                         "seqLen": self.in_tensors[7].tolist()})
 
         self.execute_with_param()

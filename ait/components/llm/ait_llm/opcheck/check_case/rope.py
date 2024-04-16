@@ -56,7 +56,7 @@ class OpcheckUnpadRopeOperation(operation_test.OperationTest):
         k_sum = torch.cat(tuple(k_list), dim=0)
         del self.unpadRetdata
         return [q_sum, k_sum]
-    
+
     def golden_func2(self, in_tensors):
         ntoken = in_tensors[0].size()[0]
         seqlen = int(in_tensors[4][0])

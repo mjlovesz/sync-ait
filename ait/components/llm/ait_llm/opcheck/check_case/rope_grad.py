@@ -35,7 +35,7 @@ class OpcheckRopeGradOperation(operation_test.OperationTest):
         bs = int(in_tensors[0].shape[1] / 128)
         for i in range(bs):
             q_grad[:, i * 128:(i + 1) * 128] = in_tensors[0][:, i * 128:(i + 1) * 128] * (cos + rohqgsin)
-    
+
         k_grad = torch.zeros_like(in_tensors[1])
         for i in range(bs):
             k_grad[:, i * 128:(i + 1) * 128] = in_tensors[1][:, i * 128:(i + 1) * 128] * (cos + rohqgsin)

@@ -21,7 +21,7 @@ class CaseManager:
         self.suite = unittest.TestSuite()
         self.cases = []
         self.excuted_ids = excuted_ids
-    
+
     def add_case(self, case_info):
         op_name = case_info['op_name']
         if op_name not in OP_NAME_DICT.keys():

@@ -20,7 +20,7 @@ from ait_llm.opcheck import operation_test
 from ait_llm.common.log import logger
 
 
-class OpcheckSortOperation(operation_test.OperationTest):    
+class OpcheckSortOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         num = self.param.get("num", None)
         values, indices = torch.topk(in_tensors[0], k=num[0], largest=True)

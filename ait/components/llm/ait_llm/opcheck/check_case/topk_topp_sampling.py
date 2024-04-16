@@ -28,7 +28,7 @@ class OpcheckToppOperation(operation_test.OperationTest):
         libc = CDLL("libc.so.6")
         libc.srand(rand_seed)
         rand_list = [libc.rand() / 0x7fffffff for i in range(64)]
- 
+
         probs = in_tensors[0]
         topp = in_tensors[1]
         probs_sorted = torch.sort(probs, axis=-1)[..., ::-1][..., :topk]
@@ -52,7 +52,6 @@ class OpcheckToppOperation(operation_test.OperationTest):
         probs_sampled = torch.take_along_axis(probs_sorted, indices_sorted_sampled, axis=-1)
         return [indices_sampled, probs_sampled]
 
-    
     def test(self):
         rand_seed = self.op_param.get('rand_seed', None)
         topk = self.op_param.get('topk', None)

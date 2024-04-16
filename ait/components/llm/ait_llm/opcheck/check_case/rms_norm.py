@@ -30,7 +30,7 @@ class OpcheckRmsNormOperation(operation_test.OperationTest):
             cur_param = self.op_param.get('postNormParam', None)
         else:
             raise ValueError('layerType should be 1 or 2 or 3')
-        
+
         quant_type = cur_param.get('quantType', None)
         eps = cur_param.get('epsilon', 1e-5)
         x = in_tensors[0].float()
@@ -66,7 +66,7 @@ class OpcheckRmsNormOperation(operation_test.OperationTest):
             golden_output = torch.clamp(golden_output, -128, 127)
             golden_result_quant = torch.round(golden_output)
             return golden_result_quant.type(torch.int8)
-    
+
         if layertype == 2 and quant_type == 2:
             golden_result = [rms_norm_quant_with_tensor(golden_output, in_tensors[3], in_tensors[4], in_tensors[5]), x]
         elif layertype == 1 and quant_type == 2:
@@ -85,4 +85,3 @@ class OpcheckRmsNormOperation(operation_test.OperationTest):
             logger.error(msg)
             return
         self.execute()
-

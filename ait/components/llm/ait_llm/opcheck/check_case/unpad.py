@@ -26,7 +26,7 @@ class OpcheckUnpadOperation(operation_test.OperationTest):
         seq_len = in_tensors[3]
         batch = in_tensors[0].shape[0]
         total_length_imm = in_tensors[0].shape[1]
- 
+
         x_remove_padding = input_ids[0][0:seq_len[0]]
         for i in range(1, batch):
             x_remove_padding = torch.concatenate((x_remove_padding, input_ids[i][0:seq_len[i]]))
@@ -44,6 +44,6 @@ class OpcheckUnpadOperation(operation_test.OperationTest):
         cum_offsets_out = cum_offsets_out.reshape(batch, 1).int()
         padding_offset = padding_offset.reshape(1, batch * total_length_imm)
         return [x_remove_padding, cum_offsets_out, padding_offset]
- 
+
     def test(self): 
         self.execute()

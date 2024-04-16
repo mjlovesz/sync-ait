@@ -35,7 +35,7 @@ class OpcheckElewiseAddOperation(operation_test.OperationTest):
         elif out_type == 9:
             golden_result = in_tensors[0].long()
         return [golden_result]
- 
+
     def elewise_muls(self, in_tensors):
         mulsParam = self.op_params.get('mulsParam', {})
         var_attr = mulsParam.get('varAttr', None)
@@ -45,59 +45,59 @@ class OpcheckElewiseAddOperation(operation_test.OperationTest):
             var_attr = 1
         golden_result = in_tensors[0] * var_attr
         return [golden_result]
- 
+
     def elewise_cos(self, in_tensors):
         golden_result = torch.cos(in_tensors[0])
         return [golden_result.half()]
- 
+
     def elewise_sin(self, in_tensors):
         golden_result = torch.sin(in_tensors[0])
         return [golden_result.half()]
- 
+
     def elewise_neg(self, in_tensors):
         golden_result = in_tensors[0] * (-1.0)
         return [golden_result]
- 
+
     def elewise_quant(self, in_tensors):
         golden_result = in_tensors[0].type(torch.int8)
         return [golden_result]
- 
+
     def elewise_logical_not(self, in_tensors):
         golden_result = torch.logical_not(in_tensors[0])
         return [golden_result]
- 
+
     def elewise_add(self, in_tensors):
         golden_result = in_tensors[0] + in_tensors[1]
         return [golden_result]
- 
+
     def elewise_mul(self, in_tensors):
         golden_result = in_tensors[0] * in_tensors[1]
         return [golden_result]
-  
+
     def elewise_realdiv(self, in_tensors):
         golden_result = torch.div(in_tensors[0], in_tensors[1])
         return [golden_result]
- 
+
     def elewise_logical_and(self, in_tensors):
         golden_result = torch.logical_and(in_tensors[0].type(torch.bool), in_tensors[1].type(torch.bool))
         return [golden_result.type(torch.int8)]
- 
+
     def elewise_logical_or(self, in_tensors):
         golden_result = torch.logical_or(in_tensors[0].type(torch.bool), in_tensors[1].type(torch.bool))
         return [golden_result.type(torch.int8)]
- 
+
     def elewise_less(self, in_tensors):
         golden_result = torch.lt(in_tensors[0], in_tensors[1]).type(torch.int8)
         return [golden_result]
- 
+
     def elewise_greater(self, in_tensors):
         golden_result = torch.gt(in_tensors[0], in_tensors[1]).type(torch.int8)
         return [golden_result]
- 
+
     def elewise_sub(self, in_tensors):
         golden_result = in_tensors[0] - in_tensors[1]
         return [golden_result]
- 
+
     def elewise_equal(self, in_tensors):
         golden_result = torch.eq(in_tensors[0], in_tensors[1]).type(torch.int8)
         return [golden_result]

@@ -19,7 +19,7 @@ from ait_llm.opcheck import operation_test
 from ait_llm.common.log import logger
 
 
-class OpcheckTransdataOperation(operation_test.OperationTest):    
+class OpcheckTransdataOperation(operation_test.OperationTest):
     @staticmethod
     def round_up(self, x, align):
         if align == 0:
@@ -29,7 +29,7 @@ class OpcheckTransdataOperation(operation_test.OperationTest):
     @staticmethod
     def custom_pad(self, x, pad_dims):
         return torch.nn.functional.pad(x, pad_dims)
-    
+
     @staticmethod
     def custom_reshape(self, x, target_shape):
         return x.reshape(target_shape)
@@ -46,10 +46,10 @@ class OpcheckTransdataOperation(operation_test.OperationTest):
         aux_dims = [0, 0, 0, 0]
         aux_dims[0] = in_tensors[0].size(0)
         aux_dims[1] = self.round_up(in_tensors[0].size(1), default_align)
- 
+
         pad_dims = [0, 0, 0, 0]  
         pad_dims[3] = self.round_up(in_tensors[0].size(1), default_align) - in_tensors[0].size(1)
- 
+
         if in_tensors[0].dtype == torch.int8:
             aux_dims[2] = self.round_up(in_tensors[0].size(2), align_int8) // align_int8
             aux_dims[3] = align_int8
@@ -66,7 +66,7 @@ class OpcheckTransdataOperation(operation_test.OperationTest):
                     ),
                     1, 2
                 ).contiguous()
- 
+
     @staticmethod
     def golden_nd_to_nz_2d(self, in_tensors):
         align_int8 = 32
@@ -95,7 +95,7 @@ class OpcheckTransdataOperation(operation_test.OperationTest):
                     ),
                     1, 2
                 ).contiguous()
- 
+
     @staticmethod
     def golden_nz_to_nd(self, in_tensors, out_crops):
         aux_dims = [0, 0, 0]
@@ -118,7 +118,7 @@ class OpcheckTransdataOperation(operation_test.OperationTest):
         else:
             out_crops = self.op_param.get("outCrops", None)
             golden_result = self.golden_nz_to_nd(in_tensors, out_crops)
- 
+
         return [golden_result]
 
     def test(self):

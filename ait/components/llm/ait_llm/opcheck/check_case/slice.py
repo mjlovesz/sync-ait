@@ -35,7 +35,6 @@ class OpcheckSliceOperation(operation_test.OperationTest):
                     offset_list[1] : offset_list[1] + size_list[1], offset_list[2] : offset_list[2] + size_list[2], 
                     offset_list[3] : offset_list[3] + size_list[3]]]
 
-
     def test(self):
         offset_list = self.op_param.get('offsets', None)
         size_list = self.op_param.get('size', None)

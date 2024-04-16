@@ -27,13 +27,13 @@ class OpcheckPadOperation(operation_test.OperationTest):
         batch = input_ids.shape[0]
         hidden_dim = tmp_out.shape[1]
         max_seq_len = input_ids.shape[1]
- 
+
         golden_result = torch.zeros((batch, hidden_dim))
         temp_val = 0
         for i in range(batch):
             temp_val = temp_val + seq_len[i][0]
             golden_result[i] = tmp_out[temp_val - 1]
         return [golden_result]
-    
+
     def test(self):
         self.execute()

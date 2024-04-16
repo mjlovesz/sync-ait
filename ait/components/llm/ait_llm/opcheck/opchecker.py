@@ -76,7 +76,7 @@ class OpChecker:
         else:
             logger_text = "libopchecker.so not found in {}".format(lib_path)
             logger.error(logger_text)
-            execution_flag = False      
+            execution_flag = False
 
         return execution_flag
 
@@ -211,7 +211,7 @@ class OpChecker:
             op_id = None
 
         return op_id, op_name
-    
+
     def check_id_range(self, op_id):
         if op_id is None:
             return False
@@ -246,7 +246,7 @@ class OpChecker:
             return True
 
         return False
-    
+
     def add_case_to_cases(self, case_info):
         op_name = case_info.get("op_name", None)
         op_id = case_info.get("op_id", None)
@@ -259,7 +259,7 @@ class OpChecker:
         elif op_name == 'SelfAttentionOperation':
             self.cases_info[op_id] = case_info
         else:
-            self.cases_info[op_id] = case_info 
+            self.cases_info[op_id] = case_info
 
     def add_op_info_to_cases_info(self, dirpath):
         tensor_path = os.path.join(dirpath, 'after')
@@ -285,7 +285,7 @@ class OpChecker:
         ret = self.if_exec_node(case_info)
         if ret:
             self.add_case_to_cases(case_info)
-        return       
+        return
 
     def walk_tensor_path(self, cur_path):
         for dirpath, dirnames, filenames in os.walk(cur_path):
