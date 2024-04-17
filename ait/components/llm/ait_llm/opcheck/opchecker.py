@@ -214,23 +214,23 @@ class OpChecker:
             return False
         if self.ids == '':
             return True
-        else:
-            for p in self.check_ids_string:
-                ret = re.match("^" + p + "(_[0-9]+){0,20}$", op_id)
-                if ret:
-                    return True
-            return False
+
+        for p in self.check_ids_string:
+            ret = re.match("^" + p + "(_[0-9]+){0,20}$", op_id)
+            if ret:
+                return True
+        return False
 
     def check_name(self, op_name):
         if op_name is None:
             return False
         if self.opname is None:
             return True
-        else:  # 应该是LinearOps，SelfAttention
-            for p in self.check_patterns:
-                if p in op_name.lower():
-                    return True
-            return False
+
+        for p in self.check_patterns:
+            if p in op_name.lower():
+                return True
+        return False
 
     def is_exec_node(self, case_info):
         if self.ids == '' and self.opname is None:
