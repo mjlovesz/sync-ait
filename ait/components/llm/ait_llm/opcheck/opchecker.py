@@ -81,8 +81,7 @@ class OpChecker:
         return execution_flag
 
     def get_base_path(self, cur_path):
-        _sep = os.path.sep
-        dirseg = cur_path.split(_sep)
+        dirseg = cur_path.split(os.path.sep)
         if len(dirseg) >= 4 and dirseg[-3] == 'tensors' and dirseg[-4] == 'ait_dump':
             return cur_path
         elif cur_path == os.path.dirname(cur_path):
@@ -193,7 +192,6 @@ class OpChecker:
                 self.write_op_result_to_csv(v)
 
     def parse_op_id_name(self, dirpath):
-        _sep = os.path.sep
         basename = os.path.basename(dirpath)
         try:
             op_name = basename.split('_')[-1]
@@ -204,7 +202,7 @@ class OpChecker:
 
         rel_path = os.path.relpath(dirpath, self.base_path)
         try:
-            op_id = '_'.join([x.split('_')[0] for x in rel_path.split(_sep)])
+            op_id = '_'.join([x.split('_')[0] for x in rel_path.split(os.path.sep)])
         except IndexError as e:
             logger_text = f"{dirpath} is not a valid tensor dir, please check"
             logger.debug(logger_text)
@@ -235,7 +233,7 @@ class OpChecker:
                     return True
             return False
 
-    def if_exec_node(self, case_info):
+    def is_exec_node(self, case_info):
         if self.ids == '' and self.opname is None:
             return True
 
@@ -282,7 +280,7 @@ class OpChecker:
             'precision_type': self.precision_type, 'rerun': self.rerun
         }
 
-        ret = self.if_exec_node(case_info)
+        ret = self.is_exec_node(case_info)
         if ret:
             self.add_case_to_cases(case_info)
         return
