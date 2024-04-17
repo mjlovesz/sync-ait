@@ -30,8 +30,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             raise e       
         score = None
         for i in range(group_num):
-            group_score = torch.matmul(in_a[i * group_head: (i + 1) * group_head, :, :].astype(torch.float32),
-                                    in_b[i:(i + 1), :, :].astype(torch.float32)).astype(torch.float16)
+            group_score = torch.matmul(in_a[i * group_head: (i + 1) * group_head, :, :], in_b[i:(i + 1), :, :])
             if score is None:
                 score = group_score
             else:
