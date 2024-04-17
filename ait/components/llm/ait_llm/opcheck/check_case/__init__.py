@@ -25,10 +25,7 @@ from ait_llm.opcheck.check_case.fill import OpcheckFillOperation
 from ait_llm.opcheck.check_case.gather import OpcheckGatherOperation
 from ait_llm.opcheck.check_case.genattentionmask import OpcheckElewiseSubOperation
 from ait_llm.opcheck.check_case.kv_cache import OpcheckKvCacheOperation
-from ait_llm.opcheck.check_case.linear_activation import OpcheckLinearActivationOperation
 from ait_llm.opcheck.check_case.linear import OpcheckLinearOperation
-from ait_llm.opcheck.check_case.linear_activation_quant import OpcheckLinearActivationQuantOperation
-from ait_llm.opcheck.check_case.linear_quant import OpcheckLinearQuantOperation
 from ait_llm.opcheck.check_case.linear_sparse import OpcheckLinearSparseOperation
 from ait_llm.opcheck.check_case.matmul import OpcheckMatmulOperation
 from ait_llm.opcheck.check_case.pad import OpcheckPadOperation
@@ -72,9 +69,6 @@ OP_NAME_DICT = dict({
     "GenAttentionMaskOperation":OpcheckElewiseSubOperation,
     "KvCacheOperation":OpcheckKvCacheOperation,
     "LinearOperation":OpcheckLinearOperation,
-    "LinearActivationOperation":OpcheckLinearActivationOperation,
-    "LinearActivationQuantOperation":OpcheckLinearActivationQuantOperation,
-    "LinearQuantOperation":OpcheckLinearQuantOperation,
     "LinearSparseOperation":OpcheckLinearSparseOperation,
     "MatmulOperation":OpcheckMatmulOperation,
     "PadOperation":OpcheckPadOperation,
