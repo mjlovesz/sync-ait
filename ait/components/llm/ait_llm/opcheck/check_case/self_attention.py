@@ -118,11 +118,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             score = self.group_matmul(heads, group_num, q_slice, k_slice_t)
             s = score.view(-1) if s is None else torch.cat((s, score.view(-1)), 0)
             
-            try:
-                score = score * (1.0 / math.sqrt(1.0 * embed))
-            except ZeroDivisionError as e:
-                raise e
-
+            score = score / math.sqrt(1.0 * embed)
             score = score + attention_mask[:, :q_s, :kv_s] if self.op_param.get("isTriuMask", False) else score
             score_max = torch.max(score, axis=-1)
             score = score - score_max.view((heads, q_s, 1))
@@ -130,20 +126,14 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             if not self.op_param.get("isFp32", True):
                 score_sum = torch.sum(score_exp, axis=-1)
                 _p = score_exp.view(-1) if _p is None else torch.cat((_p, score_exp.view(-1)), 0)
-                try:
-                    p = score_exp / score_sum.view(heads, q_s, 1)
-                except ZeroDivisionError as e:
-                    raise e
+                p = score_exp / score_sum.view(heads, q_s, 1)
                 out_sub = self.group_matmul(heads, group_num, p, v_slice)
             else:
                 score_sum = torch.sum(score_exp, axis=-1)
                 _p = score_exp.view(-1) if _p is None else torch.cat((_p, score_exp.view(-1)), 0)
                 p = score_exp
                 out_sub = self.group_matmul(heads, group_num, p, v_slice)
-                try:
-                    out_sub = out_sub / score_sum.view(heads, q_s, 1)
-                except ZeroDivisionError as e:
-                    raise e
+                out_sub = out_sub / score_sum.view(heads, q_s, 1)
             out_sub = out_sub.view(heads, q_s, embed)
             out_sub = torch.permute(out_sub, (1, 0, 2))
             out = out_sub if out is None else torch.cat((out, out_sub), 0)

@@ -93,10 +93,9 @@ class OpChecker:
         ret = False
         base_path = None
 
-        try:
-            input_path = os.path.realpath(input_path)
-        except FileNotFoundError as e:
-            logger_text = f"Input path not found: {input_path}. Error info: {e}"
+        input_path = os.path.realpath(input_path)
+        if not os.path.exists(input_path):
+            logger_text = f"Input path not found: {input_path}"
             logger.error(logger_text)
             return input_path, base_path, ret
         
@@ -266,8 +265,8 @@ class OpChecker:
         try:
             with open(json_path, 'r') as f:
                 op_param = json.load(f)
-        except TypeError:
-            logger_text = f"Cannot loads json file to json! Json file: {json_path}"
+        except Exception as e:
+            logger_text = f"Cannot loads json file to json! Json file: {json_path} \n Exception: {e}"
             logger.debug(logger_text)
             return
             
