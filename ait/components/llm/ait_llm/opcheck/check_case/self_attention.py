@@ -34,7 +34,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             if score is None:
                 score = group_score
             else:
-                score = torch.concatenate((score, group_score), 0)
+                score = torch.concat((score, group_score), 0)
         logger.debug(score.shape)
         return score
 
@@ -115,7 +115,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             v_slice = mixed_v[v_offset:v_offset + kv_s][:].view(kv_s, group_num, embed)
             v_slice = torch.permute(v_slice, (1, 0, 2))
             score = self.group_matmul(heads, group_num, q_slice, k_slice_t)
-            s = score.view(-1) if s is None else torch.cat((s, score.view(-1)), 0)
+            s = score.view(-1) if s is None else torch.concat((s, score.view(-1)), 0)
             
             score = score / math.sqrt(1.0 * embed)
             score = score + attention_mask[:, :q_s, :kv_s] if self.op_param.get("isTriuMask", False) else score
@@ -124,18 +124,18 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             score_exp = torch.exp(score)
             if not self.op_param.get("isFp32", True):
                 score_sum = torch.sum(score_exp, axis=-1)
-                _p = score_exp.view(-1) if _p is None else torch.cat((_p, score_exp.view(-1)), 0)
+                _p = score_exp.view(-1) if _p is None else torch.concat((_p, score_exp.view(-1)), 0)
                 p = score_exp / score_sum.view(heads, q_s, 1)
                 out_sub = self.group_matmul(heads, group_num, p, v_slice)
             else:
                 score_sum = torch.sum(score_exp, axis=-1)
-                _p = score_exp.view(-1) if _p is None else torch.cat((_p, score_exp.view(-1)), 0)
+                _p = score_exp.view(-1) if _p is None else torch.concat((_p, score_exp.view(-1)), 0)
                 p = score_exp
                 out_sub = self.group_matmul(heads, group_num, p, v_slice)
                 out_sub = out_sub / score_sum.view(heads, q_s, 1)
             out_sub = out_sub.view(heads, q_s, embed)
             out_sub = torch.permute(out_sub, (1, 0, 2))
-            out = out_sub if out is None else torch.cat((out, out_sub), 0)
+            out = out_sub if out is None else torch.concat((out, out_sub), 0)
 
         return out.view(-1, heads, embed)
 
