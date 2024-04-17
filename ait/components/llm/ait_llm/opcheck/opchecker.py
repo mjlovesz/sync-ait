@@ -238,11 +238,7 @@ class OpChecker:
 
         flag1 = self.check_id_range(case_info.get("op_id", None))
         flag2 = self.check_name(case_info.get("op_name", None))
-        
-        if flag1 and flag2:
-            return True
-
-        return False
+        return flag1 and flag2
 
     def add_case_to_cases(self, case_info):
         op_name = case_info.get("op_name", None)
