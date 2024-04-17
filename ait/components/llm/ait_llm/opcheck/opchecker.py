@@ -286,12 +286,19 @@ class OpChecker:
         return
 
     def walk_tensor_path(self, cur_path):
-        for dirpath, dirnames, filenames in os.walk(cur_path):
-            if 'after' in dirnames and 'op_param.json' in filenames:
-                self.add_op_info_to_cases_info(dirpath)
-            for dirname in dirnames:
-                if dirname != 'after':
-                    self.walk_tensor_path(os.path.join(dirpath, dirname))
+        files_and_dirs = os.listdir(cur_path)
+        dirnames, filenames = [], []
+        for item in files_and_dirs:
+            item_path = os.path.join(cur_path, item)
+            if os.path.isdir(item_path):
+                dirnames.append(item)
+            else:
+                filenames.append(item)
+        if 'after' in dirnames and 'op_param.json' in filenames:
+            self.add_op_info_to_cases_info(cur_path)
+        for dirname in dirnames:
+            if dirname != 'after':
+                self.walk_tensor_path(os.path.join(cur_path, dirname))
 
     def excute_cases(self, case_manager):
         # 定义监控队列函数
