@@ -256,7 +256,7 @@ class OperationTest(unittest.TestCase):
             
             rel_pass_rate = "%.16f" % float(rel_pass_rate.item() * 100)
             max_rel = "%.16f" % float(max_rel)
-            abs_pass_rate, max_abs, cos_sim, kl_div = self.get_other_precisions(out_tensors[i], golden_out_tensors[i], 
+            abs_pass_rate, max_abs, cos_sim, kl_div = self.get_other_precisions(out_tensors[i], golden_out_tensors[i],
                                                                                 etol)
 
             self.case_info['res_detail'].append({"precision_standard": ps_standard,

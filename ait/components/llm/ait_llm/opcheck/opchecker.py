@@ -102,7 +102,7 @@ class OpChecker:
         base_path = self.get_base_path(input_path)
         if base_path is None:
             logger_text = f"input path is not in ait_dump tensors directory: {input_path}"
-            logger.error(logger_text)                                                        
+            logger.error(logger_text)
             return input_path, base_path, ret
         
         ret = True
@@ -112,7 +112,7 @@ class OpChecker:
         import torch_npu
 
         execution_flag = True
-        
+
         self.tensor_path, self.base_path, ret = self.check_input_legality(args.input)
         if not ret:
             execution_flag = False
@@ -271,7 +271,7 @@ class OpChecker:
             return
 
         case_info = {
-            'op_id': op_id, 'op_name': op_name, 'op_param': op_param, 'tensor_path': tensor_path, 
+            'op_id': op_id, 'op_name': op_name, 'op_param': op_param, 'tensor_path': tensor_path,
             'precision_type': self.precision_type, 'rerun': self.rerun
         }
 
