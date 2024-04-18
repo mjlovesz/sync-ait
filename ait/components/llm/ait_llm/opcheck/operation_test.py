@@ -158,7 +158,7 @@ class OperationTest(unittest.TestCase):
         )
         rel_pass_rate = torch.sum(rel_errors <= etol) / size if size != 0 else 0
         max_rel_error = torch.max(rel_errors)
-        return rel_pass_rate, max_rel_error
+        return rel_pass_rate.item(), max_rel_error.item()
 
     def get_abs_pass_rate(self, out, golden, etol):
         out, golden = out.cpu(), golden.cpu()
@@ -170,7 +170,7 @@ class OperationTest(unittest.TestCase):
         )
         abs_pass_rate = torch.sum(abs_errors <= etol) / size if size != 0 else 0
         max_abs_error = torch.max(abs_errors)
-        return abs_pass_rate, max_abs_error
+        return abs_pass_rate.item(), max_abs_error.item()
 
     def get_other_precisions(self, out, golden, etol):
         precision_type = self.case_info['precision_type']
@@ -184,8 +184,8 @@ class OperationTest(unittest.TestCase):
             cos_sim, _ = CMP_ALG_MAP["cosine_similarity"](golden, out)
         if 'kl' in precision_type:
             kl, _ = CMP_ALG_MAP["kl_divergence"](golden, out)
-        abs_pass_rate_str = "%.16f" % float(abs_pass_rate.item() * 100) if abs_pass_rate is not None else default_str
-        max_abs_error_str = "%.16f" % float(max_abs_error.item()) if max_abs_error is not None else default_str
+        abs_pass_rate_str = "%.16f" % float(abs_pass_rate * 100) if abs_pass_rate is not None else default_str
+        max_abs_error_str = "%.16f" % float(max_abs_error) if max_abs_error is not None else default_str
         cos_sim_str = "%.10f" % cos_sim if cos_sim is not None else default_str
         kl_div_str = "%.16f" % kl if kl is not None else default_str
 
@@ -241,8 +241,8 @@ class OperationTest(unittest.TestCase):
                 flag = False
                 logger.debug(e)
 
-            rel_pass_rate = "%.16f" % float(rel_pass_rate.item() * 100)
-            max_rel = "%.16f" % float(max_rel.item())
+            rel_pass_rate = "%.16f" % float(rel_pass_rate * 100)
+            max_rel = "%.16f" % float(max_rel)
             abs_pass_rate, max_abs, cos_sim, kl_div = self.get_other_precisions(out_tensors[i], golden_out_tensors[i], 
                                                                                 etol)
 
