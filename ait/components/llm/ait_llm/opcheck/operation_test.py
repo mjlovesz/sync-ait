@@ -26,6 +26,9 @@ from ait_llm.common.log import logger
 from ait_llm.compare.cmp_algorithm import CMP_ALG_MAP
 
 
+FLOAT_EPSILON = torch.finfo(torch.float).eps
+
+
 class OperationTest(unittest.TestCase):
     def __init__(self, methodName='opTest', case_info=None, excuted_ids=None):
         super(OperationTest, self).__init__(methodName)
@@ -146,61 +149,45 @@ class OperationTest(unittest.TestCase):
         self.excute_common("inplace")
 
     def get_rel_pass_rate(self, out, golden, etol):
-        out, golden = out.reshape(-1), golden.reshape(-1)
+        out, golden = out.reshape(-1).cpu(), golden.reshape(-1).cpu()
         size = out.shape[0]
-        golden_denom = golden.clone().float()
-        threshold = torch.finfo(out.dtype).eps
-        golden_denom[golden_denom < threshold] = threshold
-        try:
-            rel_errors = torch.abs((out - golden) / golden_denom)
-            rel_pass_rate = torch.sum(rel_errors <= etol) / size
-        except ZeroDivisionError as e:
-            logger_text = "Pass rate of rel error cannot be calculated because the denom is 0. Exception: {}".format(e)
-            logger.debug(logger_text)
-            raise e
-        return rel_pass_rate
-
-    def get_max_rel_error(self, out, golden):
-        out, golden = out.reshape(-1).float().cpu(), golden.reshape(-1).float().cpu()
-        max_rel_error, _ = CMP_ALG_MAP["max_relative_error"](golden, out)
-        return max_rel_error
+        rel_errors = torch.where(
+            torch.abs(golden) > FLOAT_EPSILON,
+            torch.abs(out / golden - 1),  # abs(aa - bb) / abs(bb) -> abs(aa / bb - 1)
+            torch.tensor(0, dtype=out.dtype),
+        )
+        rel_pass_rate = torch.sum(rel_errors <= etol) / size if size != 0 else 0
+        max_rel_error = torch.max(rel_errors)
+        return rel_pass_rate, max_rel_error
 
     def get_abs_pass_rate(self, out, golden, etol):
+        out, golden = out.cpu(), golden.cpu()
         size = out.shape[0]
-        abs_errors = torch.abs(out - golden)
+        abs_errors = torch.where(
+            torch.abs(golden) > FLOAT_EPSILON,
+            torch.abs(out - golden),  # abs(aa - bb) / abs(bb) -> abs(aa / bb - 1)
+            torch.tensor(0, dtype=out.dtype),
+        )
+        abs_pass_rate = torch.sum(abs_errors <= etol) / size if size != 0 else 0
         max_abs_error = torch.max(abs_errors)
-        try:
-            abs_pass_rate = torch.sum(abs_errors <= etol) / size if size != 0 else 0
-        except ZeroDivisionError as e:
-            logger_text = "Pass rate of abs error cannot be calculated because the denom is 0. Exception: {}".format(e)
-            logger.debug(logger_text)
-            abs_pass_rate = None
         return abs_pass_rate, max_abs_error
-
-    def get_cos_similarity(self, out, golden):
-        cos_sim, _ = CMP_ALG_MAP["cosine_similarity"](golden, out)
-        return cos_sim
-
-    def get_kl_divergence(self, out, golden):
-        kl, _ = CMP_ALG_MAP["kl_divergence"](golden, out)
-        return kl
 
     def get_other_precisions(self, out, golden, etol):
         precision_type = self.case_info['precision_type']
         default_str = 'NaN'
-        abs_pass_rate, max_abs_error, kl_div = None, None, None
-        cos_sim_str = default_str
+        abs_pass_rate, max_abs_error, cos_sim, kl = None, None, None, None
 
-        out, golden = out.reshape(-1).float(), golden.reshape(-1).float()
+        out, golden = out.reshape(-1), golden.reshape(-1)
         if 'abs' in precision_type:
             abs_pass_rate, max_abs_error = self.get_abs_pass_rate(out, golden, etol)
         if 'cos_sim' in precision_type:
-            cos_sim_str = self.get_cos_similarity(out, golden)
+            cos_sim, _ = CMP_ALG_MAP["cosine_similarity"](golden, out)
         if 'kl' in precision_type:
-            kl_div = self.get_kl_divergence(out, golden)
+            kl, _ = CMP_ALG_MAP["kl_divergence"](golden, out)
         abs_pass_rate_str = "%.16f" % float(abs_pass_rate.item() * 100) if abs_pass_rate is not None else default_str
         max_abs_error_str = "%.16f" % float(max_abs_error.item()) if max_abs_error is not None else default_str
-        kl_div_str = "%.16f" % kl_div if kl_div is not None else default_str
+        cos_sim_str = "%.10f" % cos_sim if cos_sim is not None else default_str
+        kl_div_str = "%.16f" % kl if kl is not None else default_str
 
         return abs_pass_rate_str, max_abs_error_str, cos_sim_str, kl_div_str
 
@@ -246,8 +233,7 @@ class OperationTest(unittest.TestCase):
             err_rate = p_s[1]
             ps_standard = f"{err_rate}%(error<{etol})"
 
-            rel_pass_rate = self.get_rel_pass_rate(out_tensors[i], golden_out_tensors[i], etol)
-            max_rel = self.get_max_rel_error(out_tensors[i], golden_out_tensors[i])
+            rel_pass_rate, max_rel = self.get_rel_pass_rate(out_tensors[i], golden_out_tensors[i], etol)
 
             try:
                 self.assertLess(err_rate, rel_pass_rate * 100)
