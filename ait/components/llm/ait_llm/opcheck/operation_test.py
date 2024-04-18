@@ -236,7 +236,7 @@ class OperationTest(unittest.TestCase):
             rel_pass_rate, max_rel = self.get_rel_pass_rate(out_tensors[i], golden_out_tensors[i], etol)
 
             try:
-                self.assertLess(err_rate, rel_pass_rate * 100)
+                self.assertLess(err_rate, rel_pass_rate)
             except AssertionError as e:
                 flag = False
                 logger.debug(e)
