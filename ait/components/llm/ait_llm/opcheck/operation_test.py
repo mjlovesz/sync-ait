@@ -149,7 +149,8 @@ class OperationTest(unittest.TestCase):
         out, golden = out.reshape(-1), golden.reshape(-1)
         size = out.shape[0]
         golden_denom = golden.clone().float()
-        golden_denom[golden_denom == 0] += torch.finfo(torch.bfloat16).eps
+        threshold = torch.finfo(torch.bfloat16).eps
+        golden_denom[golden_denom < threshold] = threshold
         try:
             rel_errors = torch.abs((out - golden) / golden_denom)
             rel_pass_rate = torch.sum(rel_errors <= etol) / size
