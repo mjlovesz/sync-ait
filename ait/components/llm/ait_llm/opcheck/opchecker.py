@@ -265,7 +265,7 @@ class OpChecker:
             logger_text = f"Cannot loads json file to json! Json file: {json_path} \n Exception: {e}"
             logger.debug(logger_text)
             return
-            
+
         op_id, op_name = self.parse_op_id_name(dirpath)
         if op_id is None or op_name is None:
             return

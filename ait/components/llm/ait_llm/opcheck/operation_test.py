@@ -40,7 +40,7 @@ class OperationTest(unittest.TestCase):
         self.in_tensors = []
         self.out_tensors = []
         self.rerun = self.case_info["rerun"]
-        
+
         error1 = 'Error0.1‰'
         error2 = 'Error0.5‰'
         error3 = 'Error1‰'
@@ -189,7 +189,7 @@ class OperationTest(unittest.TestCase):
         default_str = 'NaN'
         abs_pass_rate, max_abs_error, kl_div = None, None, None
         cos_sim_str = default_str
-        
+
         out, golden = out.reshape(-1).float(), golden.reshape(-1).float()
         if 'abs' in precision_type:
             abs_pass_rate, max_abs_error = self.get_abs_pass_rate(out, golden, etol)
@@ -202,7 +202,7 @@ class OperationTest(unittest.TestCase):
         kl_div_str = "%.16f" % kl_div if kl_div is not None else default_str
 
         return abs_pass_rate_str, max_abs_error_str, cos_sim_str, kl_div_str
-        
+
     def get_npu_device(self):
         npu_device = os.environ.get("NPU_DEVICE")
         if npu_device is None:
@@ -253,10 +253,10 @@ class OperationTest(unittest.TestCase):
             except AssertionError as e:
                 flag = False
                 logger.debug(e)
-            
+
             rel_pass_rate = "%.16f" % float(rel_pass_rate.item() * 100)
             max_rel = "%.16f" % float(max_rel)
-            abs_pass_rate, max_abs, cos_sim, kl_div = self.get_other_precisions(out_tensors[i], golden_out_tensors[i],
+            abs_pass_rate, max_abs, cos_sim, kl_div = self.get_other_precisions(out_tensors[i], golden_out_tensors[i], 
                                                                                 etol)
 
             self.case_info['res_detail'].append({"precision_standard": ps_standard,
@@ -266,7 +266,7 @@ class OperationTest(unittest.TestCase):
                                                 "max_abs": max_abs,
                                                 "cos_sim": cos_sim,
                                                 "kl_div": kl_div})
-            
+
             if flag:
                 self.case_info['excuted_information'] = 'execution successful'
             else:
