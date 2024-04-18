@@ -242,7 +242,7 @@ class OperationTest(unittest.TestCase):
                 logger.debug(e)
 
             rel_pass_rate = "%.16f" % float(rel_pass_rate.item() * 100)
-            max_rel = "%.16f" % float(max_rel)
+            max_rel = "%.16f" % float(max_rel.item())
             abs_pass_rate, max_abs, cos_sim, kl_div = self.get_other_precisions(out_tensors[i], golden_out_tensors[i], 
                                                                                 etol)
 
