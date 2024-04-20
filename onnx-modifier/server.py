@@ -237,7 +237,7 @@ class SessionInfo:
 
     def init_modifier_by_stream(self, name, stream):
         stream.seek(0)
-        model_proto = onnx.load_model(stream, onnx.ModelProto, load_external_data=False)
+        model_proto = onnx.load_model(stream, load_external_data=False)
         self.init_modifier(name, model_proto)
     
     def init_modifier(self, model_name, model_proto):
