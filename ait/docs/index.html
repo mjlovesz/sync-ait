@@ -81,7 +81,7 @@
             const menuPageFlag = "**menu**";
             const menuPathFlag = "/ait";
             if (href && href.startsWith(menuPathFlag) && title && title.includes(menuPageFlag)) {
-              return this.origin.link.apply(this, [href.substring(menuPathFlag.length), title, text])
+              return this.origin.link.apply(this, [href.substring(menuPathFlag.length), title.replace(menuPageFlag, ""), text])
             }
             return this.origin.link.apply(this, arguments)
           }
