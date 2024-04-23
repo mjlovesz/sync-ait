@@ -136,7 +136,7 @@ ait llm compare --golden-path golden_data.bin --my-path my-path.bin
 
 ## Opcheck 特性
 
-支持算子精度预检，根据dump出的tensor及算子信息，执行单算子UT，检测算子精度。具体参考[精度预检能力使用说明](./精度预检能力使用说明.md)。
+支持算子精度预检，根据dump出的tensor及算子信息，执行单算子UT，检测算子精度。具体参考[精度预检能力使用说明](./../v1.0/精度预检能力使用说明.md)。
 
 ### 使用方式
 
