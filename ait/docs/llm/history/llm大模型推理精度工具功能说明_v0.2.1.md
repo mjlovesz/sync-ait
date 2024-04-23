@@ -136,7 +136,7 @@ ait llm compare --golden-path golden_data.bin --my-path my-path.bin
 
 ## Opcheck 特性
 
-支持算子精度预检，根据dump出的tensor及算子信息，执行单算子UT，检测算子精度。具体参考[精度预检能力使用说明](./../v1.0/精度预检能力使用说明.md)。
+支持算子精度预检，根据dump出的tensor及算子信息，执行单算子UT，检测算子精度。具体参考[精度预检能力使用说明](./精度预检能力使用说明.md)。
 
 ### 使用方式
 
@@ -148,7 +148,7 @@ ait llm opcheck -i {tensor_dir} -c {op_csv_path} -o {output_dir}
 
 | 参数名                      | 描述                                                                                                                                                                    | 是否必选 |
 | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| --input, -i                 | tensor数据路径，为文件夹，由ait llm dump --type tensor落盘，示例：OUTPUT_DIR/ait_dump/tensors/{device_id}_{PID}/{TID}/                                                                                 | 是       |
+| --input, -i                 | tensor数据路径，为文件夹，由ait llm dump --type tensor落盘，示例：OUTPUT_DIR/{device_id}_{PID}/{TID}/                                                                                 | 是       |
 | --csv-path, -c              | 算子信息csv文件路径，为单个数据文件路径，由ait llm dump --type op落盘，示例：OUTPUT_DIR/ait_dump/operation_io_tensors/PID/operation_tensors_0.csv                       | 是       |
 | --output, -o                | 输出文件的保存路径，为文件夹，示例：xx/xxx/xx                                                                                                                           | 否       |
 | --operation-ids, -ids       | 选择预检指定索引的tensor，默认为空，全量算子预检。使用方式：-ids 24_1,2_3_5                                                                                             | 否       |
