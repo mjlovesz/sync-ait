@@ -174,6 +174,16 @@ class CompareCommand(BaseCommand):
             required=True,
             type=check_input_path_legality,
             help='Compared data path. It supports directory or file.')
+        
+        parser.add_argument(
+            '--cmp-level',
+            '-cl',
+            dest="cmp_level",
+            required=False,
+            default="layer",
+            choices=["layer", "token"],
+            type=check_input_path_legality,
+            help='Compare level. only enable for atb')
 
         parser.add_argument(
             '--log-level',
@@ -215,7 +225,7 @@ class CompareCommand(BaseCommand):
             from ait_llm.compare.atb_acc_cmp import acc_compare
 
             acc_compare(os.path.abspath(args.golden_path), os.path.abspath(args.my_path),
-                        args.output, args.mapping_file)
+                        args.output, args.mapping_file, args.cmp_level)
 
 
 class OpcheckCommand(BaseCommand):

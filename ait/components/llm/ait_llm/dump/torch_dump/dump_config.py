@@ -30,7 +30,7 @@ def singleton(cls):
 
 @singleton
 class DumpConfig:
-    def __init__(self, dump_path=None, token_range=None, module_list=None, tensor_part=2, device_id=None):
+    def __init__(self, dump_path=None, token_range=None, module_list=None, tensor_part=2, device_id=None, dump_last_logits=False):
         self.dump_path = dump_path or "./"
         self.mode = "module"
         self.token_range = token_range or [0]
@@ -43,6 +43,8 @@ class DumpConfig:
         self.module_ids = {}
         self.cur_module_id = 0
         self.dump_dir = ""
+        self.dump_last_logits = dump_last_logits
+        self.last_logits = None
 
         if not self._check_args():
             raise ValueError("Invalid args of DumpConfig.")
