@@ -18,7 +18,6 @@ import warnings
 from datetime import datetime
 
 import pandas as pd
-from tqdm import tqdm
 
 from ait_llm.common.log import logger
 from ait_llm.common.validate import validate_parameters_by_type, validate_parameters_by_func
@@ -95,7 +94,8 @@ class CaseFilter(object):
         data = dict()
         num_metrics = len(self._metrics)
 
-        for col_idx, metric_object in tqdm(enumerate(self._metrics)):
+        for col_idx, metric_object in enumerate(self._metrics):
+            logger.info("Current metrics: %s", metric_object.__class__.__name__)
             for row_idx, score in metric_object.compare_two_lists_of_words(outs, refs):
                 if row_idx not in data:
                     data[row_idx] = [ins[row_idx], outs[row_idx], refs[row_idx]] + [None] * num_metrics
@@ -103,6 +103,7 @@ class CaseFilter(object):
                 data[row_idx][col_idx + 3] = score
 
         self._save(data, output_dir)
+        logger.info("Filtering finished.")
 
     @validate_parameters_by_type(
         {
@@ -131,6 +132,6 @@ class CaseFilter(object):
         df.fillna("PASSED", inplace=True)
 
         time_stamp = datetime.now().strftime(r"%Y%m%d%H%M%S")
-        output_path = os.path.join(output_dir, f"filter_result_{time_stamp}.csv")
+        output_path = os.path.join(output_dir, f"ait_filter_result_{time_stamp}.csv")
         df.to_csv(output_path, encoding='utf-8', index=False)
         os.chmod(output_path, 0o640)

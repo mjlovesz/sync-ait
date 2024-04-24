@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-import os
 import re
 import statistics
 import warnings
@@ -23,6 +22,7 @@ from abc import abstractmethod, ABCMeta
 from ait_llm.common.log import logger
 from ait_llm.common.validate import validate_parameters_by_func, validate_parameters_by_type
 
+from tqdm import tqdm
 import jieba
 from nltk import bleu_score
 from rouge_chinese import Rouge
@@ -59,7 +59,8 @@ class Metrics(metaclass=ABCMeta):
             self._ngrams = self._default_ngrams
 
         score = None
-        for i, (word1, word2) in enumerate(zip(target, refenece)):
+
+        for i, (word1, word2) in enumerate(zip(tqdm(target), refenece)):
             try:
                 score = self._compare_two_words(word1, word2)
             except Exception as e:

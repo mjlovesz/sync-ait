@@ -52,8 +52,8 @@ class TestMetrics(TestCase):
             next(generator)
     
     def test_edit_distance_diff_thr(self):
-        outs = ["a"]
-        refs = [" "]
+        outs = ["a"] * 1000000
+        refs = [" "] * 1000000
 
         edit_distance = EditDistance(0)
         generator = edit_distance.compare_two_lists_of_words(outs, refs)
