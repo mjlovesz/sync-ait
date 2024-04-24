@@ -290,26 +290,3 @@ def get_metric(metric_name, thr=None) -> Metrics:
         raise KeyError(f"{metric_name} is not supported. Please choose from {list(MAPPING.keys())}.")
 
     return MAPPING[metric_name]
-
-
-if __name__ == "__main__":
-    from ais_bench.evaluate.interface import Filter
-
-    metric = get_metric("relative_distinct_3", 1.0)
-
-    target = ['The quick brown dog jumps on the log on the log', "This is a good translation a good translation."]
-    refenece = ['The black dog jumps over the log', "Can not understand this translation."]
-    indexs = [1, 2]
-
-    result_dict = {"indexs": indexs, "target_output": refenece, "model_output": target}
-    out_dir = os.path.dirname(__file__)
-
-    filter = Filter()
-
-    filter.add_measurement("distinct", ngram=3)
-
-    filter.do_measuring(result_dict)
-    filter.do_filtering(out_dir, thresholds={"distinct-3": 1.0})
-
-    for i, score in metric.compare_two_lists_of_words(target, refenece):
-        print(i, score)

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-import unittest
 from unittest import TestCase
 
 from ait_llm.metrics.metrics import Accuracy, EditDistance, BLEU, get_metric

@@ -15,9 +15,8 @@
 
 import os
 import sys
-import unittest
-from io import StringIO
 import shutil
+from io import StringIO
 from unittest import TestCase
 
 from ait_llm import CaseFilter

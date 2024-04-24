@@ -180,35 +180,3 @@ def validate_parameters_by_type(parameter_constraints, in_class=False):
         return wrapper
 
     return decorator
-
-
-if __name__ == '__main__':
-    def test(a):
-        if a == 0:
-            raise ZeroDivisionError("abc")
-        
-        if a > -1:
-            raise ValueError("bcd")
-        
-        if a < -1:
-            raise RuntimeError("qwe")
-
-
-    @validate_parameters_by_type(
-        {
-            "a": (float, str, int, ),
-            "b": (int, float, str),
-            "c": (str, int, float),
-        }
-    )
-    @validate_parameters_by_func(
-        {
-            "a": (len, sum),
-            "b": (),
-            "c": [sum],
-        }
-    )
-    def foo(a, b, c):
-        print(a, b, c)
-
-    foo([1, 2, 3,], [], [])
