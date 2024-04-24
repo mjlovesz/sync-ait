@@ -379,7 +379,7 @@ def cmp_torch_atb_token(torch_tensor_path, atb_tensor_path, token_id):
     my_tensor_path = os.path.join(atb_layer_path, "my", "outtensor0.pth")
 
     if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
-        data_info = BasicDataInfo(golden_tensor_path, my_tensor_path, data_id=0)
+        data_info = BasicDataInfo(golden_tensor_path, my_tensor_path, data_id=0, token_id=token_id)
         row_data = fill_row_data(data_info)
         compare_result.append(row_data)
 
