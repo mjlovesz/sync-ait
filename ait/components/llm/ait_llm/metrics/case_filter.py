@@ -4,6 +4,8 @@ import logging
 import warnings
 import secrets
 
+from tqdm import tqdm
+
 from ait_llm.metrics.metrics import get_metric
 from ait_llm.common.validate import validate_parameters_by_type, validate_parameters_by_func
 from ait_llm.common.log import logger
@@ -79,8 +81,8 @@ class CaseFilter(object):
         data = dict()
         num_metrics = len(self._metrics)
 
-        for col_idx, metric_method in enumerate(self._metrics):
-            for row_idx, score in metric_method(outs, refs):
+        for col_idx, metric_object in enumerate(self._metrics):
+            for row_idx, score in metric_object.compare_two_lists_of_words(outs, refs):
                 if row_idx not in data:
                     data[row_idx] = [ins[row_idx], outs[row_idx], refs[row_idx]] + [None] * num_metrics
                     
@@ -110,7 +112,7 @@ class CaseFilter(object):
 
         output_dir = os.path.abspath(output_dir)
         df = pd.DataFrame.from_dict(data, orient="index", columns=self._columns)
-        output_path = os.path.join(output_dir, f"{os.getpid()}_{secrets.randbelow(100000)}.csv")
+        output_path = os.path.join(output_dir, f"{os.getpid()}_{secrets.randbelow(100000)}_result.csv")
         df.to_csv(output_path, index=False)
         os.chmod(output_path, 0o640)
 

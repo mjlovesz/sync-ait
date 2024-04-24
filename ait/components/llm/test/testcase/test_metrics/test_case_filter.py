@@ -27,29 +27,15 @@ class TestCaseFilter(TestCase):
         self.temp_dir2 = ""
 
     def test_add_metrics_should_raise_when_key_not_valid(self):
-        metrics = {
-            2: 3,
-            2.5: 4,
-            (1, 2): 7,
-        }
-
-        with self.assertRaises(KeyError):
+        with self.assertRaises(RuntimeError):
             self.case_filter.add_metrics(key=3)
 
-        with self.assertRaises(TypeError):
-            self.case_filter.add_metrics(**metrics)
-
     def test_add_metrics_should_raise_when_value_not_valid(self):
-        self.case_filter.add_metrics(accuracy=30)
+        with self.assertRaises(RuntimeError):
+            self.case_filter.add_metrics(accuracy=30)
 
         with self.assertRaises(RuntimeError):
-            # add_metrics will not raise
-            # should apply
-            self.case_filter.apply(self.ins, self.outs, self.refs, output_dir=self.output_dir)
-
-        self.case_filter.add_metrics(edit_distance=-10)
-        with self.assertRaises(RuntimeError):
-            self.case_filter.apply(self.ins, self.outs, self.refs, output_dir=self.output_dir)
+            self.case_filter.add_metrics(edit_distance=-10)
 
     def test_add_metrics_should_not_empty_when_params_valid(self):
         self.case_filter.add_metrics(accuracy=None, edit_distance=None)

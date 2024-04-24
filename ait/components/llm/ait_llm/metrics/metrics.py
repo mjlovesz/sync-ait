@@ -1,42 +1,112 @@
+# import os
+
+# from ait_llm import CaseFilter
+
+
+# target_output = ['The quick brown dog jumps on the log.', "This is a good translation."]
+model_output = ['The fast black dog jumps over the log', "Can not understand this translation."]
+model_input = ["Paraphrase this sentences: The fast black dog jumps over the log.", "How is the following translation: 爱情好像流沙"]
+
+# out_dir = os.path.dirname(__file__)
+
+# case_filter = CaseFilter()
+# case_filter.add_metrics(bleu_2=0.7, distinct=0.7)
+# case_filter.apply(ins, outs, refs, out_dir)
+import os
 import statistics
 import re
 import warnings
 from itertools import islice
 
-import jieba
 from nltk import bleu_score
-
-from ait_llm.common.validate import validate_parameters_by_func, validate_parameters_by_type
-from ait_llm.common.log import logger
+import jieba
+from abc import abstractmethod, ABCMeta
+from tqdm import tqdm
 from rouge_chinese import Rouge
 
+from ait_llm.common.log import logger
+from ait_llm.common.validate import validate_parameters_by_func, validate_parameters_by_type
 
-class Metrics(object):
-    LEGAL_CHAR_PATTERN = r'^[\u4e00-\u9fa50-9a-zA-Z\s]+$'
-    EXCLUDE_LIST = ['.', ',', '。', '，', ' ', '(', ')', '"', "'"]
 
-    # >>>>>>>>>>>>>> accuracy >>>>>>>>>>>>>
+class Metrics(metaclass=ABCMeta):
+    _LEGAL_CHAR_PATTERN = r'^[\u4e00-\u9fa50-9a-zA-Z\s]+$'
+    _EXCLUDE_LIST = ['.', ',', '。', '，', ' ', '(', ')', '"', "'"]
+    
+    def __init__(self, thr=None, ngrams=None):
+        self._thr = thr
+        self._default_thr = None
 
-    @staticmethod
+        self._ngrams = ngrams
+        self._default_ngrams = None
+    
+    @abstractmethod
+    def _quantify_word(self, word):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def _compare_two_words(self, word1, word2):
+        raise NotImplementedError
+
+    @abstractmethod
+    def _which_is_better(self, score, thr):
+        raise NotImplementedError
+    
+    def compare_two_lists_of_words(self, target, refenece):
+        if self._thr is None:
+            self._thr = self._default_thr
+            
+        if self._ngrams is None:
+            self._ngrams = self._default_ngrams
+
+        score = None
+        for i, (word1, word2) in enumerate(zip(target, refenece)):
+            try:
+                score = self._compare_two_words(word1, word2)
+            except Exception as e:
+                logger.error("An error occured when trying to compare two strings `%s` and `%s` "
+                             "inside the class `%s`. This error is caused by: %s", 
+                             word1, word2, self.__class__.__name__, e)
+                continue
+            
+            if not self._which_is_better(score, self._thr):
+                yield i, score
+
+class Accuracy(Metrics):
     @validate_parameters_by_func(
         {
-            "outs": (),
-            "refs": (),
-            "thr": [lambda thr: thr is None or 0 <= thr <= 1, ]
-        }
+            "thr": [lambda thr: thr is None or 0 <= thr <= 1]
+        },
+        in_class=True
     )
-    def accuracy_score(outs, refs, thr, ngrams=None):
-        if thr is None:
-            thr = 1
+    def __init__(self, thr=None, ngrams=None):
+        super().__init__(thr, ngrams)
+        self._default_thr = 1
 
-        for i, (word1, word2) in enumerate(zip(outs, refs)):
-            if word1 != word2:
-                yield i, 0
-
-    # >>>>>>>>>>>>>> edit distance >>>>>>>>>>>>>
+    def _quantify_word(self, word):
+        pass
     
-    @staticmethod
-    def _edit_distance_impl(word1, word2):
+    def _compare_two_words(self, word1, word2):
+        return int(word1 == word2)
+
+    # score >= thr is better, indicating thr < score is bad case
+    def _which_is_better(self, score, thr):
+        return score >= thr
+
+class EditDistance(Metrics):
+    @validate_parameters_by_func(
+        {
+            "thr": [lambda thr: thr is None or 0 <= thr]
+        },
+        in_class=True
+    )
+    def __init__(self, thr=None, ngrams=None):
+        super().__init__(thr, ngrams)
+        self._default_thr = 5
+
+    def _quantify_word(self, word):
+        pass
+    
+    def _compare_two_words(self, word1, word2):
         m, n = len(word1), len(word2)
         dp = [[0] * (n + 1) for _ in range(m + 1)]
         for i in range(m + 1):
@@ -51,236 +121,189 @@ class Metrics(object):
                     dp[i][j] = min(dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1]) + 1
         return dp[-1][-1]
 
-    @classmethod
+    # score <= thr is better, meaning larger score is worse
+    def _which_is_better(self, score, thr):
+        return score <= thr
+
+class RelativeAbnormalStringRate(Metrics):
     @validate_parameters_by_func(
         {
-            "outs": (),
-            "refs": (),
             "thr": [lambda thr: thr is None or 0 <= thr]
         },
         in_class=True
     )
-    def edit_distance(cls, outs, refs, thr, ngrams=None):
-        if thr is None:
-            # constant
-            thr = 5
+    def __init__(self, thr=None, ngrams=None):
+        super().__init__(thr, ngrams)
+        self._default_thr = 1.2
 
-        for i, (word1, word2) in enumerate(zip(outs, refs)):
-            score = cls._edit_distance_impl(word1, word2)
-            if score <= thr:
-                continue
-            yield i, score
-    
-    # >>>>>>>>>>>>>> abnormal >>>>>>>>>>>>>
-    @classmethod
-    def _abnormal_string_rate_impl(cls, word):
+    def _quantify_word(self, word):
         try:
-            filtered_field = [word for word in jieba.cut(word) if word not in cls.EXCLUDE_LIST]
+            filtered_field = [word for word in jieba.cut(word) if word not in self._EXCLUDE_LIST]
         except Exception as e:
-            raise ValueError(f"Trying to tokenize {word}, but failed.") from e
+            raise RuntimeError(f"Trying to tokenize `{word}`, but failed due to `{e}`.")
 
-        return 0.0 if not filtered_field else statistics.mean(not re.match(cls.LEGAL_CHAR_PATTERN, word) for word in filtered_field)
+        return 0.0 if not filtered_field else statistics.mean(not re.match(self._LEGAL_CHAR_PATTERN, word) for word in filtered_field)
+    
+    def _compare_two_words(self, word1, word2):
+        ref_rate = self._quantify_word(word2)
+        ref_rate = 0.0001 if ref_rate == 0 else ref_rate
 
-    @classmethod
-    def _relative_abnormal_string_rate_impl(cls, out, ref):
-        target_rate = cls._abnormal_string_rate_impl(ref)
-        target_rate = 0.0001 if target_rate == 0 else target_rate
+        return self._quantify_word(word1) / ref_rate
 
-        return cls._abnormal_string_rate_impl(out) / target_rate
+    # score <= thr is better, meaning larger score is worse
+    def _which_is_better(self, score, thr):
+        return score <= thr
 
-    @classmethod
+class BLEU(Metrics):
     @validate_parameters_by_func(
         {
-            "outs": [],
-            "refs": [],
-            "thr": [lambda thr: thr is None or 0 <= thr],
+            "thr": [lambda thr: thr is None or 0 <= thr <= 1]
         },
         in_class=True
     )
-    def relative_abnormal_string_rate(cls, outs, refs, thr, ngrams=None):
-        if thr is None:
-            thr = 1.2
-        
-        for i, (word1, word2) in enumerate(zip(outs, refs)):
-            
-            score = float("-inf")
-            try:
-                score = cls._relative_abnormal_string_rate_impl(word1, word2)
-            except Exception as e:
-                logger.error("An error occured when trying to calculate the relative abnormal string rate "
-                             f"between `%s` and `%s` in the function `%s`. This error is caused by %s", word1, word2, "relative_abnormal_string_rate", e)
-                continue
+    def __init__(self, thr=None, ngrams=None):
+        super().__init__(thr, ngrams)
+        self._default_thr = 0.4
+        self._default_ngrams = 1
 
-            if score <= thr:
-                continue
-            yield i, score
+    def _quantify_word(self, word):
+        return [word for word in jieba.cut(word) if word not in self._EXCLUDE_LIST]
     
-    # >>>>>>>>>>> Bleu >>>>>>>>>>>>>>>
-    @classmethod
-    def _bleu_score_impl(cls, out, ref, ngrams):
-        ref_field = [word for word in jieba.cut(ref) if word not in cls.EXCLUDE_LIST]
-        out_field = [word for word in jieba.cut(out) if word not in cls.EXCLUDE_LIST]
+    def _compare_two_words(self, word1, word2):
+        out_field = self._quantify_word(word1)
+        ref_field = self._quantify_word(word2)
 
         weights = [0] * 4
-        weights[ngrams - 1] = 1
+        weights[self._ngrams - 1] = 1
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             bleu = bleu_score.sentence_bleu([ref_field], out_field, weights=weights)
+
         return bleu
 
-    @classmethod
+    # score >= thr is better, meaning smaller score is worse
+    def _which_is_better(self, score, thr):
+        return score >= thr
+
+class ROUGE(Metrics):
     @validate_parameters_by_func(
         {
-            "outs": [],
-            "refs": [],
-            "thr": [lambda thr: thr is None or 0 <= thr <= 1],
-            "ngrams": [lambda ngrams: ngrams is None or ngrams in [1, 2, 3, 4]],
+            "thr": [lambda thr: thr is None or 0 <= thr <= 1]
         },
         in_class=True
     )
-    def bleu_score(cls, outs, refs, thr, ngrams=None):
-        if thr is None:
-            # constant
-            thr = 0.4
+    def __init__(self, thr=None, ngrams=None):
+        super().__init__(thr, ngrams)
+        self._default_thr = 0.4
+        self._default_ngrams = 1
 
-        if ngrams is None:
-            ngrams = 1
-        
-        for i, (word1, word2) in enumerate(zip(outs, refs)):
-            score = float("-inf")
-            try:
-                score = cls._bleu_score_impl(word1, word2, int(ngrams))
-            except Exception as e:
-                logger.error("An error occured when trying to calculate the relative abnormal string rate "
-                             f"between `%s` and `%s` in the function `%s`. This error is caused by %s", word1, word2, "bleu_score", e)
-                continue
-
-            if score <= thr:
-                continue
-            yield i, score
-
-    # rouge
-    @staticmethod
-    def _rouge_score_impl(out, ref, ngrams):
-        modified_out = " ".join(jieba.cut(out))
-        modified_ref = " ".join(jieba.cut(ref))
+    def _quantify_word(self, word):
+        return " ".join(jieba.cut(word))
+    
+    def _compare_two_words(self, word1, word2):
+        modified_out = self._quantify_word(word1)
+        modified_ref = self._quantify_word(word2)
 
         rouge = Rouge()
 
         scores = rouge.get_scores(modified_out, modified_ref)
-        return scores[0][f"rouge-{ngrams}"]['f']
+        return scores[0][f"rouge-{self._ngrams}"]['f']
 
-    @classmethod
+    # score >= thr is better, meaning smaller score is worse
+    def _which_is_better(self, score, thr):
+        return score >= thr
+
+class RelativeDistinctStringRate(Metrics):
     @validate_parameters_by_func(
         {
-            "outs": [],
-            "refs": [],
-            "thr": [lambda thr: thr is None or 0 <= thr <= 1],
-            "ngrams": [lambda ngrams: ngrams is None or ngrams in [1, 2, 3]]
+            "thr": [lambda thr: thr is None or 0 <= thr]
         },
         in_class=True
     )
-    def rouge_score(cls, outs, refs, thr, ngrams=None):
-        if thr is None:
-            # constant
-            thr = 0.4
+    def __init__(self, thr=None, ngrams=None):
+        super().__init__(thr, ngrams)
+        self._default_thr = 0.8
+        self._default_ngrams = 2
 
-        if ngrams is None:
-            ngrams = '1'
-        
-        if ngrams == 3:
-            ngrams = 'l'
-        
-        for i, (word1, word2) in enumerate(zip(outs, refs)):
-            score = float("-inf")
-            try:
-                score = cls._rouge_score_impl(word1, word2, ngrams)
-            except Exception as e:
-                logger.error("An error occured when trying to calculate the relative abnormal string rate "
-                             f"between `%s` and `%s` in the function `%s`. This error is caused by %s", word1, word2, "rouge_score", e)
-                continue
-
-            if score <= thr:
-                continue
-            yield i, score
-
-    @staticmethod
-    def _distinct_impl(words, ngram):
+    def _quantify_word(self, word):
         unique = set()
         count = 0
-        for contiguous_item in zip(*(islice(words, i, None) for i in range(ngram))):
+
+        for contiguous_item in zip(
+            *(
+                islice((word for word in jieba.cut(word) if word not in self._EXCLUDE_LIST), i, None) 
+                for i in range(self._ngrams)
+            )
+        ):
             unique.add(contiguous_item)
             count += 1
         
         return 0 if count == 0 else len(unique) / count
+    
+    def _compare_two_words(self, word1, word2):
+        ref_rate = self._quantify_word(word2)
+        ref_rate = 0.0001 if ref_rate == 0 else ref_rate
 
-    @classmethod
-    def _relative_distinct_impl(cls, out, ref, ngram):
-        target_rate = cls._distinct_impl(ref, ngram)
-        target_rate = 0.0001 if target_rate == 0 else target_rate
+        return self._quantify_word(word1) / ref_rate
 
-        return cls._distinct_impl(out, ngram) / target_rate
-
-    @classmethod
-    @validate_parameters_by_func(
-        {
-            "outs": [],
-            "refs": [],
-            "thr": [lambda thr: thr is None or 0 <= thr],
-            "ngrams": [lambda ngrams: ngrams is None or ngrams in [1, 2, 3, 4]]
-        },
-        in_class=True
-    )
-    def relative_distinct_string_rate(cls, outs, refs, thr, ngrams=None):
-        if thr is None:
-            thr = 0.8
-        
-        if ngrams is None:
-            ngrams = 2
-
-        for i, (word1, word2) in enumerate(zip(outs, refs)):
-            score = float("-inf")
-            try:
-                score = cls._relative_distinct_impl(word1, word2, ngrams)
-            except Exception as e:
-                logger.error("An error occured when trying to calculate the relative abnormal string rate "
-                             f"between `%s` and `%s` in the function `%s`. This error is caused by %s", word1, word2, "relative_distinct_string_rate", e)
-                continue
-
-            if score <= thr:
-                continue
-            yield i, score
+    # score >= thr is better, meaning smaller score is worse
+    def _which_is_better(self, score, thr):
+        return score >= thr
 
 
 @validate_parameters_by_type(
     {
-        "metrics_name": [str],
-        "thr": (int, float, None),
-        "ngrams": [int, float, None],
+        "metric_name": [str],
+        "thr": [int, float, None]
     }
 )
-def get_metric(metric_name, thr=None, ngrams=None):
+def get_metric(metric_name, thr=None) -> Metrics:
 
     MAPPING = {
-        "accuracy": Metrics.accuracy_score,
-        "rouge": Metrics.rouge_score,
-        "bleu": Metrics.bleu_score,
-        "edit_distance": Metrics.edit_distance,
-        "relative_abnormal_string_rate": Metrics.relative_abnormal_string_rate,
-        "relative_distinct": Metrics.relative_distinct_string_rate,
-        "END": None,
+        "accuracy": Accuracy(thr),
+        "rouge": ROUGE(thr),
+        "rouge_1": ROUGE(thr, 1),
+        "rouge_2": ROUGE(thr, 2),
+        "rouge_l": ROUGE(thr, "l"),
+        "bleu": BLEU(thr),
+        "bleu_1": BLEU(thr, 1),
+        "bleu_2": BLEU(thr, 2),
+        "bleu_3": BLEU(thr, 3),
+        "bleu_4": BLEU(thr, 4),
+        "edit_distance": EditDistance(thr),
+        "relative_abnormal_string_rate": RelativeAbnormalStringRate(thr),
+        "relative_distinct": RelativeDistinctStringRate(thr),
+        "relative_distinct_1": RelativeDistinctStringRate(thr, 1),
+        "relative_distinct_2": RelativeDistinctStringRate(thr, 2),
+        "relative_distinct_3": RelativeDistinctStringRate(thr, 3),
+        "relative_distinct_4": RelativeDistinctStringRate(thr, 4),
     }
 
     if metric_name not in MAPPING:
-        raise KeyError(f"{metric_name} is not supported.")
+        raise KeyError(f"{metric_name} is not supported. Please choose from {list(MAPPING.keys())}.")
 
-    def wrapper(outs, refs):
-        return MAPPING[metric_name](outs, refs, thr, ngrams)
-
-    return wrapper
+    return MAPPING[metric_name]
 
 
-if __name__ == '__main__':
-    # get_metric("accuracy", 2)(1, 2)
-    next(Metrics.edit_distance([1], [2]))
+if __name__ == "__main__":
+    from ais_bench.evaluate.interface import Filter
+    
+    metric = get_metric("relative_distinct_3", 1.0)
+
+    target = ['The quick brown dog jumps on the log on the log', "This is a good translation a good translation."]
+    refenece = ['The black dog jumps over the log', "Can not understand this translation."]
+    indexs = [1, 2]
+
+    result_dict = {"indexs": indexs, "target_output": refenece, "model_output": target}
+    out_dir = os.path.dirname(__file__)
+
+    filter = Filter()
+
+    filter.add_measurement("distinct", ngram=3)
+
+    filter.do_measuring(result_dict)
+    filter.do_filtering(out_dir, thresholds={"distinct-3": 1.0})
+
+    for i, score in metric.compare_two_lists_of_words(target, refenece):
+        print(i, score)
