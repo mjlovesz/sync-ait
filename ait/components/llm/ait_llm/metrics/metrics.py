@@ -260,7 +260,7 @@ class Metrics(object):
         "ngrams": [int, float, None],
     }
 )
-def get_metric(metric_name: str, thr: int | float | None = None, ngrams: int | None = None):
+def get_metric(metric_name, thr=None, ngrams=None):
 
     MAPPING = {
         "accuracy": Metrics.accuracy_score,
