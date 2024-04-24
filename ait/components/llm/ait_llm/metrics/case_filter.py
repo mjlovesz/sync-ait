@@ -1,14 +1,30 @@
-import os
-import pandas as pd
-import logging
-import warnings
-import secrets
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
+
+import logging
+import os
+import secrets
+import warnings
+from datetime import datetime
+
+import pandas as pd
 from tqdm import tqdm
 
-from ait_llm.metrics.metrics import get_metric
-from ait_llm.common.validate import validate_parameters_by_type, validate_parameters_by_func
 from ait_llm.common.log import logger
+from ait_llm.common.validate import validate_parameters_by_type, validate_parameters_by_func
+from ait_llm.metrics.metrics import get_metric
 
 
 class PermissionWarning(UserWarning):
@@ -81,7 +97,7 @@ class CaseFilter(object):
         data = dict()
         num_metrics = len(self._metrics)
 
-        for col_idx, metric_object in enumerate(self._metrics):
+        for col_idx, metric_object in tqdm(enumerate(self._metrics)):
             for row_idx, score in metric_object.compare_two_lists_of_words(outs, refs):
                 if row_idx not in data:
                     data[row_idx] = [ins[row_idx], outs[row_idx], refs[row_idx]] + [None] * num_metrics
@@ -111,19 +127,12 @@ class CaseFilter(object):
             return
 
         output_dir = os.path.abspath(output_dir)
+        
         df = pd.DataFrame.from_dict(data, orient="index", columns=self._columns)
-        output_path = os.path.join(output_dir, f"{os.getpid()}_{secrets.randbelow(100000)}_result.csv")
-        df.to_csv(output_path, index=False)
+        df = df.round(5)
+        df.fillna("PASSED", inplace=True)
+
+        time_stamp = datetime.now().strftime(r"%Y%m%d%H%M%S")
+        output_path = os.path.join(output_dir, f"filter_result_{time_stamp}.csv")
+        df.to_csv(output_path, encoding='utf-8', index=False)
         os.chmod(output_path, 0o640)
-
-
-if __name__ == "__main__":
-    case_filter = CaseFilter()
-    
-    case_filter.add_metrics(edit_distance=None, relative_abnormal_string_rate=None)
-
-    ins = ["Some random tests", "我爱你中国"]
-    outs = ["Some outputs", "我也爱中国"]
-    refs = ["References", "我不爱国，不好意思"]
-
-    case_filter.apply(ins, outs, refs, os.path.dirname(__file__))

@@ -1,48 +1,48 @@
-# import os
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-# from ait_llm import CaseFilter
 
-
-# target_output = ['The quick brown dog jumps on the log.', "This is a good translation."]
-model_output = ['The fast black dog jumps over the log', "Can not understand this translation."]
-model_input = ["Paraphrase this sentences: The fast black dog jumps over the log.", "How is the following translation: 爱情好像流沙"]
-
-# out_dir = os.path.dirname(__file__)
-
-# case_filter = CaseFilter()
-# case_filter.add_metrics(bleu_2=0.7, distinct=0.7)
-# case_filter.apply(ins, outs, refs, out_dir)
 import os
-import statistics
 import re
+import statistics
 import warnings
 from itertools import islice
-
-from nltk import bleu_score
-import jieba
 from abc import abstractmethod, ABCMeta
-from tqdm import tqdm
-from rouge_chinese import Rouge
 
 from ait_llm.common.log import logger
 from ait_llm.common.validate import validate_parameters_by_func, validate_parameters_by_type
+
+import jieba
+from nltk import bleu_score
+from rouge_chinese import Rouge
 
 
 class Metrics(metaclass=ABCMeta):
     _LEGAL_CHAR_PATTERN = r'^[\u4e00-\u9fa50-9a-zA-Z\s]+$'
     _EXCLUDE_LIST = ['.', ',', '。', '，', ' ', '(', ')', '"', "'"]
-    
+
     def __init__(self, thr=None, ngrams=None):
         self._thr = thr
         self._default_thr = None
 
         self._ngrams = ngrams
         self._default_ngrams = None
-    
+
     @abstractmethod
     def _quantify_word(self, word):
         raise NotImplementedError
-    
+
     @abstractmethod
     def _compare_two_words(self, word1, word2):
         raise NotImplementedError
@@ -50,11 +50,11 @@ class Metrics(metaclass=ABCMeta):
     @abstractmethod
     def _which_is_better(self, score, thr):
         raise NotImplementedError
-    
+
     def compare_two_lists_of_words(self, target, refenece):
         if self._thr is None:
             self._thr = self._default_thr
-            
+
         if self._ngrams is None:
             self._ngrams = self._default_ngrams
 
@@ -64,12 +64,13 @@ class Metrics(metaclass=ABCMeta):
                 score = self._compare_two_words(word1, word2)
             except Exception as e:
                 logger.error("An error occured when trying to compare two strings `%s` and `%s` "
-                             "inside the class `%s`. This error is caused by: %s", 
+                             "inside the class `%s`. This error is caused by: %s",
                              word1, word2, self.__class__.__name__, e)
                 continue
             
             if not self._which_is_better(score, self._thr):
                 yield i, score
+
 
 class Accuracy(Metrics):
     @validate_parameters_by_func(
@@ -84,13 +85,14 @@ class Accuracy(Metrics):
 
     def _quantify_word(self, word):
         pass
-    
+
     def _compare_two_words(self, word1, word2):
         return int(word1 == word2)
 
     # score >= thr is better, indicating thr < score is bad case
     def _which_is_better(self, score, thr):
         return score >= thr
+
 
 class EditDistance(Metrics):
     @validate_parameters_by_func(
@@ -105,7 +107,7 @@ class EditDistance(Metrics):
 
     def _quantify_word(self, word):
         pass
-    
+
     def _compare_two_words(self, word1, word2):
         m, n = len(word1), len(word2)
         dp = [[0] * (n + 1) for _ in range(m + 1)]
@@ -125,6 +127,7 @@ class EditDistance(Metrics):
     def _which_is_better(self, score, thr):
         return score <= thr
 
+
 class RelativeAbnormalStringRate(Metrics):
     @validate_parameters_by_func(
         {
@@ -142,8 +145,9 @@ class RelativeAbnormalStringRate(Metrics):
         except Exception as e:
             raise RuntimeError(f"Trying to tokenize `{word}`, but failed due to `{e}`.")
 
-        return 0.0 if not filtered_field else statistics.mean(not re.match(self._LEGAL_CHAR_PATTERN, word) for word in filtered_field)
-    
+        return 0.0 if not filtered_field else statistics.mean(
+            not re.match(self._LEGAL_CHAR_PATTERN, word) for word in filtered_field)
+
     def _compare_two_words(self, word1, word2):
         ref_rate = self._quantify_word(word2)
         ref_rate = 0.0001 if ref_rate == 0 else ref_rate
@@ -153,6 +157,7 @@ class RelativeAbnormalStringRate(Metrics):
     # score <= thr is better, meaning larger score is worse
     def _which_is_better(self, score, thr):
         return score <= thr
+
 
 class BLEU(Metrics):
     @validate_parameters_by_func(
@@ -168,7 +173,7 @@ class BLEU(Metrics):
 
     def _quantify_word(self, word):
         return [word for word in jieba.cut(word) if word not in self._EXCLUDE_LIST]
-    
+
     def _compare_two_words(self, word1, word2):
         out_field = self._quantify_word(word1)
         ref_field = self._quantify_word(word2)
@@ -186,6 +191,7 @@ class BLEU(Metrics):
     def _which_is_better(self, score, thr):
         return score >= thr
 
+
 class ROUGE(Metrics):
     @validate_parameters_by_func(
         {
@@ -200,7 +206,7 @@ class ROUGE(Metrics):
 
     def _quantify_word(self, word):
         return " ".join(jieba.cut(word))
-    
+
     def _compare_two_words(self, word1, word2):
         modified_out = self._quantify_word(word1)
         modified_ref = self._quantify_word(word2)
@@ -213,6 +219,7 @@ class ROUGE(Metrics):
     # score >= thr is better, meaning smaller score is worse
     def _which_is_better(self, score, thr):
         return score >= thr
+
 
 class RelativeDistinctStringRate(Metrics):
     @validate_parameters_by_func(
@@ -231,16 +238,16 @@ class RelativeDistinctStringRate(Metrics):
         count = 0
 
         for contiguous_item in zip(
-            *(
-                islice((word for word in jieba.cut(word) if word not in self._EXCLUDE_LIST), i, None) 
-                for i in range(self._ngrams)
-            )
+                *(
+                        islice((word for word in jieba.cut(word) if word not in self._EXCLUDE_LIST), i, None)
+                        for i in range(self._ngrams)
+                )
         ):
             unique.add(contiguous_item)
             count += 1
-        
+
         return 0 if count == 0 else len(unique) / count
-    
+
     def _compare_two_words(self, word1, word2):
         ref_rate = self._quantify_word(word2)
         ref_rate = 0.0001 if ref_rate == 0 else ref_rate
@@ -259,7 +266,6 @@ class RelativeDistinctStringRate(Metrics):
     }
 )
 def get_metric(metric_name, thr=None) -> Metrics:
-
     MAPPING = {
         "accuracy": Accuracy(thr),
         "rouge": ROUGE(thr),
@@ -288,7 +294,7 @@ def get_metric(metric_name, thr=None) -> Metrics:
 
 if __name__ == "__main__":
     from ais_bench.evaluate.interface import Filter
-    
+
     metric = get_metric("relative_distinct_3", 1.0)
 
     target = ['The quick brown dog jumps on the log on the log', "This is a good translation a good translation."]
