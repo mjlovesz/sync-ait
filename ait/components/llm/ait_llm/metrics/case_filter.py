@@ -4,9 +4,9 @@ import logging
 import warnings
 import secrets
 
-from metrics.metrics import get_metric
-from common.validate import validate_parameters_by_type, validate_parameters_by_func
-from common.log import logger
+from ait_llm.metrics.metrics import get_metric
+from ait_llm.common.validate import validate_parameters_by_type, validate_parameters_by_func
+from ait_llm.common.log import logger
 
 
 class PermissionWarning(UserWarning):
@@ -104,7 +104,9 @@ class CaseFilter(object):
     )
     def _save(self, data, output_dir):
         if not data:
-            raise RuntimeError("The data is unexpectedly empty,")
+            logger.warning("Bad cases are unexpectedly empty: No data to save and hence no file will be created. "
+                           "If this is normal, please ignore.")
+            return
 
         output_dir = os.path.abspath(output_dir)
         df = pd.DataFrame.from_dict(data, orient="index", columns=self._columns)

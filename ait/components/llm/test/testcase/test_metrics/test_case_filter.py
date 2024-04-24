@@ -169,12 +169,6 @@ class TestCaseFilter(TestCase):
 
         with self.assertRaises(RuntimeError):
             self.case_filter.apply(self.ins, self.outs, self.refs, output_dir=self.temp_dir)
-    
-    def test_save_should_raise_when_data_empty(self):
-        data = {}
-
-        with self.assertRaises(RuntimeError):
-            self.case_filter._save(data, self.output_dir)
 
     def test_apply_should_not_raise_when_valid(self):
         self.case_filter.add_metrics(accuracy=None)

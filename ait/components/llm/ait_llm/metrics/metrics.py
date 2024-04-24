@@ -6,8 +6,8 @@ from itertools import islice
 import jieba
 from nltk import bleu_score
 
-from common.validate import validate_parameters_by_func, validate_parameters_by_type
-from common.log import logger
+from ait_llm.common.validate import validate_parameters_by_func, validate_parameters_by_type
+from ait_llm.common.log import logger
 from rouge_chinese import Rouge
 
 

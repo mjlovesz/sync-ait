@@ -30,23 +30,23 @@ def validate_parameters_by_func(parameter_constraints, in_class=False):
                         test_result = check_item(arg)
                     except Exception as e:
                         raise RuntimeError(
-                            f"The argument '{constraint_name}' is invalid as it has not been passed through the "
-                            f"designated constraint '{check_name}'.") from e
+                            f"The argument `{constraint_name}`:`{arg}` is invalid as it has not been passed through the "
+                            f"designated constraint.") from e
 
                     try:
                         test_result = True if test_result is None else bool(test_result)
                     except Exception as e:
                         raise RuntimeError(
-                            f"The result from the designated constraint '{check_name}' can not be interpreted as bool.") from e
+                            f"The result from the designated constraint `{check_name}` can not be interpreted as bool.") from e
 
                     if not test_result:
                         raise RuntimeError(
-                            f"The argument '{constraint_name}' is invalid as it has not been passed through the "
-                            f"designated constraint '{check_name}'.")
+                            f"The argument `{constraint_name}`:`{arg}` is invalid as it has not been passed through the "
+                            f"designated constraint.")
 
                 else:
                     raise TypeError(
-                        f"Provided '{check_item}' that associated with key '{constraint_name}' is invalid: Not callable.")
+                        f"Provided `{check_item}` that associated with key `{constraint_name}` is invalid: Not callable.")
             
         if in_class:
             @functools.wraps(func)
@@ -139,12 +139,12 @@ def validate_parameters_by_type(parameter_constraints, in_class=False):
                         
                 else:
                     raise TypeError(
-                        f"Provided '{check_item}' that associated with key '{constraint_name}' is invalid. Only types "
+                        f"Provided `{check_item}` that associated with key `{constraint_name}` is invalid. Only types "
                         f"are allowed.")
 
             raise TypeError(
-                        f"The argument '{constraint_name}' is invalid, where '{type_list}' is expected, but got "
-                        f"'{type(arg).__name__}' instead.")
+                        f"The argument `{constraint_name}` is invalid, where `{type_list}` is expected, but got "
+                        f"`{type(arg).__name__}` instead.")
 
         if in_class:
             @functools.wraps(func)
