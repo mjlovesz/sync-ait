@@ -182,7 +182,6 @@ class CompareCommand(BaseCommand):
             required=False,
             default="layer",
             choices=["layer", "token"],
-            type=check_input_path_legality,
             help='Compare level. only enable for atb')
 
         parser.add_argument(

@@ -50,7 +50,7 @@ class DumpHookModule:
 
         self.model.name = model_name
         self.model.ait_forward_pre_handle = self.model.register_forward_pre_hook(set_dump_flag())
-        self.model.model_ait_forward_handle = self.model.register_forward_pre_hook(set_dump_flag())
+        self.model.model_ait_forward_handle = self.model.register_forward_hook(dump_logits())
         add_hook(self.model, prefix=model_name)
 
     def _remove_module_hook(self):
@@ -159,7 +159,7 @@ def dump_module_data():
         
         if dump_config.dump_last_logits:
             if has_tensor(outputs):
-                dump_config.last_logits = (module_name, outputs)
+                dump_config.last_logits = (module.name, outputs)
             return 
 
         if dump_config.module_list and not isinstance(module, tuple(dump_config.module_list)):
