@@ -18,7 +18,7 @@
 
 #include <iostream>
 
-bool g_opcheckLogEnabled = []() -> bool {
+static bool opcheckLogEnabled = []() -> bool {
     constexpr int logStatusOn = 1;
     const char* logStatus = std::getenv("LIB_OPCHECKER_LOG_ON");
     if (logStatus != nullptr) {
@@ -31,7 +31,7 @@ bool g_opcheckLogEnabled = []() -> bool {
 }();
 
 #define AIT_OPCHECKER_COUT_LOG std::cout << "\n"
-#define AIT_OPCHECKER_LOG(level) if (g_opcheckLogEnabled) AIT_OPCHECKER_LOG_##level
+#define AIT_OPCHECKER_LOG(level) if (opcheckLogEnabled) AIT_OPCHECKER_LOG_##level
 #define AIT_OPCHECKER_LOG_TRACE AIT_OPCHECKER_COUT_LOG
 #define AIT_OPCHECKER_LOG_DEBUG AIT_OPCHECKER_COUT_LOG
 #define AIT_OPCHECKER_LOG_INFO AIT_OPCHECKER_COUT_LOG
@@ -39,7 +39,7 @@ bool g_opcheckLogEnabled = []() -> bool {
 #define AIT_OPCHECKER_LOG_ERROR AIT_OPCHECKER_COUT_LOG
 #define AIT_OPCHECKER_LOG_FATAL AIT_OPCHECKER_COUT_LOG
 #define AIT_OPCHECKER_LOG_IF(condition, level) \
-    if (g_opcheckLogEnabled && condition) \
+    if (opcheckLogEnabled && (condition)) \
     AIT_OPCHECKER_LOG(level)
 
 #endif
