@@ -450,12 +450,18 @@ def cmp_torch_atb(torch_model_topo_file, cmp_paths, mapping_file_path, cmp_level
             csv_file_path = cmp_torch_atb_model(data_info, output_path, mapping_dic)
         elif cmp_level == "token":
             compared_results = []
-            for token_id in range(999999):
-                torch_tensor_path = os.path.join(golden_path, str(token_id))
-                atb_tensor_path = os.path.join(my_path, str(token_id))
-                if not os.path.exists(torch_tensor_path) or not os.path.exists(atb_tensor_path):
-                    break
-                compare_result = cmp_torch_atb_token(torch_tensor_path, atb_tensor_path, token_id)
+
+            for token_id in os.listdir(my_path):
+                torch_token_path = os.path.join(golden_path, str(token_id))
+                atb_token_path = os.path.join(my_path, str(token_id))
+
+                if not os.path.exists(torch_token_path) or not os.path.exists(atb_token_path):
+                    continue
+
+                if not os.path.isdir(torch_token_path) or not os.path.isdir(atb_token_path):
+                    continue
+
+                compare_result = cmp_torch_atb_token(torch_token_path, atb_token_path, token_id)
 
                 compared_results.extend(compare_result)
                 
