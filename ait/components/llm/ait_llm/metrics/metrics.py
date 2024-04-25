@@ -220,7 +220,7 @@ class ROUGE(Metrics):
         self._default_ngrams = 1
 
     def _quantify_word(self, word):
-        filtered_field = []
+        filtered_field = ""
         
         try:
             filtered_field = " ".join(jieba.cut(word))
@@ -270,7 +270,7 @@ class RelativeDistinctStringRate(Metrics):
             count += 1
 
         if count == 0:
-            count = 0.0001
+            return len(unique) / 0.0001
         
         return len(unique) / count
 
@@ -278,7 +278,7 @@ class RelativeDistinctStringRate(Metrics):
         ref_rate = self._quantify_word(word2)
         
         if ref_rate == 0:
-            ref_rate = 0.0001
+            return self._quantify_word(word1) / 0.0001
 
         return self._quantify_word(word1) / ref_rate
 
@@ -315,6 +315,7 @@ def get_metric(metric_name, thr=None) -> Metrics:
     }
 
     if metric_name not in MAPPING:
-        raise KeyError(f"{metric_name} is not supported. Please choose from {list(MAPPING.keys())}.")
+        logger.error("`%s` is not supported. Please choose from %s.", metric_name, list(MAPPING.keys()))
+        raise KeyError
 
     return MAPPING[metric_name]
