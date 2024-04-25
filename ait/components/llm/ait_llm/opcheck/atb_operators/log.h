@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef ATB_LOG_H
-#define ATB_LOG_H
+#ifndef AIT_OPCHECKER_LOG_H
+#define AIT_OPCHECKER_LOG_H
 
 #include <iostream>
 
@@ -31,16 +30,16 @@ static bool opcheckLogEnabled = []() -> bool {
     return false;
 }();
 
-#define ATB_COUT_LOG std::cout << "\n"
-#define ATB_LOG(level) if (opcheckLogEnabled) ATB_LOG_##level
-#define ATB_LOG_TRACE ATB_COUT_LOG
-#define ATB_LOG_DEBUG ATB_COUT_LOG
-#define ATB_LOG_INFO ATB_COUT_LOG
-#define ATB_LOG_WARN ATB_COUT_LOG
-#define ATB_LOG_ERROR ATB_COUT_LOG
-#define ATB_LOG_FATAL ATB_COUT_LOG
-#define ATB_LOG_IF(condition, level) \
+#define AIT_OPCHECKER_COUT_LOG std::cout << "\n"
+#define AIT_OPCHECKER_LOG(level) if (opcheckLogEnabled) AIT_OPCHECKER_LOG_##level
+#define AIT_OPCHECKER_LOG_TRACE AIT_OPCHECKER_COUT_LOG
+#define AIT_OPCHECKER_LOG_DEBUG AIT_OPCHECKER_COUT_LOG
+#define AIT_OPCHECKER_LOG_INFO AIT_OPCHECKER_COUT_LOG
+#define AIT_OPCHECKER_LOG_WARN AIT_OPCHECKER_COUT_LOG
+#define AIT_OPCHECKER_LOG_ERROR AIT_OPCHECKER_COUT_LOG
+#define AIT_OPCHECKER_LOG_FATAL AIT_OPCHECKER_COUT_LOG
+#define AIT_OPCHECKER_LOG_IF(condition, level) \
     if (opcheckLogEnabled && condition) \
-    ATB_LOG(level)
+    AIT_OPCHECKER_LOG(level)
 
 #endif
