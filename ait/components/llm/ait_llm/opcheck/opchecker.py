@@ -205,6 +205,7 @@ class OpChecker:
             if v[result_info] == 'addition failed':
                 v['res_detail'] = []
                 self.write_op_result_to_csv(v)
+        logger.info(f"\nOpcheck results saved to: {self.output_path}")
 
     def parse_op_id_name(self, dirpath):
         basename = os.path.basename(dirpath)
@@ -395,4 +396,3 @@ class OpChecker:
             optional_cp = [optional[idx] for idx in optional_idx]
             ws.append(required + optional_cp)
         wb.save(self.output_path)
-        logger.info(f"\nOpcheck results saved to: {self.output_path}")

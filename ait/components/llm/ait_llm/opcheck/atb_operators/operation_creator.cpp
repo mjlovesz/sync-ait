@@ -394,8 +394,9 @@ static atb::Operation *LinearSparseOperationCreate(const nlohmann::json &paramJs
     if (paramJson.contains("tilingN")) {
         param.tilingN = paramJson["tilingN"].get<uint32_t>();
     }
-    AIT_OPCHECKER_LOG(INFO) << "LinearSparseParam transposeA:" << param.transposeA << ", transposeB:" << param.transposeB
-                  << ", tilingK:" << param.tilingK << ", tilingN:" << param.tilingN;
+    AIT_OPCHECKER_LOG(INFO) << "LinearSparseParam transposeA:" << param.transposeA
+                << ", transposeB:" << param.transposeB
+                << ", tilingK:" << param.tilingK << ", tilingN:" << param.tilingN;
     atb::Operation *op;
     CreateOperation(param, &op);
     return op;
@@ -770,7 +771,8 @@ static atb::Operation *TransdataOperationCreate(const nlohmann::json &paramJson)
             param.outCrops.push_back(item.get<int64_t>());
         }
     }
-    AIT_OPCHECKER_LOG(INFO) << "TransdataParam transdataType:" << param.transdataType << ", outCrops:" << param.outCrops;
+    AIT_OPCHECKER_LOG(INFO) << "TransdataParam transdataType:" << param.transdataType
+                            << ", outCrops:" << param.outCrops;
     atb::Operation *op;
     CreateOperation(param, &op);
     return op;
@@ -870,7 +872,8 @@ static std::map<std::string, CreateOperationFuncPtr> g_funcMap = {
 };
 
 extern "C" {
-    int RegisterAll() {
+    int RegisterAll()
+    {
         int retVal = 0;
         for (auto& item : g_funcMap) {
             auto ret = atb_speed::OperationFactory::Register(item.first, item.second);  // ret == True for successful

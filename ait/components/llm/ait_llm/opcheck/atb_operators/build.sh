@@ -12,7 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 set -e
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 AIT_LLM_INSTALL_PATH="$(python3 -c 'import ait_llm, os; print(os.path.dirname(os.path.abspath(ait_llm.__file__)))')"
