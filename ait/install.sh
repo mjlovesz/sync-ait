@@ -159,6 +159,16 @@ uninstall(){
 }
 
 
+build_opchecker_so() {
+    echo ""
+    echo "Try building libatb_speed_torch.so for ait llm. If not using opecheck, ignore errors if any"
+    cd ${CURRENT_DIR}/components/llm/ait_llm/opcheck/atb_operators
+    bash build.sh
+    cd -
+    echo ""
+}
+
+
 build_om_so() {
   echo "Installing libsaveom.so"
   echo "This part is used for the accuracy comparison of mindir and onnx models. "
@@ -208,8 +218,7 @@ install(){
     only_benchmark=true;
     only_surgeon=true;
     pre_check_skl2onnx
-    pip3 install ${CURRENT_DIR}/components/debug/compare \
-    ${arg_force_reinstall}
+    pip3 install ${CURRENT_DIR}/components/debug/compare ${arg_force_reinstall}
 
     build_om_so
 
@@ -217,8 +226,7 @@ install(){
 
   if [ ! -z $only_surgeon	 ]
   then
-    pip3 install ${CURRENT_DIR}/components/debug/surgeon \
-    ${arg_force_reinstall}
+    pip3 install ${CURRENT_DIR}/components/debug/surgeon ${arg_force_reinstall}
 
   fi
 
@@ -230,35 +238,31 @@ install(){
 
   if [ ! -z $only_analyze ]
   then
-    pip3 install ${CURRENT_DIR}/components/analyze \
-    ${arg_force_reinstall}
+    pip3 install ${CURRENT_DIR}/components/analyze ${arg_force_reinstall}
   fi
 
   if [ ! -z $only_convert ]
   then
-    pip3 install ${CURRENT_DIR}/components/convert \
-    ${arg_force_reinstall}
+    pip3 install ${CURRENT_DIR}/components/convert ${arg_force_reinstall}
 
     bash ${CURRENT_DIR}/components/convert/build.sh
   fi
 
   if [ ! -z $only_transplt ]
   then
-    pip3 install ${CURRENT_DIR}/components/transplt \
-    ${arg_force_reinstall}
+    pip3 install ${CURRENT_DIR}/components/transplt ${arg_force_reinstall}
     source ${CURRENT_DIR}/components/transplt/install.sh $full_install
   fi
 
   if [ ! -z $only_profile ]
   then
-    pip3 install ${CURRENT_DIR}/components/profile/msprof \
-    ${arg_force_reinstall}
+    pip3 install ${CURRENT_DIR}/components/profile/msprof ${arg_force_reinstall}
   fi
 
   if [ ! -z $only_llm ]
   then
-      pip3 install ${CURRENT_DIR}/components/llm \
-      ${arg_force_reinstall}
+      pip3 install ${CURRENT_DIR}/components/llm ${arg_force_reinstall}
+      build_opchecker_so
   fi
 
   if [ -z $only_compare ] && [ -z $only_surgeon ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ] && [ -z $only_llm ]
@@ -275,11 +279,12 @@ install(){
     ${CURRENT_DIR}/components/profile/msprof \
     ${CURRENT_DIR}/components/llm \
     ${arg_force_reinstall}
-    
+
     bash ${CURRENT_DIR}/components/convert/build.sh
 
     source ${CURRENT_DIR}/components/transplt/install.sh $full_install
     build_om_so
+    build_opchecker_so
   fi
 
   rm -rf ${CURRENT_DIR}/ait.egg-info
