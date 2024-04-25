@@ -19,7 +19,7 @@ import subprocess
 from components.utils.parser import BaseCommand
 from ait_llm.dump.initial import init_dump_task, clear_dump_task
 from ait_llm.opcheck.opchecker import OpChecker
-from ait_llm.errcheck.initial import init_error_check
+from ait_llm.errcheck.process import process_error_check
 from ait_llm.common.utils import str2bool, check_positive_integer, check_device_integer, safe_string, check_exec_cmd, \
     check_ids_string, check_number_list, check_output_path_legality, check_input_path_legality
 from ait_llm.common.log import logger, set_log_level, LOG_LEVELS
@@ -343,17 +343,7 @@ class ErrCheck(BaseCommand):
         )
 
     def handle(self, args, **kwargs) -> None:
-        if args.exec:
-            logger.info("Preparing to execute the command: %s", args.exec)
-            logger.warning("Please make sure that the executable command is safe.")
-            init_error_check(args)
-            # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
-            cmds = args.exec.split()
-            subprocess.run(cmds, shell=False)
-
-            # finished inference
-            logger.info("Inference finished.")
-            logger.info("Results are stored under the directory: %s.", os.environ['ATB_OUTPUT_DIR'])
+        process_error_check(args)       
 
 
 class Transform(BaseCommand):
