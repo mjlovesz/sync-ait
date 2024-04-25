@@ -21,7 +21,6 @@ import pandas as pd
 
 from ait_llm.common.log import logger
 from ait_llm.common.validate import validate_parameters_by_type, validate_parameters_by_func
-from ait_llm.metrics.metrics import get_metric
 
 
 class PermissionWarning(UserWarning):
@@ -58,12 +57,14 @@ def check_dir(output_dir):
 
 
 class CaseFilter(object):
-
+    
     def __init__(self):
         self._metrics = []
         self._columns = ["model input", "model output", "gold standard"]
 
     def add_metrics(self, **metrics):
+        from ait_llm.metrics.metrics import get_metric
+        
         for metric_name, thr in metrics.items():
             self._metrics.append(get_metric(metric_name, thr))
             self._columns.append(metric_name)
@@ -90,6 +91,9 @@ class CaseFilter(object):
 
         if not self._metrics:
             raise RuntimeError("Metrics must be added first before calling apply.")
+        
+        if output_dir is None:
+            output_dir = os.getcwd()
 
         data = dict()
         num_metrics = len(self._metrics)
