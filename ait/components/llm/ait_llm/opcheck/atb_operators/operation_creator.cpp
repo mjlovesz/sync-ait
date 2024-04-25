@@ -821,7 +821,7 @@ static atb::Operation *WhereOperationCreate(const nlohmann::json &paramJson)
     return op;
 }
 
-std::map<std::string, CreateOperationFuncPtr> g_funcMap = {
+static std::map<std::string, CreateOperationFuncPtr> g_funcMap = {
     { "ActivationOperation", &ActivationOperationCreate },
     { "AllGatherOperation", &AllGatherOperationCreate },
     { "AllReduceOperation", &AllReduceOperationCreate },
@@ -869,26 +869,24 @@ std::map<std::string, CreateOperationFuncPtr> g_funcMap = {
     { "WhereOperation", &WhereOperationCreate },
 };
 
-int registerAll() {
-    int retVal = 0;
-    for (auto & item : g_funcMap) {
-        auto ret = atb_speed::OperationFactory::Register(item.first, item.second);  // ret == True for successful
-        AIT_OPCHECKER_LOG(INFO) << "OP: " << item.first << " added, ret: " << ret;
-        if (! ret) {
-            retVal += 1;
+extern "C" {
+    int RegisterAll() {
+        int retVal = 0;
+        for (auto& item : g_funcMap) {
+            auto ret = atb_speed::OperationFactory::Register(item.first, item.second);  // ret == True for successful
+            AIT_OPCHECKER_LOG(INFO) << "OP: " << item.first << " added, ret: " << ret;
+            if (! ret) {
+                retVal += 1;
+            }
+        }
+        return retVal;
+    }
+
+    void PrintAll()
+    {
+        auto foo = atb_speed::OperationFactory::GetRegistryMap();
+        for (auto& item : foo) {
+            std::cout << "Op: " << item.first << std::endl;
         }
     }
-    return retVal;
-}
-
-void printAll() {
-  auto foo = atb_speed::OperationFactory::GetRegistryMap();
-  for (auto & item : foo) {
-      std::cout << "Op: " << item.first << std::endl;
-  }
-}
-
-extern "C" {
-    int RegisterAll() { return registerAll(); }
-    void PrintAll() { printAll(); }
 }
