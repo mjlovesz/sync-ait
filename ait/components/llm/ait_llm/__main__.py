@@ -182,7 +182,7 @@ class CompareCommand(BaseCommand):
             required=False,
             default="layer",
             choices=["layer", "token"],
-            help='Compare level. only enable for atb')
+            help='Compare level. only enabled for atb.')
 
         parser.add_argument(
             '--log-level',
