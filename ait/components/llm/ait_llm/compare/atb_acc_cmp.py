@@ -435,7 +435,7 @@ def cmp_torch_atb(torch_model_topo_file, cmp_paths, mapping_file_path, cmp_level
         logger.error(msg)
     
     csv_file_path = ""
-    atb_model_topo_file_path = os.path.join(my_path, "../../.."  if cmp_level == "layer" else "../..", "model", pid)
+    atb_model_topo_file_path = os.path.join(my_path, "../../.." if cmp_level == "layer" else "../..", "model", pid)
     if os.path.exists(atb_model_topo_file_path):
         atb_model_topo_name = os.listdir(atb_model_topo_file_path)[0]
         atb_model_topo_file = os.path.join(atb_model_topo_file_path, atb_model_topo_name)
