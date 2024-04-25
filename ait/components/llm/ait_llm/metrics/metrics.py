@@ -157,8 +157,8 @@ class RelativeAbnormalStringRate(Metrics):
         ref_rate = self._quantify_word(word2)
         
         if ref_rate == 0:
-            ref_rate = 0.0001
-
+            return self._quantify_word(word1) / 0.0001
+        
         return self._quantify_word(word1) / ref_rate
 
     # score <= thr is better, meaning larger score is worse
