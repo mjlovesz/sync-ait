@@ -376,7 +376,7 @@ def cmp_torch_atb_token(torch_tensor_path, atb_tensor_path, token_id):
         return compare_result
     
     golden_tensor_path = os.path.join(torch_layer_path, "output.pth")
-    my_tensor_path = os.path.join(atb_layer_path, "after", "outtensor0.pth")
+    my_tensor_path = os.path.join(atb_layer_path, "after", "outtensor0.bin")
 
     if os.path.exists(golden_tensor_path) and os.path.exists(my_tensor_path):
         data_info = BasicDataInfo(golden_tensor_path, my_tensor_path, data_id=0, token_id=token_id)
