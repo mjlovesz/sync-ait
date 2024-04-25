@@ -15,7 +15,7 @@
 
 import os
 import warnings
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pandas as pd
 
@@ -36,8 +36,8 @@ def check_dir(output_dir):
         raise OSError("Output directory should not be too long.")
     
     if os.path.islink(output_dir):
-            warnings.warn("Your attempt to use soft links as directories has triggered a security alert "
-                        "and is being monitored closely for potential security threats.", PermissionWarning)
+        warnings.warn("Your attempt to use soft links as directories has triggered a security alert "
+                    "and is being monitored closely for potential security threats.", PermissionWarning)
 
     # will not modify the original output_dir itself
     output_dir = os.path.abspath(output_dir)
@@ -131,7 +131,7 @@ class CaseFilter(object):
         df = df.round(5)
         df.fillna("PASSED", inplace=True)
 
-        time_stamp = datetime.now().strftime(r"%Y%m%d%H%M%S")
+        time_stamp = datetime.now(tz=timezone.utc).strftime(r"%Y%m%d%H%M%S")
         output_path = os.path.join(output_dir, f"ait_filter_result_{time_stamp}.csv")
         df.to_csv(output_path, encoding='utf-8', index=False)
         os.chmod(output_path, 0o640)

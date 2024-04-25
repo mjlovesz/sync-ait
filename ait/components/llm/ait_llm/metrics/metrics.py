@@ -141,17 +141,23 @@ class RelativeAbnormalStringRate(Metrics):
         self._default_thr = 1.2
 
     def _quantify_word(self, word):
+        filtered_field = []
+        
         try:
             filtered_field = [word for word in jieba.cut(word) if word not in self._EXCLUDE_LIST]
         except Exception as e:
-            raise RuntimeError(f"Trying to tokenize `{word}`, but failed due to `{e}`.")
+            logger.error("Trying to tokenize `%s`, but failed.", word)
+            raise
 
         return 0.0 if not filtered_field else statistics.mean(
-            not re.match(self._LEGAL_CHAR_PATTERN, word) for word in filtered_field)
+            not re.match(self._LEGAL_CHAR_PATTERN, word) for word in filtered_field
+        )
 
     def _compare_two_words(self, word1, word2):
         ref_rate = self._quantify_word(word2)
-        ref_rate = 0.0001 if ref_rate == 0 else ref_rate
+        
+        if ref_rate == 0:
+            ref_rate = 0.0001
 
         return self._quantify_word(word1) / ref_rate
 
@@ -173,8 +179,16 @@ class BLEU(Metrics):
         self._default_ngrams = 1
 
     def _quantify_word(self, word):
-        return [word for word in jieba.cut(word) if word not in self._EXCLUDE_LIST]
-
+        filtered_field = []
+        
+        try:
+            filtered_field = [word for word in jieba.cut(word) if word not in self._EXCLUDE_LIST]
+        except Exception as e:
+            logger.error("Trying to tokenize `%s`, but failed.", word)
+            raise
+        
+        return filtered_field
+    
     def _compare_two_words(self, word1, word2):
         out_field = self._quantify_word(word1)
         ref_field = self._quantify_word(word2)
@@ -206,8 +220,16 @@ class ROUGE(Metrics):
         self._default_ngrams = 1
 
     def _quantify_word(self, word):
-        return " ".join(jieba.cut(word))
-
+        filtered_field = []
+        
+        try:
+            filtered_field = " ".join(jieba.cut(word))
+        except Exception as e:
+            logger.error("Trying to tokenize `%s`, but failed.", word)
+            raise
+        
+        return filtered_field
+        
     def _compare_two_words(self, word1, word2):
         modified_out = self._quantify_word(word1)
         modified_ref = self._quantify_word(word2)
@@ -247,11 +269,16 @@ class RelativeDistinctStringRate(Metrics):
             unique.add(contiguous_item)
             count += 1
 
-        return 0 if count == 0 else len(unique) / count
+        if count == 0:
+            count = 0.0001
+        
+        return len(unique) / count
 
     def _compare_two_words(self, word1, word2):
         ref_rate = self._quantify_word(word2)
-        ref_rate = 0.0001 if ref_rate == 0 else ref_rate
+        
+        if ref_rate == 0:
+            ref_rate = 0.0001
 
         return self._quantify_word(word1) / ref_rate
 
