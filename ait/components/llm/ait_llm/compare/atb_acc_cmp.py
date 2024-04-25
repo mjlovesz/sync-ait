@@ -31,7 +31,7 @@ def acc_compare(golden_path, my_path, output_path=".", mapping_file_path=".", cm
         golden_tensor_path = os.path.join(golden_path, "golden_tensor")
         golden_topo_flag, golden_topo_json_path = is_model_topo_exist(golden_path, cmp_level)
         my_topo_flag, my_topo_json_path = is_model_topo_exist(my_path, cmp_level)
-        torch_model_topo_file = os.path.join(golden_path, ".." if cmp_level=="layer" else "", "model_tree.json")
+        torch_model_topo_file = os.path.join(golden_path, ".." if cmp_level == "layer" else "", "model_tree.json")
         if os.path.isdir(golden_tensor_path):
             # 存在golden_tensor路径，走手动映射比对逻辑
             logger.info("Manual mapping comparing starts! Comparing manual dump tensors and ATB tensors...")
@@ -39,7 +39,7 @@ def acc_compare(golden_path, my_path, output_path=".", mapping_file_path=".", cm
         elif os.path.exists(torch_model_topo_file):
             # 存在torch_model_topo_file路径，走torch模型和加速库模型比对逻辑
             logger.info("Automatic mapping comparison starts! Comparing torch tensors and ATB tensors...")
-            cmp_torch_atb(torch_model_topo_file, golden_path, my_path, output_path, mapping_file_path, cmp_level)
+            cmp_torch_atb(torch_model_topo_file, (golden_path, my_path, output_path), mapping_file_path, cmp_level)
         elif golden_topo_flag and my_topo_flag:
             # 存在ATB模型的拓扑信息，走加速库模型间的比对逻辑
             compare_atb_metadata_auto(golden_path, my_path, golden_topo_json_path, my_topo_json_path, output_path)
@@ -56,7 +56,7 @@ def acc_compare(golden_path, my_path, output_path=".", mapping_file_path=".", cm
 def is_model_topo_exist(golden_path, cmp_level="layer"):
     # 判断用户输入路径的ait_dump目录下是否包括/model路径，即是否包括模型拓扑信息
     absolute_path = os.path.abspath(golden_path)
-    model_dir_path = os.path.join(absolute_path, '../../../' if cmp_level=="layer" else '../../', 'model')
+    model_dir_path = os.path.join(absolute_path, '../../../' if cmp_level == "layer" else '../../', 'model')
     model_dir_path = os.path.normpath(model_dir_path)
     if not os.path.isdir(model_dir_path):
         msg = f"Cannot find {model_dir_path}, please check! Use ait llm dump if needed."
@@ -424,9 +424,10 @@ def load_mapping(mapping_file_path):
     return mapping_dic
 
 
-def cmp_torch_atb(torch_model_topo_file, golden_path, my_path, output_path, mapping_file_path, cmp_level="layer"):
+def cmp_torch_atb(torch_model_topo_file, cmp_paths, mapping_file_path, cmp_level="layer"):
+    golden_path, my_path, output_path = cmp_paths
     try:
-        path_index = -2 if cmp_level=="layer" else -1
+        path_index = -2 if cmp_level == "layer" else -1
         pid = str(my_path.split("/")[path_index].split("_")[1])
     except IndexError as e:
         pid = ""
@@ -434,7 +435,7 @@ def cmp_torch_atb(torch_model_topo_file, golden_path, my_path, output_path, mapp
         logger.error(msg)
     
     csv_file_path = ""
-    atb_model_topo_file_path = os.path.join(my_path, "../../.."  if cmp_level=="layer" else "../..", "model", pid)
+    atb_model_topo_file_path = os.path.join(my_path, "../../.."  if cmp_level == "layer" else "../..", "model", pid)
     if os.path.exists(atb_model_topo_file_path):
         atb_model_topo_name = os.listdir(atb_model_topo_file_path)[0]
         atb_model_topo_file = os.path.join(atb_model_topo_file_path, atb_model_topo_name)
