@@ -1,13 +1,17 @@
 /*
- * Copyright (c) 2024 Huawei Technologies Co., Ltd.
- * AscendTransformerBoost is licensed under Mulan PSL v2.
- * You can use this software according to the terms and conditions of the Mulan PSL v2.
- * You may obtain a copy of Mulan PSL v2 at:
- *          http://license.coscl.org.cn/MulanPSL2
- * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
- * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
- * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
- * See the Mulan PSL v2 for more details.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2024. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #include <iostream>
 #include <string>
@@ -17,6 +21,7 @@
 #include "atb/infer_op_params.h"
 #include "atb/train_op_params.h"
 #include "atb/operation.h"
+#include "log.h"
 #include "operation_factory.h"
 
 using CreateOperationFuncPtr = std::function<atb::Operation *(const nlohmann::json &)>;
@@ -30,6 +35,7 @@ static atb::Operation *ActivationOperationCreate(const nlohmann::json &paramJson
     if (paramJson.contains("scale")) {
         param.scale = paramJson["scale"].get<float>();
     }
+    ATB_LOG(INFO) << "ActivationParam activationType:" << param.activationType << ", scale:" << param.scale;
     atb::Operation *op;
     CreateOperation(param, &op);
     return op;
@@ -52,6 +58,9 @@ static atb::Operation *AllGatherOperationCreate(const nlohmann::json &paramJson)
     if (paramJson.find("rankTableFile") != paramJson.end()) {
         param.rankTableFile = paramJson["rankTableFile"].get<std::string>();
     }
+    ATB_LOG(INFO) << "AllGatherParam rank:" << param.rank;
+    ATB_LOG(INFO) << "AllGatherParam rankSize:" << param.rankSize;
+    ATB_LOG(INFO) << "AllGatherParam backend:" << param.backend;
     atb::Operation *op;
     CreateOperation(param, &op);
     return op;
@@ -77,6 +86,8 @@ static atb::Operation *AllReduceOperationCreate(const nlohmann::json &paramJson)
     if (paramJson.find("rankTableFile") != paramJson.end()) {
         param.rankTableFile = paramJson["rankTableFile"].get<std::string>();
     }
+    ATB_LOG(INFO) << "AllReduceParam rank:" << param.rank;
+    ATB_LOG(INFO) << "AllReduceParam rankSize:" << param.rankSize;
     atb::Operation *op;
     CreateOperation(param, &op);
     return op;
@@ -113,9 +124,12 @@ static atb::Operation *BroadcastOperationCreate(const nlohmann::json &paramJson)
     if (paramJson.find("backend") != paramJson.end()) {
         param.backend = paramJson["backend"].get<std::string>();
     }
+    ATB_LOG(INFO) << "BroadcastParam rank:" << param.rank << "rankSize:" << param.rankSize;
     if (paramJson.find("rankTableFile") != paramJson.end()) {
         param.rankTableFile = paramJson["rankTableFile"].get<std::string>();
     }
+    ATB_LOG(INFO) << "BroadcastParam rank:" << param.rank << "rankSize:" << param.rankSize << "rankRoot:" <<
+        param.rankRoot << "backend:" << param.backend;
     atb::Operation *op;
     CreateOperation(param, &op);
     return op;
@@ -126,6 +140,7 @@ static atb::Operation *ConcatOperationCreate(const nlohmann::json &paramJson)
     atb::infer::ConcatParam param;
     if (paramJson.contains("concatDim")) {
         param.concatDim = paramJson["concatDim"].get<int>();
+        ATB_LOG(INFO) << "ConcatParam axis:" << param.concatDim;
     }
     atb::Operation *op;
     CreateOperation(param, &op);
@@ -137,6 +152,7 @@ static atb::Operation *CumsumOperationCreate(const nlohmann::json &paramJson)
     atb::infer::CumsumParam param;
     for (auto item : paramJson["axes"]) {
         param.axes.push_back(item.get<int64_t>());
+        ATB_LOG(FATAL) << "axes:" << param.axes.at(0);
     }
     if (paramJson.contains("exclusive")) {
         param.exclusive = paramJson["exclusive"].get<bool>();
@@ -218,6 +234,8 @@ static atb::Operation *FillOperationCreate(const nlohmann::json &paramJson)
             param.outDim.push_back(item.get<int32_t>());
         }
     }
+    ATB_LOG(INFO) << "FillParam withMask:" << param.withMask << ", value:" << param.value
+                  << ", outDim:" << param.outDim;
     atb::Operation *op;
     CreateOperation(param, &op);
     return op;
@@ -228,9 +246,11 @@ static atb::Operation *GatherOperationCreate(const nlohmann::json &paramJson)
     atb::infer::GatherParam param;
     if (paramJson.contains("axis")) {
         param.axis = paramJson["axis"].get<int64_t>();
+        ATB_LOG(INFO) << "GatherParam axis:" << param.axis;
     }
     if (paramJson.contains("batchDims")) {
         param.batchDims = paramJson["batchDims"].get<int64_t>();
+        ATB_LOG(INFO) << "GatherParam batchDims:" << param.batchDims;
     }
     atb::Operation *op;
     CreateOperation(param, &op);
@@ -246,6 +266,7 @@ static atb::Operation *GenAttentionMaskOperationCreate(const nlohmann::json &par
     for (auto item : paramJson["seqLen"]) {
         param.seqLen.push_back(item.get<int>());
     }
+    ATB_LOG(INFO) << "param.seqLen:" << param.seqLen;
     atb::Operation *op;
     CreateOperation(param, &op);
     return op;
@@ -320,6 +341,8 @@ static atb::Operation *LinearOperationCreate(const nlohmann::json &paramJson)
     if (paramJson.contains("hasBias")) {
         param.hasBias = paramJson["hasBias"].get<bool>();
     }
+    ATB_LOG(INFO) << "LinearParam transposeA:" << param.transposeA << ", transposeB:" << param.transposeB
+                  << ", hasBias:" << param.hasBias;
     atb::Operation *op;
     CreateOperation(param, &op);
     return op;
@@ -371,7 +394,8 @@ static atb::Operation *LinearSparseOperationCreate(const nlohmann::json &paramJs
     if (paramJson.contains("tilingN")) {
         param.tilingN = paramJson["tilingN"].get<uint32_t>();
     }
-
+    ATB_LOG(INFO) << "LinearSparseParam transposeA:" << param.transposeA << ", transposeB:" << param.transposeB
+                  << ", tilingK:" << param.tilingK << ", tilingN:" << param.tilingN;
     atb::Operation *op;
     CreateOperation(param, &op);
     return op;
@@ -463,6 +487,9 @@ static atb::Operation *PagedAttentionOperationCreate(const nlohmann::json &param
     if (paramJson.contains("hasQuantOffset")) {
         param.hasQuantOffset = paramJson["hasQuantOffset"].get<bool>();
     }
+    ATB_LOG(INFO) << "PagedAttentionOperationCreate headNum:" << param.headNum << ", scale:" << param.qkScale
+                  << ", kvHeadNum:" << param.kvHeadNum << ", quantType:" << param.quantType
+                  << ", hasQuantOffset:" << param.hasQuantOffset;
     atb::Operation *op;
     CreateOperation(param, &op);
     return op;
@@ -474,6 +501,7 @@ static atb::Operation *RepeatOperationCreate(const nlohmann::json &paramJson)
     for (auto item : paramJson["multiples"]) {
         param.multiples.push_back(item.get<int64_t>());
     }
+    ATB_LOG(INFO) << "RepeatParam multiples:" << param.multiples;
     atb::Operation *op;
     CreateOperation(param, &op);
     return op;
@@ -591,6 +619,8 @@ static atb::Operation *SelfAttentionOperationCreate(const nlohmann::json &paramJ
     if (paramJson.contains("clampMax")) {
         param.clampMax = paramJson["clampMax"].get<float>();
     }
+    ATB_LOG(INFO) << "SelfAttentionParam headNum:" << param.headNum << ", qScale:" << param.qScale
+                  << ", qkScale:" << param.qkScale << ", kvHeadNum:" << param.kvHeadNum;
     atb::Operation *op;
     CreateOperation(param, &op);
     return op;
@@ -601,12 +631,15 @@ static atb::Operation *SetValueOperationCreate(const nlohmann::json &paramJson)
     atb::infer::SetValueParam param;
     for (auto item : paramJson["starts"]) {
         param.starts.push_back(item.get<int>());
+        ATB_LOG(INFO) << "starts:" << param.starts.at(0);
     }
     for (auto item : paramJson["ends"]) {
         param.ends.push_back(item.get<int>());
+        ATB_LOG(INFO) << "ends:" << param.ends.at(0);
     }
     for (auto item : paramJson["strides"]) {
         param.strides.push_back(item.get<int>());
+        ATB_LOG(INFO) << "strides:" << param.strides.at(0);
     }
     atb::Operation *op;
     CreateOperation(param, &op);
@@ -643,6 +676,7 @@ static atb::Operation *SortOperationCreate(const nlohmann::json &paramJson)
     atb::infer::SortParam param;
     for (auto item : paramJson["num"]) {
         param.num.push_back(item.get<int>());
+        ATB_LOG(INFO) << "num:" << param.num.at(0);
     }
     atb::Operation *op;
     CreateOperation(param, &op);
@@ -668,15 +702,19 @@ static atb::Operation *StridedBatchMatmulOperationCreate(const nlohmann::json &p
     atb::train::StridedBatchMatmulParam param;
     if (paramJson.contains("transA")) {
         param.transposeA = paramJson["transA"].get<int32_t>();
+        ATB_LOG(INFO) << "param.transposeA:" << param.transposeA;
     }
     if (paramJson.contains("transB")) {
         param.transposeB = paramJson["transB"].get<int32_t>();
+        ATB_LOG(INFO) << "param.transposeB:" << param.transposeB;
     }
     if (paramJson.contains("batch")) {
         param.batch = paramJson["batch"].get<int32_t>();
+        ATB_LOG(INFO) << "param.batch:" << param.batch;
     }
     if (paramJson.contains("headNum")) {
         param.headNum = paramJson["headNum"].get<int32_t>();
+        ATB_LOG(INFO) << "param.headNum:" << param.headNum;
     }
     for (auto item : paramJson["m"]) {
         param.m.push_back(item.get<int32_t>());
@@ -732,6 +770,7 @@ static atb::Operation *TransdataOperationCreate(const nlohmann::json &paramJson)
             param.outCrops.push_back(item.get<int64_t>());
         }
     }
+    ATB_LOG(INFO) << "TransdataParam transdataType:" << param.transdataType << ", outCrops:" << param.outCrops;
     atb::Operation *op;
     CreateOperation(param, &op);
     return op;
@@ -743,6 +782,7 @@ static atb::Operation *TransposeOperationCreate(const nlohmann::json &paramJson)
     for (auto item : paramJson["perm"]) {
         param.perm.push_back(item.get<int>());
     }
+    ATB_LOG(INFO) << "transpose(" << param.perm << ")";
     atb::Operation *op;
     CreateOperation(param, &op);
     return op;
@@ -775,6 +815,7 @@ static atb::Operation *UnpadWithHiddenStateOperationCreate(const nlohmann::json 
 static atb::Operation *WhereOperationCreate(const nlohmann::json &paramJson)
 {
     atb::infer::WhereParam param;
+    ATB_LOG(INFO) << "WhereParam: NULL";
     atb::Operation *op;
     CreateOperation(param, &op);
     return op;
@@ -832,6 +873,7 @@ int registerAll() {
     int retVal = 0;
     for (auto & item : g_funcMap) {
         auto ret = atb_speed::OperationFactory::Register(item.first, item.second);  // ret == True for successful
+        ATB_LOG(INFO) << "OP: " << item.first << " added, ret: " << ret;
         if (! ret) {
             retVal += 1;
         }
