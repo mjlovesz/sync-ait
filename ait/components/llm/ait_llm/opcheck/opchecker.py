@@ -395,3 +395,4 @@ class OpChecker:
             optional_cp = [optional[idx] for idx in optional_idx]
             ws.append(required + optional_cp)
         wb.save(self.output_path)
+        logger.info(f"\nOpcheck results saved to: {self.output_path}")

@@ -104,5 +104,5 @@ mkdir -p $SCRIPT_DIR/build
 cd $SCRIPT_DIR/build
 cmake .. -DCMAKE_INSTALL_PREFIX=$AIT_LLM_INSTALL_PATH/opcheck -DCMAKE_CXX_FLAGS=$CMAKE_CXX_FLAGS
 make -j4 && make install
-echo "[INFO] moved $PWD/build/libopchecker.so -> $AIT_LLM_INSTALL_PATH/opcheck/libopchecker.so"
+echo "[INFO] Copied $PWD/build/libopchecker.so -> $AIT_LLM_INSTALL_PATH/opcheck/libopchecker.so"
 cd -
