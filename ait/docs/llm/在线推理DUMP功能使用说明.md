@@ -17,6 +17,7 @@ torch-npu(gpu)模型推理数据dump
 | module_list | 指定要hook的module类型 | 数据类型：list，默认为[]，即dump所有module的数据。           | 否       |
 | tensor_part | 指定要dump哪部分数据   | 数据类型：int，默认为2。当tensor_part=0时，只dump输入数据；当tensor_part=1时，只dump输出数据； 当tensor_part=2时，dump输入和输出的数据。 | 否       |
 | device_id   | 指定要dump的device id  | 数据类型：int，默认为None 表示不限制 device。如指定 device_id=1，将跳过其他 device 的 dump。 | 否       |
+| dump_last_logits | 是否需要Dump 模型最后的输出logits | 数据类型： bool, 默认为False, 当开启后，仅 Dump 模型最后输出的 logits ,模型中间layer 不会再输出。 可参考 [《logits精度比对》](输出Token的logits精度比对-加速卡推理场景.md) | 否 |
 
 ### register_hook
 

@@ -50,11 +50,15 @@ class DumpHookModule:
 
         self.model.name = model_name
         self.model.ait_forward_pre_handle = self.model.register_forward_pre_hook(set_dump_flag())
+        self.model.model_ait_forward_handle = self.model.register_forward_hook(dump_logits())
         add_hook(self.model, prefix=model_name)
 
     def _remove_module_hook(self):
         if hasattr(self.model, "ait_forward_pre_handle"):
             self.model.ait_forward_pre_handle.remove()
+
+        if hasattr(self.model, "model_ait_forward_handle"):
+            self.model.model_ait_forward_handle.remove()
 
         def _remove_hook(module):
             if hasattr(module, "ait_forward_handle"):
@@ -152,6 +156,11 @@ def dump_module_data():
 
         if dump_config.mode == "api" or not dump_config.dump_flag:
             return
+        
+        if dump_config.dump_last_logits:
+            if has_tensor(outputs):
+                dump_config.last_logits = (module.name, outputs)
+            return 
 
         if dump_config.module_list and not isinstance(module, tuple(dump_config.module_list)):
             return
@@ -182,3 +191,29 @@ def set_dump_flag():
         cur_token_id += 1
 
     return hook_func
+
+
+def has_tensor(feat):
+    if isinstance(feat, (tuple, list)):
+        for tensor in feat:
+            if has_tensor(tensor):
+                return True
+    elif isinstance(feat, torch.Tensor):
+        return True 
+    return False
+
+
+def dump_logits():
+    def hook_func(*args):
+        config = DumpConfig()
+        if config.dump_last_logits and config.last_logits is not None:
+            module_name, outputs = config.last_logits
+
+            dump_path = os.path.join(config.dump_dir, str(config.token_id), module_name)
+
+            if not os.path.exists(dump_path):
+                os.makedirs(dump_path, mode=0o750)
+            dump_tensor(outputs, os.path.join(dump_path, "output"))
+
+    return hook_func
+    
