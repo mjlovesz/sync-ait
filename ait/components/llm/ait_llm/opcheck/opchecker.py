@@ -56,29 +56,45 @@ class OpChecker:
 
     @staticmethod
     def third_party_init():
-        execution_flag = True
-
         import ait_llm
+        import ctypes
 
-        lib_path = os.environ.get("AIT_OPCHECK_LIB_PATH", "")
-        if not lib_path:
+        # Loading libopchecker.so with ctypes
+        lib_opchecker_path = os.environ.get("AIT_OPCHECK_LIB_PATH", "")
+        if not lib_opchecker_path:
             lib_path_dir = os.path.dirname(os.path.abspath(ait_llm.__file__))
-            lib_path = os.path.join(lib_path_dir, "opcheck", "libopchecker.so")
+            lib_opchecker_path = os.path.join(lib_path_dir, "opcheck", "libopchecker.so")
 
-        if os.path.exists(lib_path):
-            try:
-                logger.info(lib_path)
-                torch.classes.load_library(lib_path)
-            except OSError as e:
-                logger_text = "Failed to load libopchecker.so, please check. Error: {}".format(e)
-                logger.error(logger_text)
-                execution_flag = False
-        else:
-            logger_text = "libopchecker.so not found in {}".format(lib_path)
-            logger.error(logger_text)
-            execution_flag = False
+        logger.info(f"lib_opchecker_path is {lib_opchecker_path}")
+        if not os.path.exists(lib_opchecker_path):
+            logger.error(f"{lib_opchecker_path} not exists, check if ait_llm installed correctly")
+            return False
 
-        return execution_flag
+        try:
+            ctypes.cdll.LoadLibrary(lib_opchecker_path).RegisterAll()
+        except Exception as e:
+            logger.error(f"{lib_opchecker_path} loading failed, check if ait_llm installed correctly")
+            return False
+
+        # Loading libatb_speed_torch.so with torch
+        atb_speed_path = os.getenv('ATB_SPEED_HOME_PATH', "")
+        if not atb_speed_path:
+            logger.error("ATB_SPEED_HOME_PATH is empty, check if mindie_atb_models configured correctly")
+            return False
+
+        libatb_speed_torch_path = os.path.join(atb_speed_path, 'lib', 'libatb_speed_torch.so')
+        logger.info(f"libatb_speed_torch_path is {libatb_speed_torch_path}")
+        if not os.path.exists(libatb_speed_torch_path):
+            logger.error(f"{libatb_speed_torch_path} not exists, check if mindie_atb_models configured correctly")
+            return False
+
+        try:
+            torch.classes.load_library(libatb_speed_torch_path)
+        except Exception as e:
+            logger.error(f"{libatb_speed_torch_path} loading failed, check if mindie_atb_models configured correctly")
+            return False
+
+        return True
 
     def get_base_path(self, cur_path):
         dirseg = cur_path.split(os.path.sep)
@@ -189,6 +205,7 @@ class OpChecker:
             if v[result_info] == 'addition failed':
                 v['res_detail'] = []
                 self.write_op_result_to_csv(v)
+        logger.info(f"\nOpcheck results saved to: {self.output_path}")
 
     def parse_op_id_name(self, dirpath):
         basename = os.path.basename(dirpath)
