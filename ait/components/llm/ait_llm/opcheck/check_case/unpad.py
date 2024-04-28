@@ -29,7 +29,7 @@ class OpcheckUnpadOperation(operation_test.OperationTest):
 
         x_remove_padding = input_ids[0][0:seq_len[0]]
         for i in range(1, batch):
-            x_remove_padding = torch.concatenate((x_remove_padding, input_ids[i][0:seq_len[i]]))
+            x_remove_padding = torch.concat((x_remove_padding, input_ids[i][0:seq_len[i]]))
         x_remove_padding = torch.pad(x_remove_padding, (0, (batch * total_length_imm - token_num[0][0])))
         cum_offsets_out = torch.zeros(batch)
         for i in range(1, batch):
@@ -37,7 +37,7 @@ class OpcheckUnpadOperation(operation_test.OperationTest):
         padding_offset = seq_len[0] * [0]
         for i in range(1, batch):
             temp_pad_out = seq_len[i] * [cum_offsets_now[i - 1]]
-            padding_offset = torch.concatenate((padding_offset, temp_pad_out))
+            padding_offset = torch.concat((padding_offset, temp_pad_out))
         zero_offset = torch.zeros((1, batch * total_length_imm - token_num[0][0]))
         padding_offset = torch.append(padding_offset, zero_offset)
         x_remove_padding = x_remove_padding.reshape(1, batch * total_length_imm).long()
