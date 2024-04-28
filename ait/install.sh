@@ -161,7 +161,7 @@ uninstall(){
 
 build_opchecker_so() {
     echo ""
-    echo "Try building libatb_speed_torch.so for ait llm. If not using opecheck, ignore errors if any"
+    echo "Try building libatb_speed_torch.so for ait llm. If not using opcheck, ignore errors if any"
     cd ${CURRENT_DIR}/components/llm/ait_llm/opcheck/atb_operators
     bash build.sh
     cd -
