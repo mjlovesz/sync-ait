@@ -119,7 +119,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             
             score = score / math.sqrt(1.0 * embed)
             score = score + attention_mask[:, :q_s, :kv_s] if self.op_param.get("isTriuMask", False) else score
-            score_max = torch.max(score, axis=-1)
+            score_max = torch.max(score, axis=-1).values
             score = score - score_max.view((heads, q_s, 1))
             score_exp = torch.exp(score)
             if not self.op_param.get("isFp32", True):
