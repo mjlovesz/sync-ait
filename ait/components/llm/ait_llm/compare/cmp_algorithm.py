@@ -79,6 +79,18 @@ def relative_euclidean_distance(golden_data: torch.Tensor, my_data: torch.Tensor
     return result.item(), ''
 
 
+def register_custom_compare_algorithm(custom_compare_algorithm):
+    import os, sys, importlib
+
+    file_path, func_name = custom_compare_algorithm.split(':')
+    sys.path.append(os.path.dirname(file_path))
+
+    custom_module_name = os.path.basename(file_path).replace('.py', '')
+    custom_module = importlib.import_module(custom_module_name)
+    custom_compare_func = getattr(custom_module, func_name, None)
+    CMP_ALG_MAP[func_name] = custom_compare_func
+
+
 CMP_ALG_MAP = {
     "cosine_similarity": cosine_similarity,
     "max_relative_error": max_relative_error,
