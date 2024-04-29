@@ -17,7 +17,7 @@ import subprocess
 import argparse
 
 
-from components.utils.parser import BaseCommand
+from components.utils.parser import AitCmdTask, AitParamTask
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig,\
     ARGS_REQUIRED_KNOWLEDGES
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
@@ -32,15 +32,12 @@ from auto_optimizer.common.click_utils import default_off_knowledges
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 
 
-class ListCommand(BaseCommand):
-    def add_arguments(self, parser):
-        pass
-
-    def handle(self, args):
+class ListCommand(AitParamTask):
+    def handle(self, _):
         list_knowledges()
 
 
-class EvaluateCommand(BaseCommand):
+class EvaluateCommand(AitParamTask):
     def add_arguments(self, parser):
         parser.add_argument('--path', required=True, type=check_in_path_legality,
                             help='Target onnx file or directory containing onnx file')
@@ -79,7 +76,7 @@ class EvaluateCommand(BaseCommand):
         cli_eva(path_, optimizer, args.recursive, args.verbose, args.processes)
 
 
-class OptimizeCommand(BaseCommand):
+class OptimizeCommand(AitParamTask):
     def add_arguments(self, parser):
         parser.add_argument('-in', '--input', dest='input_model', required=True, type=check_in_model_path_legality,
                             help='Input onnx model to be optimized')
@@ -186,7 +183,7 @@ class OptimizeCommand(BaseCommand):
             logger.info('=' * 100)
 
 
-class ExtractCommand(BaseCommand):
+class ExtractCommand(AitParamTask):
     def add_arguments(self, parser):
         parser.add_argument('-in', '--input', dest='input_model', required=True, type=check_in_model_path_legality,
                             help='Input onnx model to be optimized')
@@ -235,7 +232,7 @@ class ExtractCommand(BaseCommand):
             logger.error(err)
 
 
-class ConcatenateCommand(BaseCommand):
+class ConcatenateCommand(AitParamTask):
     def add_arguments(self, parser):
         parser.add_argument('-g1', '--graph1', required=True, type=check_in_model_path_legality,
                             help='First onnx model to be consolidated')
@@ -287,17 +284,6 @@ class ConcatenateCommand(BaseCommand):
         logger.info(f"Combined ONNX model saved in: {combined_graph_path}")
 
 
-class SurgeonCommand(BaseCommand):
-    def __init__(self, name="", help_info="", children=None, has_handle=False, **kwargs):
-        super().__init__(name, help_info, children, has_handle, **kwargs)
-
-    def add_arguments(self, parser, **kwargs):
-        return super().add_arguments(parser, **kwargs)
-
-    def handle(self, args, **kwargs):
-        return super().handle(args, **kwargs)
-
-
 def get_cmd_instance():
     surgeon_help_info = "surgeon tool for onnx modifying functions."
     list_cmd_instance = ListCommand("list", "List available Knowledges")
@@ -307,6 +293,6 @@ def get_cmd_instance():
     concatenate_cmd_instance = ConcatenateCommand("concatenate",
                                                   "Concatenate two onnxgraph into combined one onnxgraph",
                                                   alias_name="concat")
-    return SurgeonCommand("surgeon", surgeon_help_info, [list_cmd_instance, evaluate_cmd_instance,
+    return AitCmdTask("surgeon", surgeon_help_info, [list_cmd_instance, evaluate_cmd_instance,
                                                          optimize_cmd_instance, extract_cmd_instance,
                                                          concatenate_cmd_instance])

@@ -15,7 +15,7 @@
 import os
 import re
 import argparse
-from components.utils.parser import BaseCommand
+from components.utils.parser import AitParamTask
 from model_evaluation.common import utils, logger
 from model_evaluation.common.enum import Framework
 from model_evaluation.bean import ConvertConfig
@@ -106,7 +106,7 @@ def parse_input_param(model: str,
     )
 
 
-class AnalyzeCommand(BaseCommand):
+class AnalyzeCommand(AitParamTask):
     def add_arguments(self, parser):
         parser.add_argument(
             "-gm", "--golden-model", type=check_model_path_legality,

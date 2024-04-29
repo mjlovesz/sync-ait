@@ -15,93 +15,121 @@
 import sys
 import logging
 import argparse
-import pkg_resources
+from abc import abstractmethod
+
 
 AIT_FAQ_HOME = "https://gitee.com/ascend/ait/wikis/Home"
 MIND_STUDIO_LOGO = "[Powered by MindStudio]"
 
-logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
+logging.basicConfig(
+    stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 
-class BaseCommand:
-    '''
-    for a ending command, a derived class need to be created inherienting this BaseCommand,
-    then modify the add_arguments and handle method
-    '''
-    def __init__(self, name="", help_info="", children=None, has_handle=True, alias_name="", **kwargs):
-        '''
-        parameters:
-            name: (string) name of the command
-            help_info: (string) help infomation of the command
-            children: (list[BaseCommand]) list of BaseCommand instance
-            has_handle: (bool) boolean indicating whether this command has handle function
-            kwargs: for extension in the future
-        return:
-            None
-        '''
+class AitTask:
+    def __init__(self, name, help_info="", alias_name="") -> None:
         self.name = name
         self.help_info = help_info
-        if not children:
-            self.children = []
-        else:
-            self.children = children
         self.alias_name = alias_name
-        self.has_handle = has_handle
 
-    def add_arguments(self, parser, **kwargs):
-        '''
-        parameters:
-            parser: (argparse.ArgumentParser) parser to be added parameters
-            kwargs: for extension in the future
-        return:
-            None
-        '''
+    @abstractmethod
+    def register_parser(self, parser):
         pass
 
-    def handle(self, args, **kwargs):
-        '''
-        parameters:
-            args: (argparse.Namespace) argument aggregation
-            kwargs: for extension in the future
-        return:
-            None
-        '''
+    @abstractmethod
+    def handle(self, args):
         pass
 
 
-def register_parser(parser, commands):
-    if commands is None or (isinstance(commands, list) and len(commands) * [None] == commands):
-        return
-    subparsers = parser.add_subparsers(title="Command")
-    for command in commands:
-        if command is None:
-            continue
-        cmd_alias_name = [command.alias_name] if command.alias_name else []
-        subparser = subparsers.add_parser(
-            command.name, formatter_class=argparse.ArgumentDefaultsHelpFormatter, help=command.help_info,
-            aliases=cmd_alias_name,
-            description=command.help_info + " " + MIND_STUDIO_LOGO
-        )
-        command.add_arguments(subparser)
-        if command.has_handle:
-            subparser.set_defaults(handle=command.handle)
+class AitParamTask(AitTask):
+    def register_parser(self, parser):
+        self.add_arguments(parser)
+        parser.set_defaults(handle=self.handle)
+
+    @abstractmethod
+    def add_arguments(self, parser):
+        pass
+
+
+class AitCmdTask(AitTask):
+    def __init__(self, name, help_info, children, alias_name="") -> None:
+        super().__init__(name, help_info, alias_name)
+
+        self.parser = None
+        self.children: list[AitTask] = []
+
+        if isinstance(children, str):
+            self.children = AitLazyEntryPointTask.build_lazy_tasks(children)
         else:
-            subparser.set_defaults(print_help=subparser.print_help)
-        register_parser(subparser, command.children)
+            self.children: list[AitTask] = [] if children is None else children
+
+    def register_parser(self, parser: argparse.ArgumentParser):
+        self.parser = parser
+        parser.set_defaults(handle=self.handle)
+
+        if not self.children:
+            return
+        subparsers = parser.add_subparsers(title="Command")
+        for command in self.children:
+            subparser = subparsers.add_parser(
+                command.name,
+                formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                help=command.help_info,
+                aliases=[command.alias_name] if command.alias_name else [],
+                description=command.help_info + " " + MIND_STUDIO_LOGO,
+            )
+            command.register_parser(subparser)
+
+    def handle(self, _):
+        if self.parser is not None:
+            self.parser.print_help()
 
 
-def load_command_instance(entry_points : str, name=None, help_info=None, derived_command=None):
-    cmd_instances = []
-    for entry_point in pkg_resources.iter_entry_points(entry_points):
-        cmd_instances.append(entry_point.load()())
+class AitLazyEntryPointTask(AitTask):
+    def __init__(self, name, help_info, entry_point) -> None:
+        super().__init__(name, help_info)
+        self.entry_point = entry_point
+        self.inner_task = None
 
-    if len(cmd_instances) == 1:
-        return cmd_instances[0]
-    elif len(cmd_instances) > 1:
-        if not isinstance(name, str) or not isinstance(help_info, str) or derived_command is None:
-            logger.warning("load subcommands from entry point %s failed, \
-                           lack of name or help_info or subcommand class", entry_points)
-        else:
-            return derived_command(name, help_info, cmd_instances)
-    return None
+    @staticmethod
+    def build_lazy_tasks(entry_points_name):
+        entry_points = AitLazyEntryPointTask.get_entry_points(entry_points_name)
+        tasks = []
+        for entry_point in entry_points:
+            entry_info = entry_point.name.split(":", 1)
+            if len(entry_info) == 1:
+                name, help_info = entry_info[0], ""
+            else:
+                name, help_info = entry_info
+
+            tasks.append(AitLazyEntryPointTask(name, help_info, entry_point))
+        return tasks
+
+    @staticmethod
+    def get_entry_points(entry_points_name):
+        try:
+            from importlib import metadata
+
+            return metadata.entry_points().get(entry_points_name, [])
+        except:
+            import pkg_resources
+
+            return list(pkg_resources.iter_entry_points(entry_points_name))
+
+    def register_parser(self, parser: argparse.ArgumentParser):
+        self.register_parser_lazy(parser)
+
+    def register_parser_lazy(self, parser: argparse.ArgumentParser):
+        ori_parse_args = parser.parse_known_args
+
+        def hook_parse_args(args=None, namespace=None):
+            self.load_register_inner_task(parser)
+            return ori_parse_args(args, namespace)
+
+        parser.parse_known_args = hook_parse_args
+
+    def load_register_inner_task(self, parser: argparse.ArgumentParser):
+        self.inner_task: AitTask = self.entry_point.load()()
+        if isinstance(self.inner_task, AitTask):
+            self.inner_task.register_parser(parser)

@@ -16,7 +16,7 @@
 import os
 import subprocess
 
-from components.utils.parser import BaseCommand
+from components.utils.parser import AitParamTask, AitCmdTask
 from ait_llm.dump.initial import init_dump_task, clear_dump_task
 from ait_llm.opcheck.opchecker import OpChecker
 from ait_llm.errcheck.process import process_error_check
@@ -28,7 +28,7 @@ from ait_llm.common.log import logger, set_log_level, LOG_LEVELS
 LOG_LEVELS_LOWER = [ii.lower() for ii in LOG_LEVELS.keys()]
 
 
-class DumpCommand(BaseCommand):
+class DumpCommand(AitParamTask):
     def add_arguments(self, parser):
         parser.add_argument(
             '--only-save-desc',
@@ -157,7 +157,7 @@ class DumpCommand(BaseCommand):
             return
 
 
-class CompareCommand(BaseCommand):
+class CompareCommand(AitParamTask):
     def add_arguments(self, parser, **kwargs):
         parser.add_argument(
             '--golden-path',
@@ -227,7 +227,7 @@ class CompareCommand(BaseCommand):
                         args.output, args.mapping_file, args.cmp_level)
 
 
-class OpcheckCommand(BaseCommand):
+class OpcheckCommand(AitParamTask):
     def add_arguments(self, parser, **kwargs):
         parser.add_argument(
             '--input',
@@ -299,7 +299,7 @@ class OpcheckCommand(BaseCommand):
         logger.info(f"===================Opcheck end====================")
 
 
-class ErrCheck(BaseCommand):
+class ErrCheck(AitParamTask):
     def add_arguments(self, parser, **kwargs) -> None:
         parser.add_argument(
             '--exec',
@@ -346,7 +346,7 @@ class ErrCheck(BaseCommand):
         process_error_check(args)       
 
 
-class Transform(BaseCommand):
+class Transform(AitParamTask):
     def add_arguments(self, parser, **kwargs) -> None:
         parser.add_argument(
             "-s",
@@ -368,17 +368,6 @@ class Transform(BaseCommand):
         transform_quant.transform_quant(source_path=args.source, enable_sparse=args.enable_sparse)
 
 
-class LlmCommand(BaseCommand):
-    def __init__(self, name="", help_info="", children=None, has_handle=False, **kwargs):
-        super().__init__(name, help_info, children, has_handle, **kwargs)
-
-    def add_arguments(self, parser, **kwargs):
-        return super().add_arguments(parser, **kwargs)
-
-    def handle(self, args, **kwargs):
-        return super().handle(args, **kwargs)
-
-
 def get_cmd_instance():
     llm_help_info = "Large Language Model(llm) Debugger Tools."
     dump_cmd_instance = DumpCommand("dump", "Dump tool for ascend transformer boost", alias_name="dd")
@@ -392,4 +381,4 @@ def get_cmd_instance():
     instances = [
         dump_cmd_instance, compare_cmd_instance, opcheck_cmd_instance, errcheck_cmd_instance, transform_cmd_instance
     ]
-    return LlmCommand("llm", llm_help_info, instances)
+    return AitCmdTask("llm", llm_help_info, instances)

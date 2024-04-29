@@ -19,6 +19,16 @@ with open('requirements.txt', encoding='utf-8') as f:
 
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
+
+ait_sub_tasks = [{
+    "name": "msprof",
+    "help_info": "get profiling data of a given programma",
+    "module": "ait_prof.main_cli",
+    "attr": "get_cmd_instance"
+}]
+
+ait_sub_task_entry_points = [f"{t['name']}:{t['help_info']} = {t['module']}:{t['attr']}" for t in ait_sub_tasks]
+
 setup(
     name='msprof',
     version='0.0.2',
@@ -30,6 +40,6 @@ setup(
     install_requires=required,
     python_requires='>=3.7',
     entry_points={
-        'profile_sub_task': ['msprof=ait_prof.main_cli:get_cmd_instance']
+        'ait_sub_task': ait_sub_task_entry_points
     }
 )

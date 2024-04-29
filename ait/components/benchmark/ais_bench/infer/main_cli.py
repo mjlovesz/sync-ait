@@ -16,7 +16,7 @@ import os
 import re
 import argparse
 
-from components.utils.parser import BaseCommand
+from components.utils.parser import AitParamTask, AitCmdTask
 from ais_bench.infer.benchmark_process import benchmark_process
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.args_check import (
@@ -27,7 +27,7 @@ from ais_bench.infer.args_check import (
 )
 
 
-class BenchmarkCommand(BaseCommand):
+class BenchmarkCommand(AitParamTask):
     def add_arguments(self, parser):
         parser.add_argument(
             "-om",

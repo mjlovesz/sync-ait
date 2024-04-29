@@ -18,6 +18,15 @@ from setuptools import setup, find_packages  # type: ignore
 with open('requirements.txt', encoding='utf-8') as f:
     required = f.read().splitlines()
 
+ait_sub_tasks = [{
+    "name": "convert",
+    "help_info": "convert tool converts the model from ONNX, TensorFlow, Caffe and MindSpore to OM. \
+                   It supports atc, aoe and aie.",
+    "module": "model_convert.__main__",
+    "attr": "get_cmd_instance"
+}]
+
+ait_sub_task_entry_points = [f"{t['name']}:{t['help_info']} = {t['module']}:{t['attr']}" for t in ait_sub_tasks]
 
 setup(
     name='convert_tool',
@@ -41,6 +50,6 @@ setup(
     ],
     python_requires='>=3.7',
     entry_points={
-        'convert_sub_task': ['convert=model_convert.__main__:get_cmd_instance'],
+        'ait_sub_task': ait_sub_task_entry_points,
     },
 )

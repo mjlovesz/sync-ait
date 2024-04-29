@@ -25,6 +25,15 @@ opchecker_lib_src = []
 for root, dirs, files in os.walk('components/llm/ait_llm/opcheck/test_framework/'):
     opchecker_lib_src.append((os.path.join("/", root), [os.path.join(root, f) for f in files]))
 
+ait_sub_tasks = [{
+    "name": "llm",
+    "help_info": "Large Language Model(llm) Debugger Tools.",
+    "module": "ait_llm.__main__",
+    "attr": "get_cmd_instance"
+}]
+
+ait_sub_task_entry_points = [f"{t['name']}:{t['help_info']} = {t['module']}:{t['attr']}" for t in ait_sub_tasks]
+
 setup(
     name='ait-llm',
     version='1.0',
@@ -50,6 +59,6 @@ setup(
     include_package_data=True,
     python_requires='>=3.7',
     entry_points={
-        'llm_sub_task': ['llm=ait_llm.__main__:get_cmd_instance'],
+        'ait_sub_task': ait_sub_task_entry_points,
     },
 )
