@@ -91,7 +91,7 @@ class OpcheckUnpadRopeOperation(operation_test.OperationTest):
             hidden_sizeq = in_tensors[0].size()[1]
             head_size = in_tensors[2].size()[1]
             q_head_num = hidden_sizeq // head_size
-            hidden_sizek = in_tensors[0].size()[1]
+            hidden_sizek = in_tensors[1].size()[1]
             k_head_num = hidden_sizek // head_size
         rot_dim = in_tensors[2].size()[1]
 
