@@ -87,7 +87,7 @@ class OpcheckUnpadRopeOperation(operation_test.OperationTest):
         else:
             ntoken = in_tensors[0].size()[0]
             seqlen = int(in_tensors[4][0])
-            batch = ntoken // seqlen
+            batch = max(ntoken // seqlen, 1)
             hidden_sizeq = in_tensors[0].size()[1]
             head_size = in_tensors[2].size()[1]
             q_head_num = hidden_sizeq // head_size
