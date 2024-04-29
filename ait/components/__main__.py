@@ -16,6 +16,62 @@ import argparse
 
 from components.utils.parser import BaseCommand, AIT_FAQ_HOME, MIND_STUDIO_LOGO
 from components.utils.file_open_check import UmaskWrapper
+from components.utils.install import check_tools, build_extra, install_tools
+
+
+class AitCommand(BaseCommand):
+    def add_arguments(self, parser):
+        all_sub_tools = [
+            'ait-llm',
+            'ait-compare',
+            'ait-surgeon',
+            'ait-analyze',
+            'ait-transplt',
+            'ait-convert',
+            'ait-msprof',
+            'ait-benchmark',
+            'all',
+        ]
+        parser.add_argument(
+            "--install",
+            nargs="+",
+            choices=all_sub_tools,
+            default=None,
+            help="install ait tools",
+        )
+
+        parser.add_argument(
+            "--check",
+            nargs="+",
+            choices=all_sub_tools,
+            default=None,
+            help="check ait tools status ",
+        )
+
+        parser.add_argument(
+            "--build-extra",
+            dest='build_extra',
+            type=str,
+            default=None,
+            help="install ait tools extra",
+        )
+
+    def handle(self, args):
+        handled = False
+        if args.install:
+            handled = True
+            install_tools(args.install)
+
+        if args.build_extra:
+            handled = True
+            build_extra(args.build_extra)
+
+        if args.check:
+            handled = True
+            check_tools(args.check)
+
+        if not handled:
+            return super().handle(args)
 
 
 def main():
@@ -26,21 +82,19 @@ def main():
         f"For any issue, refer FAQ first: {AIT_FAQ_HOME}",
     )
 
-    cmd = BaseCommand("ait",  None, "ait_sub_task")
+    cmd = AitCommand("ait", None, "ait_sub_task")
     cmd.register_parser(parser)
 
-    parser.add_argument("--framework", type=str,
-            choices=['0', '3', '5'],
-            default=None, help="Framework type: 0:Caffe; 3:Tensorflow; 5:Onnx.")
-     
     args = parser.parse_args()
-    
+
     if hasattr(args, 'handle'):
         with UmaskWrapper():
             try:
                 args.handle(args)
             except Exception as err:
-                raise Exception(f"[ERROR] Refer FAQ if a known issue: {AIT_FAQ_HOME}") from err
+                raise Exception(
+                    f"[ERROR] Refer FAQ if a known issue: {AIT_FAQ_HOME}"
+                ) from err
 
 
 if __name__ == "__main__":

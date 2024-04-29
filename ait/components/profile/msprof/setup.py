@@ -30,8 +30,8 @@ ait_sub_tasks = [{
 ait_sub_task_entry_points = [f"{t['name']}:{t['help_info']} = {t['module']}:{t['attr']}" for t in ait_sub_tasks]
 
 setup(
-    name='msprof',
-    version='0.0.2',
+    name='ait-msprof',
+    version='7.0.0c2',
     description='msprof tool',
     long_description=long_description,
     url='ait_msprof url',
@@ -40,6 +40,7 @@ setup(
     install_requires=required,
     python_requires='>=3.7',
     entry_points={
-        'ait_sub_task': ait_sub_task_entry_points
+        'ait_sub_task': ait_sub_task_entry_points,
+        'ait_sub_task_installer': ['ait-msprof=ait_prof.__install__:MsProfInstall'],
     }
 )

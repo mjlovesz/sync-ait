@@ -37,7 +37,7 @@ setup(
     long_description_content_type='text/markdown',
     url='https://gitee.com/ascend/ait',
     packages=find_packages(),
-    package_data={'': ['LICENSE', 'requirements.txt']},
+    package_data={'': ['LICENSE', 'README.md', 'requirements.txt', 'install.bat', 'install.sh', '*.cpp', '*.h']},
     data_files=[('', ['requirements.txt'])],
     license='Apache-2.0',
     keywords='ait',

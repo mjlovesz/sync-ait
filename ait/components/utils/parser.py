@@ -16,7 +16,7 @@ import sys
 import logging
 import argparse
 from abc import abstractmethod
-
+from .util import get_entry_points
 
 AIT_FAQ_HOME = "https://gitee.com/ascend/ait/wikis/Home"
 MIND_STUDIO_LOGO = "[Powered by MindStudio]"
@@ -27,7 +27,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class BaseCommand:
+class AitCommand:
     def __init__(self, name, help_info="", alias_name="") -> None:
         self.name = name
         self.help_info = help_info
@@ -42,18 +42,8 @@ class BaseCommand:
         pass
 
 
-class BaseCommand(BaseCommand):
-    def register_parser(self, parser):
-        self.add_arguments(parser)
-        parser.set_defaults(handle=self.handle)
-
-    @abstractmethod
-    def add_arguments(self, parser):
-        pass
-
-
-class BaseCommand(BaseCommand):
-    def __init__(self, name, help_info, children, alias_name="") -> None:
+class BaseCommand(AitCommand):
+    def __init__(self, name, help_info, children=None, alias_name="") -> None:
         super().__init__(name, help_info, alias_name)
 
         self.parser = None
@@ -66,6 +56,7 @@ class BaseCommand(BaseCommand):
 
     def register_parser(self, parser: argparse.ArgumentParser):
         self.parser = parser
+        self.add_arguments(parser)
         parser.set_defaults(handle=self.handle)
 
         if not self.children:
@@ -81,12 +72,15 @@ class BaseCommand(BaseCommand):
             )
             command.register_parser(subparser)
 
+    def add_arguments(self, parser):
+        pass
+
     def handle(self, _):
         if self.parser is not None:
             self.parser.print_help()
 
 
-class LazyEntryPointCommand(BaseCommand):
+class LazyEntryPointCommand(AitCommand):
     def __init__(self, name, help_info, entry_point) -> None:
         super().__init__(name, help_info)
         self.entry_point = entry_point
@@ -94,7 +88,7 @@ class LazyEntryPointCommand(BaseCommand):
 
     @staticmethod
     def build_lazy_tasks(entry_points_name):
-        entry_points = LazyEntryPointCommand.get_entry_points(entry_points_name)
+        entry_points = get_entry_points(entry_points_name)
         tasks = []
         for entry_point in entry_points:
             entry_info = entry_point.name.split(":", 1)
@@ -106,16 +100,6 @@ class LazyEntryPointCommand(BaseCommand):
             tasks.append(LazyEntryPointCommand(name, help_info, entry_point))
         return tasks
 
-    @staticmethod
-    def get_entry_points(entry_points_name):
-        try:
-            from importlib import metadata
-
-            return metadata.entry_points().get(entry_points_name, [])
-        except:
-            import pkg_resources
-
-            return list(pkg_resources.iter_entry_points(entry_points_name))
 
     def register_parser(self, parser: argparse.ArgumentParser):
         self.register_parser_lazy(parser)

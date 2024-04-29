@@ -36,10 +36,11 @@ ait_sub_task_entry_points = [f"{t['name']}:{t['help_info']} = {t['module']}:{t['
 
 setup(
     name='ait-llm',
-    version='1.0',
+    version='7.0.0c2',
     description='Debug tools for large language model(llm)',
     url='https://gitee.com/ascend/ait/ait/components/llm',
-    packages=find_packages(),
+    packages=find_packages(),    
+    package_data={'': ['*.sh', '*.cpp', '*.h', 'CMakeLists.txt']},
     license='Apache-2.0',
     keywords='ait_llm',
     install_requires=required,
@@ -60,5 +61,6 @@ setup(
     python_requires='>=3.7',
     entry_points={
         'ait_sub_task': ait_sub_task_entry_points,
+        'ait_sub_task_installer': ['ait-llm=ait_llm.__install__:LlmInstall'],
     },
 )

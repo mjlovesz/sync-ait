@@ -27,16 +27,17 @@ ait_sub_tasks = [{
         "attr": "get_cmd_instance",
     }]
 
-ait_sub_task_entry_points = [f"{t.name}:{t.help_info} = {t.module}:{t.attr}" for t in ait_sub_tasks]
+ait_sub_task_entry_points = [f"{t['name']}:{t['help_info']} = {t['module']}:{t['attr']}" for t in ait_sub_tasks]
 
 setup(
-    name='transplt',
-    version='0.1.0',
+    name='ait-transplt',
+    version='7.0.0c2',
     description='app analyze for cpu and gpu projects',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://gitee.com/ascend/ait',
     packages=find_packages(),
+    package_data={'': ['install.sh', 'install.bat']},
     license='Apache-2.0',
     keywords='app_analyze',
     install_requires=required,
@@ -54,5 +55,6 @@ setup(
     python_requires='>=3.7',
     entry_points={
         'ait_sub_task': ait_sub_task_entry_points,
+        'ait_sub_task_installer': ['ait-transplt=app_analyze.__install__:TranspltInstall'],
     },
 )

@@ -29,11 +29,12 @@ ait_sub_tasks = [{
 ait_sub_task_entry_points = [f"{t['name']}:{t['help_info']} = {t['module']}:{t['attr']}" for t in ait_sub_tasks]
 
 setup(
-    name='convert_tool',
-    version='0.1.0',
+    name='ait-convert',
+    version='7.0.0c2',
     description='model convert tool',
     url='https://gitee.com/ascend/ait',
     packages=find_packages(),
+    package_data={'': ['LICENSE', 'README.md', 'requirements.txt', 'install.bat', 'install.sh', '*.cpp', '*.h']},
     license='Apache-2.0',
     keywords='convert tool',
     install_requires=required,
@@ -51,5 +52,6 @@ setup(
     python_requires='>=3.7',
     entry_points={
         'ait_sub_task': ait_sub_task_entry_points,
+        'ait_sub_task_installer': ['ait-convert=model_convert.__install__:ConvertInstall'],
     },
 )

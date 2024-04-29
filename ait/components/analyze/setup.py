@@ -31,8 +31,8 @@ ait_sub_tasks = [{
 ait_sub_task_entry_points = [f"{t['name']}:{t['help_info']} = {t['module']}:{t['attr']}" for t in ait_sub_tasks]
 
 setup(
-    name='analyze_tool',
-    version='0.1.0',
+    name='ait-analyze',
+    version='7.0.0c2',
     description='inference analyze tool',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -56,5 +56,6 @@ setup(
     python_requires='>=3.7',
     entry_points={
         'ait_sub_task': ait_sub_task_entry_points,
+        'ait_sub_task_installer': ['ait-analyze=model_evaluation.__install__:AnalyzeInstall'],
     },
 )

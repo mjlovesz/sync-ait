@@ -30,18 +30,20 @@ ait_sub_tasks = [{
 ait_sub_task_entry_points = [f"{t['name']}:{t['help_info']} = {t['module']}:{t['attr']}" for t in ait_sub_tasks]
 
 setup(
-    name='ais_bench',
-    version='0.0.2',
-    description='ais_bench tool',
+    name='ait-benchmark', # 不与ais_bench冲突
+    version='7.0.0c2',
+    description='ais_bench tool(ait)',
     long_description=long_description,
     url='ais_bench url',
     packages=find_packages(),
+    package_data={'': ['LICENSE', 'README.md', 'requirements.txt', 'install.bat', 'install.sh', '*.cpp', '*.h']},
     include_package_data=True,
     keywords='ais_bench tool',
     install_requires=required,
     python_requires='>=3.7',
     entry_points={
         'ait_sub_task': ait_sub_task_entry_points,
+        'ait_sub_task_installer': ['ait-benchmark=ais_bench.__install__:BenchmarkInstall'],
     },
 
 )
