@@ -104,7 +104,7 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
         dims = list(range(len(origin_shape)))
         last_dims = dims[-4:]
 
-        perm = dims[:-4] + [last_dims[-1], last_dims[2], last_dims[0], last_dims[3]]
+        perm = dims[:-4] + [last_dims[1], last_dims[2], last_dims[0], last_dims[3]]
         data = data.transpose(perm)
         nd_shape = data.shape[:-4] + (data.shape[-4] * data.shape[-3], data.shape[-2], data.shape[-1])
         data = data.reshape(nd_shape)
