@@ -16,7 +16,7 @@ import re
 import shutil
 import argparse
 
-from components.utils.parser import AitParamTask
+from components.utils.parser import BaseCommand
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.cmp_process import cmp_process
 from msquickcmp.common.utils import logger
@@ -30,7 +30,7 @@ from msquickcmp.common.args_check import (
 CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "/usr/local/Ascend/ascend-toolkit/latest")
 
 
-class CompareCommand(AitParamTask):
+class CompareCommand(BaseCommand):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.parser = None

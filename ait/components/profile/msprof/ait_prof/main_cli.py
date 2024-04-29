@@ -14,7 +14,7 @@
 
 import argparse
 import re
-from components.utils.parser import AitParamTask
+from components.utils.parser import BaseCommand
 from ait_prof.msprof_process import msprof_process
 from ait_prof.args_adapter import MsProfArgsAdapter
 from components.utils.file_open_check import FileStat
@@ -41,7 +41,7 @@ def check_application_string_legality(value):
     return cmd_str
 
 
-class ProfileCommand(AitParamTask):
+class ProfileCommand(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "--application",

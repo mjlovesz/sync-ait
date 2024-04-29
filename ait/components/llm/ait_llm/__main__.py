@@ -16,7 +16,7 @@
 import os
 import subprocess
 
-from components.utils.parser import AitParamTask, AitCmdTask
+from components.utils.parser import BaseCommand
 from ait_llm.dump.initial import init_dump_task, clear_dump_task
 from ait_llm.opcheck.opchecker import OpChecker
 from ait_llm.errcheck.process import process_error_check
@@ -28,7 +28,7 @@ from ait_llm.common.log import logger, set_log_level, LOG_LEVELS
 LOG_LEVELS_LOWER = [ii.lower() for ii in LOG_LEVELS.keys()]
 
 
-class DumpCommand(AitParamTask):
+class DumpCommand(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             '--only-save-desc',
@@ -157,7 +157,7 @@ class DumpCommand(AitParamTask):
             return
 
 
-class CompareCommand(AitParamTask):
+class CompareCommand(BaseCommand):
     def add_arguments(self, parser, **kwargs):
         parser.add_argument(
             '--golden-path',
@@ -227,7 +227,7 @@ class CompareCommand(AitParamTask):
                         args.output, args.mapping_file, args.cmp_level)
 
 
-class OpcheckCommand(AitParamTask):
+class OpcheckCommand(BaseCommand):
     def add_arguments(self, parser, **kwargs):
         parser.add_argument(
             '--input',
@@ -299,7 +299,7 @@ class OpcheckCommand(AitParamTask):
         logger.info(f"===================Opcheck end====================")
 
 
-class ErrCheck(AitParamTask):
+class ErrCheck(BaseCommand):
     def add_arguments(self, parser, **kwargs) -> None:
         parser.add_argument(
             '--exec',
@@ -346,7 +346,7 @@ class ErrCheck(AitParamTask):
         process_error_check(args)       
 
 
-class Transform(AitParamTask):
+class Transform(BaseCommand):
     def add_arguments(self, parser, **kwargs) -> None:
         parser.add_argument(
             "-s",
@@ -381,4 +381,4 @@ def get_cmd_instance():
     instances = [
         dump_cmd_instance, compare_cmd_instance, opcheck_cmd_instance, errcheck_cmd_instance, transform_cmd_instance
     ]
-    return AitCmdTask("llm", llm_help_info, instances)
+    return BaseCommand("llm", llm_help_info, instances)

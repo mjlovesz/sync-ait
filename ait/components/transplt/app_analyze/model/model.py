@@ -24,10 +24,10 @@ from app_analyze.scan.sequence.acc_libs import set_expert_libs, get_expert_libs,
 from app_analyze.utils.io_util import IOUtil
 from app_analyze.utils import log_util
 from app_analyze.__main__ import get_cmd_instance
-from components.utils.parser import AitParamTask
+from components.utils.parser import BaseCommand
 
 
-class LoadSequencesCommand(AitParamTask):
+class LoadSequencesCommand(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--seqs", required=True, help="seqs results file, saved by api ids")
         parser.add_argument("--seqs-idx", required=True, help="id and seq mapping file")

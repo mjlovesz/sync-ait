@@ -13,7 +13,7 @@
 
 import argparse
 import os
-from components.utils.parser import AitParamTask
+from components.utils.parser import BaseCommand
 from app_analyze.utils import log_util
 from app_analyze.porting.app import start_scan_kit
 from components.utils.file_open_check import FileStat
@@ -35,7 +35,7 @@ def check_source_path(value):
     return value
 
 
-class TranspltCommand(AitParamTask):
+class TranspltCommand(BaseCommand):
     def add_arguments(self, parser):
         # 逗号分隔的情况下只有一个列表元素
         parser.add_argument(

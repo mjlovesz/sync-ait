@@ -27,7 +27,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class AitTask:
+class BaseCommand:
     def __init__(self, name, help_info="", alias_name="") -> None:
         self.name = name
         self.help_info = help_info
@@ -42,7 +42,7 @@ class AitTask:
         pass
 
 
-class AitParamTask(AitTask):
+class BaseCommand(BaseCommand):
     def register_parser(self, parser):
         self.add_arguments(parser)
         parser.set_defaults(handle=self.handle)
@@ -52,17 +52,17 @@ class AitParamTask(AitTask):
         pass
 
 
-class AitCmdTask(AitTask):
+class BaseCommand(BaseCommand):
     def __init__(self, name, help_info, children, alias_name="") -> None:
         super().__init__(name, help_info, alias_name)
 
         self.parser = None
-        self.children: list[AitTask] = []
+        self.children: list[BaseCommand] = []
 
         if isinstance(children, str):
-            self.children = AitLazyEntryPointTask.build_lazy_tasks(children)
+            self.children = LazyEntryPointCommand.build_lazy_tasks(children)
         else:
-            self.children: list[AitTask] = [] if children is None else children
+            self.children: list[BaseCommand] = [] if children is None else children
 
     def register_parser(self, parser: argparse.ArgumentParser):
         self.parser = parser
@@ -86,7 +86,7 @@ class AitCmdTask(AitTask):
             self.parser.print_help()
 
 
-class AitLazyEntryPointTask(AitTask):
+class LazyEntryPointCommand(BaseCommand):
     def __init__(self, name, help_info, entry_point) -> None:
         super().__init__(name, help_info)
         self.entry_point = entry_point
@@ -94,7 +94,7 @@ class AitLazyEntryPointTask(AitTask):
 
     @staticmethod
     def build_lazy_tasks(entry_points_name):
-        entry_points = AitLazyEntryPointTask.get_entry_points(entry_points_name)
+        entry_points = LazyEntryPointCommand.get_entry_points(entry_points_name)
         tasks = []
         for entry_point in entry_points:
             entry_info = entry_point.name.split(":", 1)
@@ -103,7 +103,7 @@ class AitLazyEntryPointTask(AitTask):
             else:
                 name, help_info = entry_info
 
-            tasks.append(AitLazyEntryPointTask(name, help_info, entry_point))
+            tasks.append(LazyEntryPointCommand(name, help_info, entry_point))
         return tasks
 
     @staticmethod
@@ -130,6 +130,6 @@ class AitLazyEntryPointTask(AitTask):
         parser.parse_known_args = hook_parse_args
 
     def load_register_inner_task(self, parser: argparse.ArgumentParser):
-        self.inner_task: AitTask = self.entry_point.load()()
-        if isinstance(self.inner_task, AitTask):
+        self.inner_task: BaseCommand = self.entry_point.load()()
+        if isinstance(self.inner_task, BaseCommand):
             self.inner_task.register_parser(parser)

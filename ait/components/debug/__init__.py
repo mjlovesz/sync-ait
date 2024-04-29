@@ -13,8 +13,8 @@
 # limitations under the License.
 import pkg_resources
 
-from components.utils.parser import AitCmdTask
+from components.utils.parser import BaseCommand
 
 
 def debug_task():
-    return AitCmdTask("debug", "debug a wide variety of model issues", "debug_sub_task")
+    return BaseCommand("debug", "debug a wide variety of model issues", "debug_sub_task")

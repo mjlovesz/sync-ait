@@ -14,7 +14,7 @@
 
 import argparse
 
-from components.utils.parser import AitCmdTask, AIT_FAQ_HOME, MIND_STUDIO_LOGO
+from components.utils.parser import BaseCommand, AIT_FAQ_HOME, MIND_STUDIO_LOGO
 from components.utils.file_open_check import UmaskWrapper
 
 
@@ -26,8 +26,13 @@ def main():
         f"For any issue, refer FAQ first: {AIT_FAQ_HOME}",
     )
 
-    cmd = AitCmdTask("ait",  None, "ait_sub_task")
+    cmd = BaseCommand("ait",  None, "ait_sub_task")
     cmd.register_parser(parser)
+
+    parser.add_argument("--framework", type=str,
+            choices=['0', '3', '5'],
+            default=None, help="Framework type: 0:Caffe; 3:Tensorflow; 5:Onnx.")
+     
     args = parser.parse_args()
     
     if hasattr(args, 'handle'):
