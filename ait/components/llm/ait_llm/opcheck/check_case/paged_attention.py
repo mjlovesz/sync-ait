@@ -15,8 +15,6 @@
 import torch
 import torch_npu
 
-import numpy as np
-
 from ait_llm.opcheck import operation_test
 from ait_llm.common.log import logger
 
@@ -26,12 +24,11 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
         group_num = head // kv_head
         score = None
         for i in range(kv_head):
-            group_score = np.matmul(A[i * group_num: (i + 1) * group_num, :, :].astype(np.float32), 
-                                    B[i: (i + 1), :, :].astype(np.float32))
+            group_score = torch.matmul(A[i * group_num: (i + 1) * group_num, :, :], B[i: (i + 1), :, :])
             if score is None:
                 score = group_score
             else:
-                score = np.concatenate((score, group_score), 0)
+                score = torch.concat((score, group_score), 0)
         logger.debug(score.shape)
         return score                                                                                                                                                                                                                                                                                                                                                                                                                     
 
@@ -44,23 +41,21 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
     ):
         # Q * K.T
         query = query * scale
-        query = np.transpose(query, (1, 0, 2))
-        key = np.transpose(key, (1, 2, 0))
+        query = torch.permute(query, (1, 0, 2))
+        key = torch.permute(key, (1, 2, 0))
         sim = OpcheckPagedAttentionAttentionOperation.group_matmul(query.shape[0], key.shape[0], query, key)
         if alibi_bias is not None:
             sim = sim + alibi_bias
         # softmax
-        row_max = np.max(sim, axis=-1, keepdims=True)
+        row_max = torch.max(sim, axis=-1, keepdims=True).values
         sim -= row_max
-        sim = sim.astype(np.float32)
-        sim = np.exp(sim)
-        row_sum = np.sum(sim, axis=-1, keepdims=True)
+        sim = torch.exp(sim)
+        row_sum = torch.sum(sim, axis=-1, keepdims=True)
         p = sim / row_sum
-        p = p.astype(np.float16)
         # P * V
-        value = np.transpose(value, (1, 0, 2))
+        value = torch.permute(value, (1, 0, 2))
         out = OpcheckPagedAttentionAttentionOperation.group_matmul(query.shape[0], key.shape[0], p, value)
-        out = np.transpose(out, (1, 0, 2))
+        out = torch.permute(out, (1, 0, 2))
         return out
 
     def ref_single_query_cached_kv_attention(output, paged_input, alibi=None) -> None:
@@ -70,12 +65,12 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
         block_tables = paged_input[3]
         context_lens = paged_input[4]
         num_heads = query.shape[1]
-        kv_heads = value_cache.shape[2]
-        head_size = value_cache.shape[3]
-        block_size = value_cache.shape[1]
+        kv_heads = value_cache.shape[1]
+        head_size = value_cache.shape[2]
+        block_size = value_cache.shape[0]
         num_input_tokens = query.shape[0]
         for i in range(num_input_tokens):
-            q = np.expand_dims(query[i], 0)
+            q = torch.unsqueeze(query[i], 0)
             block_table = block_tables[i]
             context_len = int(context_lens[i])
             keys = []
@@ -89,8 +84,8 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
                 v = value_cache[block_number, block_offset, :, :]
                 v = v.reshape(kv_heads, head_size)
                 values.append(v)
-            keys = np.stack(np.array(values), axis=0)
-            values = np.stack(np.array(values), axis=0)
+            keys = torch.stack(values, axis=0)
+            values = torch.stack(values, axis=0)
             scale = 1.0 / (head_size ** 0.5)
             if alibi is None:
                 out = OpcheckPagedAttentionAttentionOperation.ref_masked_attention(q, keys, values, scale)
