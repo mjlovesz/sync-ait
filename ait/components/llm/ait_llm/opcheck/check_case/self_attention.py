@@ -93,6 +93,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         mixed_q, mixed_k, mixed_v, attention_mask, seq_len = in_tensors[0], in_tensors[1], in_tensors[2], \
             in_tensors[3], in_tensors[4]
         
+        dtype = mixed_q.dtype
         batch_run_status_enable = self.op_param.get("batchRunStatusEnable", False)
         if batch_run_status_enable:
             batch_status = in_tensors[5]
@@ -118,11 +119,10 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             s = score.view(-1) if s is None else torch.concat((s, score.view(-1)), 0)
             
             score = score / math.sqrt(1.0 * embed)
-            score = score + attention_mask[:, :q_s, :kv_s] if self.op_param.get("isTriuMask", False) else score
             score_max = torch.max(score, axis=-1).values
             score = score - score_max.view((heads, q_s, 1))
             score_exp = torch.exp(score)
-            if not self.op_param.get("isFp32", True):
+            if not dtype == torch.float32:
                 score_sum = torch.sum(score_exp, axis=-1)
                 _p = score_exp.view(-1) if _p is None else torch.concat((_p, score_exp.view(-1)), 0)
                 p = score_exp / score_sum.view(heads, q_s, 1)
