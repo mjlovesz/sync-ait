@@ -128,10 +128,10 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
                 alibi_mask = self.nz_2_nd(alibi_mask_nz)
 
         ref_output = torch.zeros_like(query)
-        input = query, key_cache, value_cache, block_tables, context_lens
+        paged_input = query, key_cache, value_cache, block_tables, context_lens
         OpcheckPagedAttentionAttentionOperation.ref_single_query_cached_kv_attention(
             ref_output,
-            input,
+            paged_input,
             alibi_mask
         )
         return ref_output
