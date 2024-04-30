@@ -148,18 +148,19 @@ class RelativeAbnormalStringRate(Metrics):
         except Exception as e:
             logger.error("Trying to tokenize `%s`, but failed.", word)
             raise
-
-        return 0.0 if not filtered_field else statistics.mean(
+        
+        if not filtered_field:
+            logger.error("Process terminated due to invalid word value %s, please check if it is well-formatted.", word)
+            raise ValueError("invalid word value.")
+        
+        rate = statistics.mean(
             not re.match(self._LEGAL_CHAR_PATTERN, word) for word in filtered_field
         )
 
+        return 0.0001 if rate == 0 else rate
+
     def _compare_two_words(self, word1, word2):
-        ref_rate = self._quantify_word(word2)
-        
-        if ref_rate == 0:
-            return self._quantify_word(word1) / 0.0001
-        
-        return self._quantify_word(word1) / ref_rate
+        return self._quantify_word(word1) / self._quantify_word(word2)
 
     # score <= thr is better, meaning larger score is worse
     def _which_is_better(self, score, thr):
@@ -268,19 +269,17 @@ class RelativeDistinctStringRate(Metrics):
         ):
             unique.add(contiguous_item)
             count += 1
-
-        if count == 0:
-            return len(unique) / 0.0001
         
+        if not unique:
+            logger.error("Process terminated due to invalid word value %s, please check if it is well-formatted.", word)
+            raise ValueError("invalid word value.")
+        
+        # unique should contain at least one element when entering the loop
+        # count should be greater or equal to 1 when entering the loop
         return len(unique) / count
-
+    
     def _compare_two_words(self, word1, word2):
-        ref_rate = self._quantify_word(word2)
-        
-        if ref_rate == 0:
-            return self._quantify_word(word1) / 0.0001
-
-        return self._quantify_word(word1) / ref_rate
+        return self._quantify_word(word1) / self._quantify_word(word2)
 
     # score >= thr is better, meaning smaller score is worse
     def _which_is_better(self, score, thr):
@@ -306,7 +305,7 @@ def get_metric(metric_name, thr=None) -> Metrics:
         "bleu_3": BLEU(thr, 3),
         "bleu_4": BLEU(thr, 4),
         "edit_distance": EditDistance(thr),
-        "relative_abnormal_string_rate": RelativeAbnormalStringRate(thr),
+        "relative_abnormal": RelativeAbnormalStringRate(thr),
         "relative_distinct": RelativeDistinctStringRate(thr),
         "relative_distinct_1": RelativeDistinctStringRate(thr, 1),
         "relative_distinct_2": RelativeDistinctStringRate(thr, 2),
