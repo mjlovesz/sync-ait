@@ -80,14 +80,38 @@ def relative_euclidean_distance(golden_data: torch.Tensor, my_data: torch.Tensor
 
 
 def register_custom_compare_algorithm(custom_compare_algorithm):
-    import os, sys, importlib
+    import os, sys, importlib, inspect
+    from components.utils.file_open_check import FileStat
 
-    file_path, func_name = custom_compare_algorithm.split(':')
-    sys.path.append(os.path.dirname(file_path))
+    custom_compare_algorithm_split = custom_compare_algorithm.split(':')
+    if len(custom_compare_algorithm_split) != 2:
+        raise ValueError("custom_compare_algorithm should be in format '{python_file_path}:{function_name}'")
+    file_path, func_name = custom_compare_algorithm_split
 
-    custom_module_name = os.path.basename(file_path).replace('.py', '')
-    custom_module = importlib.import_module(custom_module_name)
+    if not os.path.exists(file_path):
+        raise ValueError(f"custom_compare_algorithm specified {file_path} not exists")
+    if not file_path.endswith(".py"):
+        raise ValueError("custom_compare_algorithm specified {file_path} is not a py file")
+    
+    file_stat = FileStat(file_path)
+    if not file_stat.is_basically_legal('read', strict_permission=False):
+        raise ValueError(f"custom_compare_algorithm specified {file_path} permission stat is illegal")
+
+    file_dir, file_name = os.path.dirname(file_path), os.path.basename(file_path)
+    if len(file_dir) > 0 and file_dir not in sys.path:
+        sys.path.append(file_dir)
+
+    custom_module_name = file_name.replace('.py', '')
+    try:
+        custom_module = importlib.import_module(custom_module_name)
+    except Exception as ee:
+        raise ValueError(f"import {custom_module_name} from {file_dir} failed") from ee
+
     custom_compare_func = getattr(custom_module, func_name, None)
+    if custom_compare_func is None:
+        raise ValueError(f"get {custom_compare_func} from {custom_compare_algorithm} failed")
+    if len(inspect.signature(custom_compare_func).parameters) != 2:
+        raise ValueError(f"function {custom_compare_func} signature should have exact two parameters")
     CMP_ALG_MAP[func_name] = custom_compare_func
 
 
