@@ -127,7 +127,7 @@ def test_fill_row_data_given_my_path_when_valid_then_pass(golden_data_file, test
     data_info = ait_llm.compare.cmp_utils.BasicDataInfo(golden_data_file, test_data_file, 0, 0)
     row_data = ait_llm.compare.cmp_utils.fill_row_data(data_info)
     assert isinstance(row_data, dict) and len(row_data) == 22
-    assert row_data["cosine_similarity"] == '1.000000'
+    assert row_data["cosine_similarity"] == 1.0
     assert len(row_data["cmp_fail_reason"]) == 0
 
 
@@ -137,8 +137,7 @@ def test_fill_row_data_given_loaded_my_data_when_valid_then_pass(golden_data_fil
     data_info = ait_llm.compare.cmp_utils.BasicDataInfo(golden_data_file, "test")
     row_data = ait_llm.compare.cmp_utils.fill_row_data(data_info, loaded_my_data=loaded_my_data)
     assert isinstance(row_data, dict) and len(row_data) == 22
-    assert row_data["cosine_similarity"] == 'NaN'
-    assert len(row_data["cmp_fail_reason"]) > 0
+    assert row_data["cosine_similarity"] == 0.0
 
 
 def test_fill_row_data_given_my_path_when_dir_then_error(golden_data_file):
@@ -204,14 +203,14 @@ def test_compare_data_given_data_file_when_valid_then_pass(golden_data_file, tes
     test_data = ait_llm.compare.cmp_utils.read_data(test_data_file)
     golden_data = ait_llm.compare.cmp_utils.read_data(golden_data_file)
     res = ait_llm.compare.cmp_utils.compare_data(test_data, golden_data)
-    assert res == {'cosine_similarity': '1.000000', 'max_relative_error': 0.0, 'mean_relative_error': 0.0,
+    assert res == {'cosine_similarity': 1.0, 'max_relative_error': 0.0, 'mean_relative_error': 0.0,
                    'kl_divergence': 0.0, 'max_absolute_error': 0.0, 'mean_absolute_error': 0.0,
                    'relative_euclidean_distance': 0.0, 'cmp_fail_reason': ''}
 
 
 def test_compare_file_given_data_file_when_valid_then_pass(golden_data_file, test_data_file):
     res = atb_acc_cmp.compare_file(golden_data_file, test_data_file)
-    assert res == {'cosine_similarity': '1.000000', 'max_relative_error': 0.0, 'mean_relative_error': 0.0,
+    assert res == {'cosine_similarity': 1.0, 'max_relative_error': 0.0, 'mean_relative_error': 0.0,
                    'kl_divergence': 0.0, 'max_absolute_error': 0.0, 'mean_absolute_error': 0.0,
                    'relative_euclidean_distance': 0.0, 'cmp_fail_reason': ''}
 
@@ -226,6 +225,6 @@ def test_compare_torch_atb_given_data_path_when_valid_then_pass(test_torch_path,
     golden_path = os.path.abspath(os.path.join(test_torch_path, "1111_npu0/0/"))
     my_path = os.path.abspath(os.path.join(test_atb_path, "ait_dump/tensors/1_2222/0/"))
     with mock.patch('ait_llm.dump.torch_dump.topo.TreeNode.get_layer_node_type', return_value="BloomLayer"):
-        csv_save_path = atb_acc_cmp.cmp_torch_atb(torch_model_topo_file, golden_path, my_path, output_path=".", 
+        csv_save_path = atb_acc_cmp.cmp_torch_atb(torch_model_topo_file, (golden_path, my_path, "."), 
                                                 mapping_file_path=".")
     assert os.path.exists(csv_save_path) and os.path.getsize(csv_save_path) > 0

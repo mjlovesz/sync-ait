@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import unittest
-from ait_llm.opcheck.opcheck_checkcases import OP_NAME_DICT
+from ait_llm.opcheck.check_case import OP_NAME_DICT
 
 
 class CaseManager:
@@ -21,7 +21,7 @@ class CaseManager:
         self.suite = unittest.TestSuite()
         self.cases = []
         self.excuted_ids = excuted_ids
-    
+
     def add_case(self, case_info):
         op_name = case_info['op_name']
         if op_name not in OP_NAME_DICT.keys():
