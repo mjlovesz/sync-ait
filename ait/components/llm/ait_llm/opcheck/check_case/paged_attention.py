@@ -131,7 +131,7 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
         paged_input = query, key_cache, value_cache, block_tables, context_lens
         OpcheckPagedAttentionAttentionOperation.ref_single_query_cached_kv_attention(
             ref_output,
-            paged_input,
+            paged_input,  
             alibi_mask
         )
         return ref_output
