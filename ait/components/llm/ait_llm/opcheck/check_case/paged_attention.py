@@ -113,13 +113,13 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
         soc_version = self.get_soc_version()
         is_support_alibi = self.op_param.get("isSupportAlibi", False)
         if is_support_alibi and soc_version == "Ascend310P":
-            query, key_cache_nz, value_cache_nz, block_tables, context_lens, alibi_mask_nz = in_tensors
+            query, key_cache_nz, value_cache_nz, block_tables, context_lens, alibi_mask_nz = in_tensors[:6]
         elif not is_support_alibi and soc_version == "Ascend310P":
-            query, key_cache_nz, value_cache_nz, block_tables, context_lens = in_tensors
+            query, key_cache_nz, value_cache_nz, block_tables, context_lens = in_tensors[:5]
         elif is_support_alibi and soc_version == "Ascend910B":
-            query, key_cache, value_cache, block_tables, context_lens, alibi_mask = in_tensors
+            query, key_cache, value_cache, block_tables, context_lens, alibi_mask = in_tensors[:6]
         else:
-            query, key_cache, value_cache, block_tables, context_lens = in_tensors
+            query, key_cache, value_cache, block_tables, context_lens = in_tensors[:5]
 
         if soc_version == "Ascend310P":
             key_cache = self.nz_2_nd(key_cache_nz)
