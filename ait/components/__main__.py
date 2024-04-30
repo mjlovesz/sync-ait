@@ -16,62 +16,7 @@ import argparse
 
 from components.utils.parser import BaseCommand, AIT_FAQ_HOME, MIND_STUDIO_LOGO
 from components.utils.file_open_check import UmaskWrapper
-from components.utils.install import check_tools, build_extra, install_tools
-
-
-class AitCommand(BaseCommand):
-    def add_arguments(self, parser):
-        all_sub_tools = [
-            'ait-llm',
-            'ait-compare',
-            'ait-surgeon',
-            'ait-analyze',
-            'ait-transplt',
-            'ait-convert',
-            'ait-msprof',
-            'ait-benchmark',
-            'all',
-        ]
-        parser.add_argument(
-            "--install",
-            nargs="+",
-            choices=all_sub_tools,
-            default=None,
-            help="install ait tools",
-        )
-
-        parser.add_argument(
-            "--check",
-            nargs="+",
-            choices=all_sub_tools,
-            default=None,
-            help="check ait tools status ",
-        )
-
-        parser.add_argument(
-            "--build-extra",
-            dest='build_extra',
-            type=str,
-            default=None,
-            help="install ait tools extra",
-        )
-
-    def handle(self, args):
-        handled = False
-        if args.install:
-            handled = True
-            install_tools(args.install)
-
-        if args.build_extra:
-            handled = True
-            build_extra(args.build_extra)
-
-        if args.check:
-            handled = True
-            check_tools(args.check)
-
-        if not handled:
-            return super().handle(args)
+from components.utils.install import AitInstallCommand, AitBuildExtraCommand, AitCheckCommand
 
 
 def main():
@@ -82,7 +27,7 @@ def main():
         f"For any issue, refer FAQ first: {AIT_FAQ_HOME}",
     )
 
-    cmd = AitCommand("ait", None, "ait_sub_task")
+    cmd = BaseCommand("ait", None, ["ait_sub_task", AitInstallCommand(), AitBuildExtraCommand(), AitCheckCommand()])
     cmd.register_parser(parser)
 
     args = parser.parse_args()

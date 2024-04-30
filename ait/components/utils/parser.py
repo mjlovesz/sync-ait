@@ -51,8 +51,16 @@ class BaseCommand(AitCommand):
 
         if isinstance(children, str):
             self.children = LazyEntryPointCommand.build_lazy_tasks(children)
+        elif isinstance(children, list):
+            for child in children:
+                if isinstance(child, BaseCommand):
+                    self.children.append(child)
+                elif isinstance(child, str):
+                    self.children.extend(LazyEntryPointCommand.build_lazy_tasks(child))
+                else:
+                    raise ValueError("unknow child")
         else:
-            self.children: list[BaseCommand] = [] if children is None else children
+            pass
 
     def register_parser(self, parser: argparse.ArgumentParser):
         self.parser = parser

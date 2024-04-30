@@ -2,8 +2,10 @@ import os
 import logging
 import sys
 import subprocess
+import argparse
 from abc import abstractmethod
-from .util import get_entry_points
+from components.utils.util import get_entry_points
+from components.utils.parser import BaseCommand
 from typing import Union
 
 logging.basicConfig(
@@ -43,6 +45,68 @@ class AitInstaller:
         logger.info("there are no more extra dependencies to build")
 
 
+ALL_SUB_TOOLS = [
+    'llm',
+    'compare',
+    'surgeon',
+    'analyze',
+    'transplt',
+    'convert',
+    'msprof',
+    'benchmark',
+    'all',
+]
+
+
+class AitInstallCommand(BaseCommand):
+    def __init__(self) -> None:
+        super().__init__("install", "install ait tools")
+
+    def add_arguments(self, parser: argparse.ArgumentParser):
+        parser.add_argument(
+            "comp_names",
+            default=None,
+            nargs="+",
+            choices=ALL_SUB_TOOLS,
+            help="component's name",
+        )
+
+    def handle(self, args):
+        install_tools([f"ait-{name}" for name in args.comp_names])
+
+class AitCheckCommand(BaseCommand):
+    def __init__(self) -> None:
+        super().__init__("check", "check ait tools status.")
+
+    def add_arguments(self, parser: argparse.ArgumentParser):
+        parser.add_argument(
+            "comp_names",
+            default=None,
+            nargs="+",
+            choices=ALL_SUB_TOOLS,
+            help="component's name",
+        )
+
+    def handle(self, args):
+        check_tools([f"ait-{name}" for name in args.comp_names])
+
+
+class AitBuildExtraCommand(BaseCommand):
+    def __init__(self) -> None:
+        super().__init__("build-extra", "build ait tools extra")
+
+    def add_arguments(self, parser: argparse.ArgumentParser):
+        parser.add_argument(
+            "comp_name",
+            default=None,
+            choices=ALL_SUB_TOOLS,
+            help="component's name",
+        )
+
+    def handle(self, args):
+        build_extra(f"ait-{args.comp_name}")
+
+
 INSTALL_INFO_MAP = [
     {
         "pkg-name": "ait-llm",
@@ -51,17 +115,13 @@ INSTALL_INFO_MAP = [
     {
         "pkg-name": "ait-surgeon",
         "pkg-path": os.path.join("debug", "surgeon"),
-        "support_windows": True
+        "support_windows": True,
     },
     {
         "pkg-name": "ait-analyze",
         "pkg-path": "analyze",
     },
-    {
-        "pkg-name": "ait-transplt",
-        "pkg-path": "transplt",
-        "support_windows": True
-    },
+    {"pkg-name": "ait-transplt", "pkg-path": "transplt", "support_windows": True},
     {
         "pkg-name": "ait-convert",
         "pkg-path": "convert",
@@ -77,10 +137,7 @@ INSTALL_INFO_MAP = [
     {
         "pkg-name": "ait-compare",
         "pkg-path": os.path.join("debug", "compare"),
-        "depends": [
-            "ait-benchmark",
-            "ait-surgeon"
-        ]
+        "depends": ["ait-benchmark", "ait-surgeon"],
     },
 ]
 
@@ -93,18 +150,25 @@ def get_install_info_follow_depends(install_infos):
     if len(all_names) == len(install_infos):
         return install_infos
     else:
-        return list(filter(lambda info: info["pkg-name"] in all_names, INSTALL_INFO_MAP))
+        return list(
+            filter(lambda info: info["pkg-name"] in all_names, INSTALL_INFO_MAP)
+        )
+
 
 def install_tools(names):
-    if len(names) == 0:
-        logger.info("You can specify the components you want to install, "
-                    "you can select more than one, "
-                    "or you can use --install all to install all components.")
-        return 
+    if names is None or len(names) == 0:
+        logger.info(
+            "You can specify the components you want to install, "
+            "you can select more than one, "
+            "or you can use --install all to install all components."
+        )
+        return
     if "all" in names:
         install_infos = INSTALL_INFO_MAP
     else:
-        install_infos = list(filter(lambda info: info["pkg-name"] in names, INSTALL_INFO_MAP))
+        install_infos = list(
+            filter(lambda info: info["pkg-name"] in names, INSTALL_INFO_MAP)
+        )
 
         install_infos = get_install_info_follow_depends(install_infos)
 
@@ -135,8 +199,9 @@ def get_installer(pkg_name) -> Union[AitInstaller, None]:
         return pkg_installer
     return None
 
+
 def check_tools(names):
-    if "all" in names or len(names) == 0:
+    if names is None or "all" in names or len(names) == 0:
         install_infos = INSTALL_INFO_MAP
     else:
         install_infos = filter(lambda info: info["pkg-name"] in names, INSTALL_INFO_MAP)
@@ -146,6 +211,7 @@ def check_tools(names):
         logger.info(pkg_name)
         for msg in check_tool(pkg_name).split("\n"):
             logger.info(f"  {msg}")
+
 
 def check_tool(pkg_name):
     logger.debug(f"checking {pkg_name}")
