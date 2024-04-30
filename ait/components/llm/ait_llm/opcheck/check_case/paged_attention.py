@@ -134,6 +134,7 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
             input,
             alibi_mask
         )
+        return ref_output
 
     def test(self):
         self.execute()
