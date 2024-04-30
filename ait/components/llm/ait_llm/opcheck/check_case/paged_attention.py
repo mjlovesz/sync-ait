@@ -64,11 +64,14 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
         value_cache = paged_input[2]
         block_tables = paged_input[3]
         context_lens = paged_input[4]
-        num_heads = query.shape[1]
-        kv_heads = value_cache.shape[1]
-        head_size = value_cache.shape[2]
-        block_size = value_cache.shape[0]
+
         num_input_tokens = query.shape[0]
+        num_heads = query.shape[1]
+        
+        block_size = value_cache.shape[1]
+        kv_heads = value_cache.shape[2]
+        head_size = value_cache.shape[3]
+
         for i in range(num_input_tokens):
             q = torch.unsqueeze(query[i], 0)
             block_table = block_tables[i]
@@ -99,7 +102,7 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
         dims = list(range(len(origin_shape)))
         last_dims = dims[-4:]
 
-        perm = dims[:-4] + [last_dims[1], last_dims[2], last_dims[0], last_dims[3]]
+        perm = dims[:-4] + [last_dims[1], last_dims[2], last_ims[0], last_dims[3]]
         data = torch.permute(data, perm)
         nd_shape = data.shape[:-4] + (data.shape[-4] * data.shape[-3], data.shape[-2], data.shape[-1])
         data = data.reshape(nd_shape)
