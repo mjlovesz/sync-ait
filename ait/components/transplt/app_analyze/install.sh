@@ -81,21 +81,34 @@ install_clang() {
   fi
 }
 
-
 # Download and unzip config.zip, headers.zip
 download_config_and_headers() {
   cwd=$(pwd)
 
   ori_mask=$(umask)
   umask 022
+  if [ -n $AIT_DOWNLOAD_PATH ]; then
+    DOWNLOAD_PATH = $AIT_DOWNLOAD_PATH
+  else
+    DOWNLOAD_PATH = $(python3 -c "import app_analyze; print(app_analyze.__path__[0])")
+  fi
 
-  cd $(python3 -c "import app_analyze; print(app_analyze.__path__[0])") \
-    && wget -O config.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip \
-    && unzip -o -q config.zip \
-    && rm config.zip -f \
-    && wget -O headers.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip \
-    && unzip -o -q headers.zip \
-    && rm headers.zip -f
+  if [ $? -ne 0  ]; then
+      echo "Downloading failed"
+      return
+  fi
+
+  if [ -n $AIT_INSTALL_FIND_LINKS ]; then
+      cp '$AIT_INSTALL_FIND_LINKS/config' ./ -r
+      cp '$AIT_INSTALL_FIND_LINKS/headers' ./ -r
+  else 
+    cd $DOWNLOAD_PATH \
+      && wget -O config.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip \
+      && unzip -o -q config.zip \
+      && rm config.zip -f \
+      && wget -O headers.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip \
+      && unzip -o -q headers.zip \
+      && rm headers.zip -f
 
   umask $ori_mask
   cd $cwd

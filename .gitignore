@@ -11,3 +11,5 @@
 **/build
 **/*.egg-info
 **/ait_transplt.log
+**/.idea
+**/.gradle

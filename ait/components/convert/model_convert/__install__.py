@@ -16,9 +16,8 @@ class ConvertInstall(AitInstaller):
         else:
             return "\n".join(check_res)
         
-    
-    def build_extra(self):
+    def build_extra(self, find_links=None):
         if sys.platform == 'win32':
-            return 
+            return
 
         subprocess.run(["bash", os.path.join(os.path.dirname(__file__), "install.sh")])

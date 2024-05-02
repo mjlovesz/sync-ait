@@ -28,10 +28,11 @@ logger = logging.getLogger(__name__)
 
 
 class AitCommand:
-    def __init__(self, name, help_info="", alias_name="") -> None:
+    def __init__(self, name, help_info="", alias_name="", group="Command") -> None:
         self.name = name
         self.help_info = help_info
         self.alias_name = alias_name
+        self.group = group
 
     @abstractmethod
     def register_parser(self, parser):
@@ -43,8 +44,8 @@ class AitCommand:
 
 
 class BaseCommand(AitCommand):
-    def __init__(self, name, help_info, children=None, alias_name="") -> None:
-        super().__init__(name, help_info, alias_name)
+    def __init__(self, name, help_info, children=None, alias_name="", group="Command") -> None:
+        super().__init__(name, help_info, alias_name, group)
 
         self.parser = None
         self.children: list[BaseCommand] = []
@@ -69,16 +70,23 @@ class BaseCommand(AitCommand):
 
         if not self.children:
             return
+        
         subparsers = parser.add_subparsers(title="Command")
+        # groups, now put it together. not real group
+        groups = {"Command": []}
         for command in self.children:
-            subparser = subparsers.add_parser(
-                command.name,
-                formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                help=command.help_info,
-                aliases=[command.alias_name] if command.alias_name else [],
-                description=command.help_info + " " + MIND_STUDIO_LOGO,
-            )
-            command.register_parser(subparser)
+            groups.setdefault(command.group, [])
+            groups[command.group].append(command)
+        for _, command_list in groups.items():
+            for command in command_list:
+                subparser = subparsers.add_parser(
+                    command.name,
+                    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                    help=command.help_info,
+                    aliases=[command.alias_name] if command.alias_name else [],
+                    description=command.help_info + " " + MIND_STUDIO_LOGO,
+                )
+                command.register_parser(subparser)
 
     def add_arguments(self, parser):
         pass
