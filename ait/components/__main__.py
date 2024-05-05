@@ -16,7 +16,7 @@ import argparse
 
 from components.utils.parser import BaseCommand, AIT_FAQ_HOME, MIND_STUDIO_LOGO
 from components.utils.file_open_check import UmaskWrapper
-from components.utils.install import AitInstallCommand, AitBuildExtraCommand, AitCheckCommand
+from components.utils.install import AitInstallCommand, AitBuildExtraCommand, AitCheckCommand, DownloadCommand
 
 
 def main():
@@ -27,7 +27,7 @@ def main():
         f"For any issue, refer FAQ first: {AIT_FAQ_HOME}",
     )
 
-    cmd = BaseCommand("ait", None, ["ait_sub_task", AitInstallCommand(), AitBuildExtraCommand(), AitCheckCommand()])
+    cmd = BaseCommand("ait", None, ["ait_sub_task", AitInstallCommand(), AitBuildExtraCommand(), AitCheckCommand(), DownloadCommand()])
     cmd.register_parser(parser)
 
     args = parser.parse_args()

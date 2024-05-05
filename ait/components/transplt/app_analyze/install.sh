@@ -87,10 +87,10 @@ download_config_and_headers() {
 
   ori_mask=$(umask)
   umask 022
-  if [ -n $AIT_DOWNLOAD_PATH ]; then
-    DOWNLOAD_PATH = $AIT_DOWNLOAD_PATH
+  if [[ -n $AIT_DOWNLOAD_PATH ]]; then
+    DOWNLOAD_PATH=$AIT_DOWNLOAD_PATH
   else
-    DOWNLOAD_PATH = $(python3 -c "import app_analyze; print(app_analyze.__path__[0])")
+    DOWNLOAD_PATH=$(python3 -c "import app_analyze; print(app_analyze.__path__[0])")
   fi
 
   if [ $? -ne 0  ]; then
@@ -98,9 +98,9 @@ download_config_and_headers() {
       return
   fi
 
-  if [ -n $AIT_INSTALL_FIND_LINKS ]; then
-      cp '$AIT_INSTALL_FIND_LINKS/config' ./ -r
-      cp '$AIT_INSTALL_FIND_LINKS/headers' ./ -r
+  if [[ -n $AIT_INSTALL_FIND_LINKS ]]; then
+      cp "$AIT_INSTALL_FIND_LINKS/config" ./ -r
+      cp "$AIT_INSTALL_FIND_LINKS/headers" ./ -r
   else 
     cd $DOWNLOAD_PATH \
       && wget -O config.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip \
@@ -109,6 +109,7 @@ download_config_and_headers() {
       && wget -O headers.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip \
       && unzip -o -q headers.zip \
       && rm headers.zip -f
+  fi
 
   umask $ori_mask
   cd $cwd

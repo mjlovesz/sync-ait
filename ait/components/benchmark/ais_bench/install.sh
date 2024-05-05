@@ -16,6 +16,7 @@ CURRENT_DIR=$(dirname $(readlink -f $0))
 
 
 download_and_install_aclruntime() {
+    echo "AIT_INSTALL_FIND_LINKS=$AIT_INSTALL_FIND_LINKS, AIT_DOWNLOAD_PATH=$AIT_DOWNLOAD_PATH"
     ACLRUNTIME_VERSION=`pip3 show aclruntime | awk '/Version: /{print $2}'`
 
     if [ "$ACLRUNTIME_VERSION" = "0.0.2" ]; then
@@ -33,27 +34,32 @@ download_and_install_aclruntime() {
     echo "PYTHON3_MINI_VERSION=$PYTHON3_MINI_VERSION, SUB_SUFFIX=$SUB_SUFFIX"
     WHL_NAME="aclruntime-0.0.2-cp3${PYTHON3_MINI_VERSION}-cp3${PYTHON3_MINI_VERSION}${SUB_SUFFIX}-linux_$(uname -m).whl"
     BASE_URL="https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/ait/"
-    echo "WHL_NAME=$WHL_NAME, URL=${BASE_URL}${WHL_NAME}"
-    if [ -n $AIT_INSTALL_FIND_LINKS ]; then
-        cp '$AIT_INSTALL_FIND_LINKS/$WHL_NAME' $WHL_NAME
+    echo "WHL_NAME=$WHL_NAME, URL=${BASE_URL}${WHL_NAME}"    
+    if [[ -n $AIT_INSTALL_FIND_LINKS ]]; then
+        cp "$AIT_INSTALL_FIND_LINKS/$WHL_NAME" $WHL_NAME
     else 
         wget --no-check-certificate -c "${BASE_URL}${WHL_NAME}"
+    fi
     
     if [ $? -ne 0  ]; then
-        echo "Downloading or installing from whl failed"
-        return
+        echo "Downloading from whl failed"
+        echo "installing from whl failed, will install from source code"
+        if [[ -z $AIT_DOWNLOAD_PATH ]]; then 
+            pip install ${CURRENT_DIR}/../backend --force-reinstall
+        else
+            pip3 wheel ${CURRENT_DIR}/../backend -v
+        fi 
+    fi
+    if [ $? -ne 0  ]; then
+        echo "Building from source code failed"
+        return 
     fi
 
-    if [ -z $AIT_DOWNLOAD_PATH ]; then
+    if [[ -z $AIT_DOWNLOAD_PATH ]]; then
         pip3 install $WHL_NAME --force-reinstall && rm -f $WHL_NAME
     else
-        mv $WHL_NAME '$AIT_DOWNLOAD_PATH/$WHL_NAME'
+        mv $WHL_NAME "$AIT_DOWNLOAD_PATH/$WHL_NAME"
         return
-    fi
-
-    if [ $? -ne 0 ]; then
-        echo "installing from whl failed, will install from source code"
-        cd ${CURRENT_DIR}/../backend && pip install . --force-reinstall && cd -
     fi
 }
 

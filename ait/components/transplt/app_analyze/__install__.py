@@ -9,7 +9,7 @@ class TranspltInstall(AitInstaller):
 
         if not os.path.exists(os.path.join(os.path.dirname(__file__), "headers")):
             check_res.append("[error] download data failed. will make the transplt feature unusable. "
-                             "use `ait --build-extra ait-transplt` to try again")
+                             "use `ait build-extra transplt` to try again")
         
         if not check_res:
             return "OK"

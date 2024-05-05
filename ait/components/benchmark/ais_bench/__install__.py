@@ -10,7 +10,7 @@ class BenchmarkInstall(AitInstaller):
         installed_pkg = [pkg.key for pkg in pkg_resources.working_set]
 
         if "aclruntime" not in installed_pkg:
-            check_res.append("[error] aclruntime not installed. use `ait --build-extra ait-benchmark` to try again")
+            check_res.append("[error] aclruntime not installed. use `ait build-extra benchmark` to try again")
 
         if not check_res:
             return "OK"

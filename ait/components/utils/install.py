@@ -39,7 +39,7 @@ class AitInstaller:
     def check(self):
         return "OK"
 
-    def build_extra(self):
+    def build_extra(self, find_links):
         logger.info("there are no more extra dependencies to build")
 
     def download_extra(self, dest):
@@ -117,7 +117,7 @@ class AitInstallCommand(BaseCommand):
         )
 
     def handle(self, args):
-        install_tools(args.comp_names)
+        install_tools(args.comp_names, args.find_links)
 
 class AitCheckCommand(BaseCommand):
     def __init__(self) -> None:
@@ -148,8 +148,15 @@ class AitBuildExtraCommand(BaseCommand):
             help="component's name",
         )
 
+        parser.add_argument(
+            "--find-links", "-f",
+            default=None,
+            type=str,
+            help="the dir look for archives",
+        )
+
     def handle(self, args):
-        build_extra(args.comp_name)
+        build_extra(args.comp_name, args.find_links)
 
 
 class DownloadCommand(BaseCommand):
@@ -158,7 +165,7 @@ class DownloadCommand(BaseCommand):
 
     def add_arguments(self, parser: argparse.ArgumentParser):
         parser.add_argument(
-            "comp_name",
+            "comp_names",
             default=None,
             choices=ALL_SUB_TOOLS_WITH_ALL,
             help="component's name",
@@ -167,6 +174,7 @@ class DownloadCommand(BaseCommand):
         parser.add_argument(
             "--dest", "-d",
             default=None,
+            required=True,
             type=str,
             help=" Download packages into <dir>.",
         )
@@ -189,7 +197,7 @@ def get_install_info_follow_depends(install_infos):
         )
 
 
-def install_tools(names):
+def install_tools(names, find_links):
     if names is None or len(names) == 0:
         logger.info(
             "You can specify the components you want to install, "
@@ -207,10 +215,10 @@ def install_tools(names):
         install_infos = get_install_info_follow_depends(install_infos)
 
     for tool_info in install_infos:
-        install_tool(tool_info)
+        install_tool(tool_info, find_links)
 
 
-def install_tool(tool_info):
+def install_tool(tool_info, find_links):
     pkg_name = tool_info.get("pkg-name")
     arg_name = tool_info.get("arg-name")
     support_windows = tool_info.get("support_windows", False)
@@ -219,9 +227,12 @@ def install_tool(tool_info):
     logger.info(f"installing {pkg_name}")
     pkg_path = get_real_pkg_path(tool_info.get("pkg-path"))
 
-    subprocess.run([sys.executable, "-m", "pip", "install", pkg_path])
-    subprocess.run([sys.executable, "-m", "components", "build-extra", arg_name])
-
+    if find_links is not None:
+        subprocess.run([sys.executable, "-m", "pip", "install", pkg_path, "-f", find_links])
+        subprocess.run([sys.executable, "-m", "components", "build-extra", arg_name, "-f", find_links])
+    else:
+        subprocess.run([sys.executable, "-m", "pip", "install", pkg_path])
+        subprocess.run([sys.executable, "-m", "components", "build-extra", arg_name])
 
 def get_installer(pkg_name) -> Union[AitInstaller, None]:
     entry_points = get_entry_points("ait_sub_task_installer")
@@ -239,7 +250,7 @@ def check_tools(names):
     if names is None or "all" in names or len(names) == 0:
         install_infos = INSTALL_INFO_MAP
     else:
-        install_infos = filter(lambda info: info["pkg-name"] in names, INSTALL_INFO_MAP)
+        install_infos = filter(lambda info: info["arg-name"] in names, INSTALL_INFO_MAP)
 
     for tool_info in install_infos:
         pkg_name = tool_info.get("pkg-name")
@@ -258,7 +269,7 @@ def check_tool(pkg_name):
         return pkg_installer.check()
 
 
-def build_extra(name):
+def build_extra(name, find_links):
     pkg_name = None
 
     for pkg_info in INSTALL_INFO_MAP:
@@ -273,7 +284,7 @@ def build_extra(name):
 
     if not pkg_installer:
         pkg_installer = AitInstaller()
-    return pkg_installer.build_extra()
+    return pkg_installer.build_extra(find_links)
 
 
 def download_comps(names, dest):
@@ -282,10 +293,10 @@ def download_comps(names, dest):
     else:
         install_infos = filter(lambda info: info["arg-name"] in names, INSTALL_INFO_MAP)
    
-    install_infos = get_install_info_follow_depends(install_infos)
+    install_infos = get_install_info_follow_depends(list(install_infos))
 
     for tool_info in install_infos:
-        download_tool(tool_info)
+        download_tool(tool_info, dest)
     return install_infos
 
 def download_tool(tool_info, dest):
@@ -297,6 +308,7 @@ def download_tool(tool_info, dest):
     pkg_path = get_real_pkg_path(tool_info.get("pkg-path"))
 
     subprocess.run([sys.executable, "-m", "pip", "download", "-d", dest,  pkg_path])
+    subprocess.run([sys.executable, "-m", "pip", "install", "--no-index", "-f", dest,  pkg_path])
     
     pkg_installer = get_installer(pkg_name)
 
