@@ -64,7 +64,6 @@ class OpcheckLayerNormOperation(operation_test.OperationTest):
                 bias = in_tensors[2]                    
                 normalized_shape = (1, in_tensors[0].shape[-1])
                 layer_norm_res = torch.nn.functional.layer_norm(op_input, normalized_shape, weight, bias, eps)
-                layer_norm_res = layer_norm_res
                 golden_result = layer_norm_res * quant_alpha
                 golden_result_quant = self.layer_norm_quant(layer_norm_res, quant_scale, quant_offset)
             elif layer_type == 3:
@@ -73,7 +72,6 @@ class OpcheckLayerNormOperation(operation_test.OperationTest):
                 normalized_shape = (1, in_tensors[0].shape[-1])                
                 op_input = torch.add(in_tensors[0], in_tensors[1])
                 layer_norm_res = torch.nn.functional.layer_norm(op_input, normalized_shape, weight, bias, eps)
-                layer_norm_res = layer_norm_res
                 golden_result = (layer_norm_res * quant_alpha)
                 golden_result_quant = self.layer_norm_quant(layer_norm_res, quant_scale, quant_offset)
             golden = [golden_result, golden_result_quant]        
