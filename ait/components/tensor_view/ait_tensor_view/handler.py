@@ -16,7 +16,7 @@ from os.path import splitext
 
 import torch
 
-from ait_tensor_view.read_atb_data import read_atb_data
+from ait_tensor_view.atb import read_atb_data, write_atb_data
 from ait_tensor_view.operation import SliceOperation, PermuteOperation
 from ait_tensor_view.print_stat import print_stat
 
@@ -52,7 +52,10 @@ def handle_tensor_view(args):
         try:
             if not out_ext and in_ext:
                 out_path += in_ext
-            torch.save(tensor, out_path)
+            if args.atb:
+                write_atb_data(tensor, out_path)
+            else:
+                torch.save(tensor, out_path)
             print(f'Tensor saved successfully to {out_path}')
         except Exception as e:
             print(f"Error saving Tensor: {e}")

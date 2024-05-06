@@ -100,6 +100,12 @@ class TensorViewCommand(BaseCommand):
                  "sequences should use parentheses"
         )
 
+        parser.add_argument(
+            "--atb", "-a",
+            action="store_true",
+            help="Whether to save in [atb data format] instead of the [standard torch format]"
+        )
+
     def handle(self, args):
         handle_tensor_view(args)
 
