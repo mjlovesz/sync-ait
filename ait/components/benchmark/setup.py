@@ -48,5 +48,4 @@ setup(
         'ait_sub_task': ait_sub_task_entry_points,
         'ait_sub_task_installer': ['ait-benchmark=ais_bench.__install__:BenchmarkInstall'],
     },
-
 )

@@ -15,8 +15,8 @@
 import argparse
 import os
 
-from operation import SliceOperation, PermuteOperation
-from handler import handle_tensor_view
+from ait_tensor_view.operation import SliceOperation, PermuteOperation
+from ait_tensor_view.handler import handle_tensor_view
 from components.utils.parser import BaseCommand
 from components.utils.file_open_check import FileStat
 

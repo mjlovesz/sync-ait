@@ -16,9 +16,9 @@ from os.path import splitext
 
 import torch
 
-from read_atb_data import read_atb_data
-from operation import SliceOperation, PermuteOperation
-from print_stat import print_stat
+from ait_tensor_view.read_atb_data import read_atb_data
+from ait_tensor_view.operation import SliceOperation, PermuteOperation
+from ait_tensor_view.print_stat import print_stat
 
 
 def replace(in_path: str, out_path: str) -> str:

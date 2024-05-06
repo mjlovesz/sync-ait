@@ -17,20 +17,17 @@ from setuptools import setup, find_packages  # type: ignore
 with open('requirements.txt', encoding='utf-8') as f:
     required = f.read().splitlines()
 
-with open('README.md', encoding='utf-8') as f:
-    long_description = f.read()
-
 setup(
     name='tensor-view',
     version='0.0.1',
     description='tensor view tool',
-    long_description=long_description,
+    long_description="Provides interfaces for viewing, slicing, transposing, and saving tensor",
     url='ait tensor-view url',
     packages=find_packages(),
     keywords='ait tensor-view tool',
     install_requires=required,
     python_requires='>=3.7',
     entry_points={
-        'tensor_view_sub_task': ['tensor-view=main_cli:get_cmd_instance']
+        'tensor_view_sub_task': ['tensor-view=ait_tensor_view.main_cli:get_cmd_instance']
     }
 )
