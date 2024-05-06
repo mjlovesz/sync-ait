@@ -23,7 +23,7 @@ class CompareInstall(AitInstaller):
         check_res = []
         installed_pkg = [pkg.key for pkg in pkg_resources.working_set]
 
-        if "ait-benchmark" not in installed_pkg:
+        if "ais-bench" not in installed_pkg:
             check_res.append("[error] ait-benchmark not installed. use `ait install benchmark` to try again")
 
         if "ait-surgeon" not in installed_pkg:
