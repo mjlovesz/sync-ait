@@ -66,6 +66,7 @@ if [ "$arg_help" -eq "1" ]; then
   echo " --profile : only install profile component"
   echo " --llm : only install llm component"
   echo " --full : using with install, install all components and dependencies, may need sudo privileges"
+  echo "--tensor-view: "
   echo " --uninstall : uninstall"
   echo " -y : using with uninstall, don't ask for confirmation of uninstall deletions"
   exit;
