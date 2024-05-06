@@ -161,7 +161,7 @@ uninstall(){
 
     if [ ! -z $only_tensor_view ]
         then
-          pip3 uninstall ait_tensor_view ${all_uninstall}
+          pip3 uninstall tensor_view ${all_uninstall}
         fi
   fi
   exit;
@@ -276,7 +276,7 @@ install(){
 
   if [ ! -z $only_tensor_view ]
     then
-        pip3 install ${CURRENT_DIR}/components/tensor_view/ait_tensor_view ${arg_force_reinstall}
+        pip3 install ${CURRENT_DIR}/components/tensor_view ${arg_force_reinstall}
         build_opchecker_so
     fi
 
@@ -293,7 +293,7 @@ install(){
     ${CURRENT_DIR}/components/transplt \
     ${CURRENT_DIR}/components/profile/msprof \
     ${CURRENT_DIR}/components/llm \
-    ${CURRENT_DIR}/components/tensor_view/ait_tensor_view \
+    ${CURRENT_DIR}/components/tensor_view \
     ${arg_force_reinstall}
 
     bash ${CURRENT_DIR}/components/convert/build.sh

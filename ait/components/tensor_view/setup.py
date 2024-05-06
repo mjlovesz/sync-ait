@@ -31,6 +31,6 @@ setup(
     install_requires=required,
     python_requires='>=3.7',
     entry_points={
-        'tensor_view_sub_task': ['tensor-view=ait_tensor_view.main_cli:get_cmd_instance']
+        'tensor_view_sub_task': ['tensor-view=main_cli:get_cmd_instance']
     }
 )
