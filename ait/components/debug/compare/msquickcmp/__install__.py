@@ -13,8 +13,8 @@
 # limitations under the License.
 import os
 import sys
-import pkg_resources
 import subprocess
+import pkg_resources
 from components.utils.install import AitInstaller
 
 
