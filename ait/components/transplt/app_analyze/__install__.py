@@ -43,7 +43,7 @@ class TranspltInstall(AitInstaller):
             subprocess.run(["/bin/bash", os.path.join(os.path.dirname(__file__), "install.sh")])
 
     def download_extra(self, dest):
-        os.environ['AIT_DOWNLOAD_PATH'] =  os.path.realpath(dest)
+        os.environ['AIT_DOWNLOAD_PATH'] = os.path.realpath(dest)
         
         if sys.platform == 'win32':
             subprocess.run([os.path.join(os.path.dirname(__file__), "install.bat")]) 
