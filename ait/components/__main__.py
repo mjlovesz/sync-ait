@@ -17,6 +17,7 @@ import argparse
 from components.llm import llm_cmd
 from components.debug import debug_cmd
 from components.profile import profile_cmd
+from components.tensor_view import tensor_view_cmd
 from components.transplt import transplt_cmd
 from components.benchmark import benchmark_cmd
 from components.analyze import analyze_cmd
