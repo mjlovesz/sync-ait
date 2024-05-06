@@ -27,13 +27,13 @@ from components.utils.file_open_check import UmaskWrapper
 
 
 def main():
-    subcommands = [debug_cmd, profile_cmd, transplt_cmd, benchmark_cmd, \
-                   analyze_cmd, convert_cmd, llm_cmd]
+    subcommands = [debug_cmd, profile_cmd, transplt_cmd, benchmark_cmd,
+                   analyze_cmd, convert_cmd, llm_cmd, tensor_view_cmd]
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=f"ait(Ascend Inference Tools), {MIND_STUDIO_LOGO}.\n"
-        "Providing one-site debugging and optimization toolkit for inference on Ascend Devices.\n"
-        f"For any issue, refer FAQ first: {AIT_FAQ_HOME}",
+                    "Providing one-site debugging and optimization toolkit for inference on Ascend Devices.\n"
+                    f"For any issue, refer FAQ first: {AIT_FAQ_HOME}",
     )
     register_parser(parser, subcommands)
     parser.set_defaults(print_help=parser.print_help)
@@ -47,6 +47,7 @@ def main():
                 raise Exception(f"[ERROR] Refer FAQ if a known issue: {AIT_FAQ_HOME}") from err
     elif hasattr(args, "print_help"):
         args.print_help()
+
 
 if __name__ == "__main__":
     main()
