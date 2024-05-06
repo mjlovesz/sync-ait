@@ -87,8 +87,8 @@ INSTALL_INFO_MAP = [
         "pkg-path": "convert",
     },
     {
-        "arg-name": "msprof",
-        "pkg-name": "ait-msprof",
+        "arg-name": "profile",
+        "pkg-name": "ait-profile",
         "pkg-path": os.path.join("profile", "msprof"),
     },
     {
