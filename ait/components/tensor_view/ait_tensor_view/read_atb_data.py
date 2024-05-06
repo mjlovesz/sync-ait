@@ -17,7 +17,7 @@ from array import array
 import torch
 from torch import float16, float32, int8, int32, int64, bfloat16
 
-ATTR_END = "$END"
+ATTR_END = "$End"
 ATTR_OBJECT_LENGTH = "$Object.Length"
 
 
@@ -42,7 +42,7 @@ def read_atb_data(path: str) -> torch.Tensor:
 
     for i, byte in enumerate(file_data):
         if byte == ord("\n"):
-            line = file_data[offset: i].decode("utf-8")
+            line = file_data[offset:i].decode("utf-8")
             offset = i + 1
             [attr_name, attr_value] = line.split("=")
 

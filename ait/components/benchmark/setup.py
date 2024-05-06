@@ -34,5 +34,4 @@ setup(
     entry_points={
         'benchmark_sub_task': ['benchmark=ais_bench.infer.main_cli:get_cmd_instance'],
     },
-
 )
