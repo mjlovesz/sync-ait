@@ -33,9 +33,9 @@ ait_sub_task_entry_points = [
 ]
 
 setup(
-    name='ait-benchmark', # 不与ais_bench冲突
-    version='7.0.0c2',
-    description='ais_bench tool(ait)',
+    name='ais_bench',
+    version='0.0.2',
+    description='ais_bench tool',
     long_description=long_description,
     url='ais_bench url',
     packages=find_packages(),
