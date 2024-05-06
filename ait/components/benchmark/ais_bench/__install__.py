@@ -37,11 +37,11 @@ class BenchmarkInstall(AitInstaller):
         
         if find_links is not None:
             os.environ['AIT_INSTALL_FIND_LINKS'] = os.path.realpath(find_links)
-        subprocess.run(["bash", os.path.abspath(os.path.join(os.path.dirname(__file__), "install.sh"))], shell=False)
+        subprocess.run(["/bin/bash", os.path.abspath(os.path.join(os.path.dirname(__file__), "install.sh"))], shell=False)
 
     def download_extra(self, dest):
         if sys.platform == 'win32':
             return 
         
         os.environ['AIT_DOWNLOAD_PATH'] = os.path.realpath(dest)
-        subprocess.run(["bash", os.path.abspath(os.path.join(os.path.dirname(__file__), "install.sh"))], shell=False)
+        subprocess.run(["/bin/bash", os.path.abspath(os.path.join(os.path.dirname(__file__), "install.sh"))], shell=False)
