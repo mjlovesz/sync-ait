@@ -15,11 +15,11 @@
 import os
 import logging
 import sys
-import subprocess
 import argparse
+import subprocess
+from typing import Union
 from components.utils.util import get_entry_points
 from components.utils.parser import BaseCommand
-from typing import Union
 
 logging.basicConfig(
     stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s'
@@ -131,6 +131,7 @@ class AitInstallCommand(BaseCommand):
 
     def handle(self, args):
         install_tools(args.comp_names, args.find_links)
+
 
 class AitCheckCommand(BaseCommand):
     def __init__(self) -> None:
@@ -247,6 +248,7 @@ def install_tool(tool_info, find_links):
         subprocess.run([sys.executable, "-m", "pip", "install", pkg_path])
         subprocess.run([sys.executable, "-m", "components", "build-extra", arg_name])
 
+
 def get_installer(pkg_name) -> Union[AitInstaller, None]:
     entry_points = get_entry_points("ait_sub_task_installer")
     pkg_installer = None
@@ -309,22 +311,23 @@ def download_comps(names, dest):
     install_infos = get_install_info_follow_depends(list(install_infos))
 
     for tool_info in install_infos:
-        download_tool(tool_info, dest)
+        download_comp(tool_info, dest)
     return install_infos
 
-def download_tool(tool_info, dest):
+
+def download_comp(tool_info, dest):
     pkg_name = tool_info.get("pkg-name")
     support_windows = tool_info.get("support_windows", False)
     if not support_windows and warning_in_windows(pkg_name):
-        return
+        return 
     logger.info(f"installing {pkg_name}")
     pkg_path = get_real_pkg_path(tool_info.get("pkg-path"))
 
-    subprocess.run([sys.executable, "-m", "pip", "download", "-d", dest,  pkg_path])
-    subprocess.run([sys.executable, "-m", "pip", "install", "--no-index", "-f", dest,  pkg_path])
+    subprocess.run([sys.executable, "-m", "pip", "download", "-d", dest, pkg_path], shell=False)
+    subprocess.run([sys.executable, "-m", "pip", "install", "--no-index", "-f", dest, pkg_path], shell=False)
     
     pkg_installer = get_installer(pkg_name)
 
     if not pkg_installer:
         pkg_installer = AitInstaller()
-    return pkg_installer.download_extra(dest)
+    pkg_installer.download_extra(dest)

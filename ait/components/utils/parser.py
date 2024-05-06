@@ -76,7 +76,7 @@ class BaseCommand(AitCommand):
         groups = {"Command": []}
         for command in self.children:
             groups.setdefault(command.group, [])
-            groups[command.group].append(command)
+            groups.get(command.group).append(command)
         for _, command_list in groups.items():
             for command in command_list:
                 subparser = subparsers.add_parser(
