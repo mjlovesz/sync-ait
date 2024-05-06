@@ -34,4 +34,4 @@ class ConvertInstall(AitInstaller):
         if sys.platform == 'win32':
             return
 
-        subprocess.run(["bash", os.path.abspath(os.path.join(os.path.dirname(__file__), "install.sh"))], shell=False)
+        subprocess.run(["/bin/bash", os.path.abspath(os.path.join(os.path.dirname(__file__), "install.sh"))], shell=False)
