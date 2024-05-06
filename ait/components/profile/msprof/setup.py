@@ -21,7 +21,7 @@ with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
 
 ait_sub_tasks = [{
-    "name": "msprof",
+    "name": "profile",
     "help_info": "get profiling data of a given programma",
     "module": "ait_prof.main_cli",
     "attr": "get_cmd_instance"
@@ -33,7 +33,7 @@ ait_sub_task_entry_points = [
 ]
 
 setup(
-    name='ait-msprof',
+    name='ait-profile',
     version='7.0.0c2',
     description='msprof tool',
     long_description=long_description,
@@ -44,6 +44,6 @@ setup(
     python_requires='>=3.7',
     entry_points={
         'ait_sub_task': ait_sub_task_entry_points,
-        'ait_sub_task_installer': ['ait-msprof=ait_prof.__install__:MsProfInstall'],
+        'ait_sub_task_installer': ['ait-profile=ait_prof.__install__:MsProfInstall'],
     }
 )
