@@ -26,7 +26,10 @@ debug_sub_tasks = [{
     "attr": "get_cmd_instance"
 }]
 
-debug_sub_task_entry_points = [f"{t['name']}:{t['help_info']} = {t['module']}:{t['attr']}" for t in debug_sub_tasks]
+debug_sub_task_entry_points = [
+    f"{t.get('name')}:{t.get('help_info')} = {t.get('module')}:{t.get('attr')}"
+    for t in debug_sub_tasks
+]
 
 setup(
     name='ait-surgeon',
