@@ -21,7 +21,7 @@ with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
 
 ait_sub_tasks = [{
-    "name": "ais_bench",
+    "name": "benchmark",
     "help_info": "benchmark tool to get performance data including latency and throughput",
     "module": "ais_bench.infer.main_cli",
     "attr": "get_cmd_instance"
