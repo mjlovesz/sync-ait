@@ -20,19 +20,30 @@ from torch import float16, float32, int8, int32, int64, bfloat16
 ATTR_END = "$End"
 ATTR_OBJECT_LENGTH = "$Object.Length"
 
+dtype_dict = {
+    0: float32,
+    1: float16,
+    2: int8,
+    3: int32,
+    9: int64,
+    12: torch.bool,
+    27: bfloat16
+}
+
+dtype_map = {
+    float32: 0,
+    float16: 1,
+    int8: 2,
+    int32: 3,
+    int64: 9,
+    torch.bool: 12,
+    bfloat16: 27
+}
+
 
 def read_atb_data(path: str) -> torch.Tensor:
     dtype = 0
     dims = []
-    dtype_dict = {
-        0: float32,
-        1: float16,
-        2: int8,
-        3: int32,
-        9: int64,
-        12: torch.bool,
-        27: bfloat16
-    }
 
     with open(path, "rb") as fd:
         file_data = fd.read()
@@ -64,3 +75,14 @@ def read_atb_data(path: str) -> torch.Tensor:
     tensor = torch.frombuffer(array("b", obj_buffer), dtype=dtype)
 
     return tensor.view(dims)
+
+
+def write_atb_data(tensor: torch.Tensor, path: str):
+    dtype = dtype_map.get(tensor.dtype)
+    dims = ','.join(map(str, tensor.shape))
+    data = tensor.numpy().tobytes()
+
+    meta = f"dtype={dtype}\ndims={dims}\n$End=1\n".encode("utf-8")
+
+    with open(path, "wb") as fo:
+        fo.write(meta + data)
