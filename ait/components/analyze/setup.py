@@ -22,7 +22,7 @@ with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
 
 ait_sub_tasks = [{
-    "name": "model",
+    "name": "analyze",
     "help_info": "Analyze tool to evaluate compatibility of model conversion",
     "module": "model_evaluation.__main__",
     "attr": "get_cmd_instance"
