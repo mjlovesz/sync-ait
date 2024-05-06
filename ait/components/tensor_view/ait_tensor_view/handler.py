@@ -1,7 +1,6 @@
-import os.path
+from os.path import splitext
 
 import torch
-from os.path import splitext
 
 from read_atb_data import read_atb_data
 from operation import SliceOperation, PermuteOperation

@@ -56,15 +56,15 @@ class SliceOperation(Operation):
         if size == 1:
             src = self.parts[0]
             if ":" in src:
-                slice_obj = convert_slice(src)
+                return prev[convert_slice(src)]
             elif src == "...":
-                slice_obj = Ellipsis
+                return prev
             else:
                 index = int(src)
                 dim_size0 = shape[0]
                 if index >= dim_size0 or -1 * index > dim_size0:
                     raise ValueError(f"Index out of range , dim0_size is {dim_size0} while index={index}")
-                slice_obj = index
+                return prev[index]
         else:
             if size > shape_size:
                 raise ValueError(f"number of dimensions[{self.slice_raw}] is bigger than the shape size[{shape_size}]")
@@ -82,9 +82,7 @@ class SliceOperation(Operation):
                         raise ValueError(f"Index out of range, dim[{i}]_size is {dim_size} while index={index}")
                     slices.append(index)
 
-            slice_obj = slices
-
-        return prev[slice_obj]
+            return prev[slices]
 
 
 class PermuteOperation(Operation):

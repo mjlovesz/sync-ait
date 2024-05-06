@@ -1,6 +1,7 @@
+from array import array
+
 import torch
 from torch import float16, float32, int8, int32, int64, bfloat16
-from array import array
 
 ATTR_END = "$END"
 ATTR_OBJECT_LENGTH = "$Object.Length"
