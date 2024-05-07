@@ -94,7 +94,7 @@ def get_valid_write_path(path, extensions=None, check_user_stat=True, is_dir=Fal
         if check_user_stat and os.stat(real_path).st_uid != os.getuid():  # Has to be exactly belonging to current user
             raise ValueError("The file {} doesn't belong to the current user.".format(path))
         if check_user_stat and os.stat(real_path).st_mode & WRITE_FILE_NOT_PERMITTED_STAT > 0:
-            raise ValueError("The file {} permission for others is not <=5, or is group writable.".format(path))
+            raise ValueError("The file {} permission for others is writable, or is group writable.".format(path))
         if not os.access(real_path, os.W_OK):
             raise ValueError("The file {} exist and not writable.".format(path))
     return real_path
