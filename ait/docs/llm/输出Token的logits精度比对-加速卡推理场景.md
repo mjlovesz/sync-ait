@@ -77,3 +77,4 @@ ait llm compare 提供有精度问题的数据与标杆数据之间的比对能�
 > - --my-path 参数为第二步中 `atb_tensor`所在目录 `{DUMP_DIR}/ait_dump/tensors/{device_id}_{PID}/`
 > - -cl token 参数指定比对的token 数据。
 > - 完成比对后会在 `output_dir`下生成一个 `ait_cmp_report_{TIMESTAMP}.csv`，保存比对的最终结果。
+> - csv报告查看参考[精度比对结果参数说明](./精度比对结果参数说明.md)
