@@ -12,18 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-import math
-import os
-import random
-import sys
-import unittest
-import collections
-import numpy as np
 import torch
 import torch_npu
 
 from ait_llm.opcheck import operation_test
+from ait_llm.common.log import logger
 
 
 class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
@@ -39,4 +32,6 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
             return [in_tensors[5]]
 
     def test(self):
-        self.execute()
+        logger_text = f"PagedAttentionOperation is not supported!"
+        logger.error(logger_text)
+        return
