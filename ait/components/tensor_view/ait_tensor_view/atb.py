@@ -31,16 +31,6 @@ dtype_dict = {
     27: bfloat16
 }
 
-dtype_map = {
-    float32: 0,
-    float16: 1,
-    int8: 2,
-    int32: 3,
-    int64: 9,
-    torch.bool: 12,
-    bfloat16: 27
-}
-
 
 def read_atb_data(path: str) -> torch.Tensor:
     dtype = 0
@@ -79,7 +69,8 @@ def read_atb_data(path: str) -> torch.Tensor:
 
 
 def write_atb_data(tensor: torch.Tensor, path: str):
-    dtype = dtype_map.get(tensor.dtype)
+    _dtype_map = {v: k for k, v in dtype_dict.items()}
+    dtype = _dtype_map.get(tensor.dtype)
     dims = ','.join(map(str, tensor.shape))
     data = tensor.numpy().tobytes()
 
@@ -87,3 +78,5 @@ def write_atb_data(tensor: torch.Tensor, path: str):
 
     with open(path, "wb") as fo:
         fo.write(meta + data)
+
+    del _dtype_map
