@@ -24,28 +24,27 @@ from components.utils.file_open_check import FileStat
 def check_input_path_legality(value):
     if not value:
         return value
-    inputs_list = value.split(',')
-    for input_path in inputs_list:
-        try:
-            file_stat = FileStat(input_path)
-        except Exception as err:
-            raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.") from err
-        if not file_stat.is_basically_legal('read', strict_permission=False):
-            raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.")
+    if not value.endswith(".bin") or not value.endswith(".pth"):
+        raise ValueError("only .bin or .pth file is accepted")
+    try:
+        file_stat = FileStat(value)
+    except Exception as err:
+        raise argparse.ArgumentTypeError(f"input path:{value} is illegal. Please check.") from err
+    if not file_stat.is_basically_legal('read', strict_permission=False):
+        raise argparse.ArgumentTypeError(f"input path:{value} is illegal. Please check.")
     return value
 
 
 def check_output_path_legality(value):
     if not value:
         return value
-    path_value = value
     try:
-        file_stat = FileStat(path_value)
+        file_stat = FileStat(value)
     except Exception as err:
-        raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.") from err
+        raise argparse.ArgumentTypeError(f"output path:{value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal("write", strict_permission=False):
-        raise argparse.ArgumentTypeError(f"output path:{path_value} can not write. Please check.")
-    return path_value
+        raise argparse.ArgumentTypeError(f"output path:{value} can not write. Please check.")
+    return value
 
 
 def parse_operations(value):
@@ -98,12 +97,6 @@ class TensorViewCommand(BaseCommand):
             type=parse_operations,
             help="Each operation is separated by a semicolon; slice operations should use square brackets; permute "
                  "sequences should use parentheses"
-        )
-
-        parser.add_argument(
-            "--atb", "-a",
-            action="store_true",
-            help="Whether to save in [atb data format] instead of the [standard torch format]"
         )
 
     def handle(self, args):
