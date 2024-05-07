@@ -139,9 +139,7 @@ class DumpCommand(BaseCommand):
             type=check_positive_integer,
             default=None,
             help='Specify a single device ID for dumping data, will skip other devices.')
-        parser.add_argument(
-            "--custom-algorithms", "-l", default="INFO", choices=LOG_LEVELS_LOWER, help="specify log level"
-        )
+
         parser.add_argument(
             "--log-level", "-l", default="INFO", choices=LOG_LEVELS_LOWER, help="specify log level"
         )
@@ -217,7 +215,9 @@ class CompareCommand(BaseCommand):
             '--custom-algorithms',
             required=False,
             nargs='+',
-            help='custom comparing algorithms in format "python_file_path.py:function".')
+            help='custom comparing algorithms in format "python_file_path.py:function". \
+                  Should better be a standalong file, and function should in format like \
+                  "def foo(golden_tensor, my_tensor): return float_value, string_message"')
 
     def handle(self, args, **kwargs):
         from ait_llm.compare.torchair_acc_cmp import get_torchair_ge_graph_path
@@ -309,7 +309,22 @@ class OpcheckCommand(BaseCommand):
             default=False,
             help='Rerun atb operations if True. Compare outputs in dump data if False')
 
+        parser.add_argument(
+            '--custom-algorithms',
+            required=False,
+            nargs='+',
+            help='custom comparing algorithms in format "python_file_path.py:function". \
+                  Should better be a standalong file, and function should in format like \
+                  "def foo(golden_tensor, my_tensor): return float_value, string_message"')
+
     def handle(self, args, **kwargs):
+        # Adding custom comparing algorithms
+        if args.custom_metrics:
+            from ait_llm.compare.cmp_algorithm import register_custom_compare_algorithm
+
+            for custom_compare_algorithm in args.custom_metrics:
+                register_custom_compare_algorithm(custom_compare_algorithm)
+
         op = OpChecker()
         logger.info(f"===================Opcheck start====================")
         op.start_test(args)

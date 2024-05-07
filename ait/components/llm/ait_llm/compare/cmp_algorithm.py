@@ -87,6 +87,7 @@ def register_custom_compare_algorithm(custom_compare_algorithm):
     if len(custom_compare_algorithm_split) != 2:
         raise ValueError("custom_compare_algorithm should be in format '{python_file_path}:{function_name}'")
     file_path, func_name = custom_compare_algorithm_split
+    file_path = os.path.expanduser(file_path)
 
     if not os.path.exists(file_path):
         raise ValueError(f"custom_compare_algorithm specified {file_path} not exists")
@@ -112,6 +113,15 @@ def register_custom_compare_algorithm(custom_compare_algorithm):
         raise ValueError(f"get {custom_compare_func} from {custom_compare_algorithm} failed")
     if len(inspect.signature(custom_compare_func).parameters) != 2:
         raise ValueError(f"function {custom_compare_func} signature should have exact two parameters")
+
+    try:
+        ret = custom_compare_func(torch.ones([1]), torch.ones([1]))
+    except Exception as ee:
+        raise ValueError(f"function {custom_compare_func} should recieve 2 torch tensor parameters")
+
+    if len(ret) != 2 or not isinstance(ret[0], (float, int, str) or not isinstance(ret[0], str):
+        raise ValueError(f"function {custom_compare_func} should return 2 value in type ((float, int, str), string)")
+
     logger.info(f"Added custom comparing algorithm: {func_name}")
     CMP_ALG_MAP[func_name] = custom_compare_func
 
