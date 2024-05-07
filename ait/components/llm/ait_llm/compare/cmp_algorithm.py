@@ -113,17 +113,17 @@ def register_custom_compare_algorithm(custom_compare_algorithm):
 
     custom_compare_func = getattr(custom_module, func_name, None)
     if custom_compare_func is None:
-        raise ValueError(f"get {custom_compare_func} from {custom_compare_algorithm} failed")
+        raise ValueError(f"getting {func_name} from {custom_compare_algorithm} failed")
     if len(inspect.signature(custom_compare_func).parameters) != 2:
-        raise ValueError(f"function {custom_compare_func} signature should have exact two parameters")
+        raise ValueError(f"function {func_name} signature should have exact two parameters")
 
     try:
         ret = custom_compare_func(torch.ones([1]), torch.ones([1]))
     except Exception as ee:
-        raise ValueError(f"function {custom_compare_func} should recieve 2 torch tensor parameters")
+        raise ValueError(f"function {func_name} should recieve 2 torch tensor parameters")
 
-    if len(ret) != 2 or not isinstance(ret[0], (float, int, str)) or not isinstance(ret[0], str):
-        raise ValueError(f"function {custom_compare_func} should return 2 value in type ((float, int, str), str)")
+    if len(ret) != 2 or not isinstance(ret[0], (float, int, str)) or not isinstance(ret[1], str):
+        raise ValueError(f"function {func_name} should return 2 value in type ((float, int, str), str)")
 
     logger.info(f"Added custom comparing algorithm: {func_name}")
     CUSTOM_ALG_MAP[func_name] = custom_compare_func
