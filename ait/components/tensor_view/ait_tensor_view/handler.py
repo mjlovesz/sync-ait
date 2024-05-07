@@ -33,9 +33,12 @@ def replace(in_path: str, out_path: str) -> str:
 
 
 def handle_tensor_view(args):
-    tensor = read_atb_data(args.bin)
-
     in_ext = splitext(args.bin)[1]
+    if in_ext == ".bin":
+        tensor = read_atb_data(args.bin)
+    else:
+        tensor = torch.load(args.bin)
+
     logger.info(f"source tensor shape: {tensor.shape}")
 
     if args.operations:
@@ -58,12 +61,13 @@ def handle_tensor_view(args):
         out_ext = splitext(out_path)[1]
 
         try:
-            if not out_ext and in_ext:
+            if not out_ext or (out_ext != ".bin" and out_ext != ".pth"):
                 out_path += in_ext
-            if args.atb:
+            if out_path.endswith(".bin"):
                 write_atb_data(tensor, out_path)
             else:
                 torch.save(tensor, out_path)
+
             logger.info(f'Tensor saved successfully to {out_path}')
         except Exception as e:
             logger.error(f"Error saving Tensor: {e}")
