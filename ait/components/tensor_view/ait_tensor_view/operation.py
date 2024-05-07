@@ -113,9 +113,3 @@ class PermuteOperation:
     def check_permute_range(self, n: int):
         if not all(0 <= x < n for x in self.parts):
             raise ValueError(f"{self.permute_raw}: not all dimensions are between 0 and {n - 1}")
-
-
-tensor = torch.rand(4, 4)
-op1 = SliceOperation("[3]")
-print(op1.process(tensor))
-print(tensor[[3]])
