@@ -139,7 +139,9 @@ class DumpCommand(BaseCommand):
             type=check_positive_integer,
             default=None,
             help='Specify a single device ID for dumping data, will skip other devices.')
-
+        parser.add_argument(
+            "--custom-algorithms", "-l", default="INFO", choices=LOG_LEVELS_LOWER, help="specify log level"
+        )
         parser.add_argument(
             "--log-level", "-l", default="INFO", choices=LOG_LEVELS_LOWER, help="specify log level"
         )
@@ -211,10 +213,25 @@ class CompareCommand(BaseCommand):
             default='',
             help='Operation mapping file directory.E.g:--op-mapping-file /xx/xxxx/xx')
 
+        parser.add_argument(
+            '--custom-algorithms',
+            required=False,
+            nargs='+',
+            help='custom comparing algorithms in format "python_file_path.py:function".')
+
     def handle(self, args, **kwargs):
         from ait_llm.compare.torchair_acc_cmp import get_torchair_ge_graph_path
 
         set_log_level(args.log_level)
+
+        # Adding custom comparing algorithms
+        if args.custom_metrics:
+            from ait_llm.compare.cmp_algorithm import register_custom_compare_algorithm
+
+            for custom_compare_algorithm in args.custom_metrics:
+                register_custom_compare_algorithm(custom_compare_algorithm)
+
+        # accuracy comparing for different scenarios
         torchair_ge_graph_path = get_torchair_ge_graph_path(args.my_path)
         if torchair_ge_graph_path is not None:
             from ait_llm.compare.torchair_acc_cmp import acc_compare

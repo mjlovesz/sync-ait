@@ -112,6 +112,7 @@ def register_custom_compare_algorithm(custom_compare_algorithm):
         raise ValueError(f"get {custom_compare_func} from {custom_compare_algorithm} failed")
     if len(inspect.signature(custom_compare_func).parameters) != 2:
         raise ValueError(f"function {custom_compare_func} signature should have exact two parameters")
+    logger.info(f"Added custom comparing algorithm: {func_name}")
     CMP_ALG_MAP[func_name] = custom_compare_func
 
 
