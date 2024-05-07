@@ -105,3 +105,7 @@
   ```sh
   ait llm compare --my-path {dump_path}/dump_{time_stamp} --golden-path {dump_path}/dump_{time_stamp}
   ```
+
+## 结果查看
+
+参考[精度比对结果参数说明](./精度比对结果参数说明.md)
