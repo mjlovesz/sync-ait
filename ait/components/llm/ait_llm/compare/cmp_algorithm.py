@@ -80,7 +80,10 @@ def relative_euclidean_distance(golden_data: torch.Tensor, my_data: torch.Tensor
 
 
 def register_custom_compare_algorithm(custom_compare_algorithm):
-    import os, sys, importlib, inspect
+    import os
+    import sys
+    import importlib
+    import inspect
     from components.utils.file_open_check import FileStat
 
     custom_compare_algorithm_split = custom_compare_algorithm.split(':')
