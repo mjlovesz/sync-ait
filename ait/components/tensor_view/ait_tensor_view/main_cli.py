@@ -21,19 +21,6 @@ from components.utils.parser import BaseCommand
 from components.utils.file_open_check import FileStat
 
 
-def check_output_path_legality(value):
-    if not value:
-        return value
-    path_value = value
-    try:
-        file_stat = FileStat(path_value)
-    except Exception as err:
-        raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.") from err
-    if not file_stat.is_basically_legal("write", strict_permission=False):
-        raise argparse.ArgumentTypeError(f"output path:{path_value} can not write. Please check.")
-    return path_value
-
-
 def check_input_path_legality(value):
     if not value:
         return value
@@ -46,6 +33,19 @@ def check_input_path_legality(value):
         if not file_stat.is_basically_legal('read', strict_permission=False):
             raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.")
     return value
+
+
+def check_output_path_legality(value):
+    if not value:
+        return value
+    path_value = value
+    try:
+        file_stat = FileStat(path_value)
+    except Exception as err:
+        raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.") from err
+    if not file_stat.is_basically_legal("write", strict_permission=False):
+        raise argparse.ArgumentTypeError(f"output path:{path_value} can not write. Please check.")
+    return path_value
 
 
 def parse_operations(value):

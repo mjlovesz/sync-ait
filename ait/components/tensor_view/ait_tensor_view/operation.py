@@ -19,11 +19,6 @@ import torch
 SLICE_PATTERN = re.compile(r"\.\.\.|\d+|(\d+)?:(\d+)?(:?\d+)?")
 
 
-class Operation:
-    def process(self, prev: torch.Tensor) -> torch.Tensor:
-        pass
-
-
 def convert_slice(s: str) -> slice:
     parts = [n.strip() for n in s.split(":")]
     size = len(parts)
@@ -43,7 +38,7 @@ def convert_slice(s: str) -> slice:
         raise SyntaxError(f"'{s}' is not valid slice string")
 
 
-class SliceOperation(Operation):
+class SliceOperation:
     def __init__(self, slice_str: str):
         content = slice_str[1:-1].split(",")
 
@@ -61,6 +56,7 @@ class SliceOperation(Operation):
 
         self.slice_raw = slice_str
         self.parts = parts
+        self.name = f"SliceOperation: {parts}"
 
     def process(self, prev: torch.Tensor) -> torch.Tensor:
         size = len(self.parts)
@@ -93,17 +89,18 @@ class SliceOperation(Operation):
                     index = int(part)
                     dim_size = shape[i]
                     if index >= dim_size or -1 * index > dim_size:
-                        raise ValueError(f"Index out of range, dim[{i}]_size is {dim_size} while index={index}")
+                        raise IndexError(f"Index out of range, dim[{i}]_size is {dim_size} while index={index}")
                     slices.append(index)
 
             return prev[slices]
 
 
-class PermuteOperation(Operation):
+class PermuteOperation:
     def __init__(self, permute_str: str):
         parts = [int(n.strip()) for n in permute_str[1:-1].split(",") if n != ""]
         self.permute_raw = permute_str
         self.parts = parts
+        self.name = f"PermuteOperation: {parts}"
 
     def process(self, prev: torch.Tensor) -> torch.Tensor:
         shape = prev.shape
