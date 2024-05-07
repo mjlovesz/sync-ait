@@ -111,19 +111,18 @@ download_and_install_aclruntime() {
 
 
 uninstall(){
-  pip3 uninstall ait analyze_tool convert_tool compare auto_optimizer msprof transplt ait_llm
   if [ -z $only_debug ] && [ -z $only_compare ] && [ -z $only_surgen ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ] && [ -z $only_llm ]
   then
-    pip3 uninstall ms-ait ait-analyze aclruntime ais_bench ait-convert ait-compare ait-surgeon ait-profile ait-transplt ait-llm ${all_uninstall}
+    pip3 uninstall ait analyze_tool aclruntime ais_bench convert_tool compare auto_optimizer msprof transplt ait_llm ${all_uninstall}
   else
     if [ ! -z $only_compare ]
     then
-      pip3 uninstall ait-compare ${all_uninstall}
+      pip3 uninstall compare ${all_uninstall}
     fi
 
     if [ ! -z $only_surgeon ]
     then
-      pip3 uninstall ait-surgeon ${all_uninstall}
+      pip3 uninstall auto_optimizer ${all_uninstall}
     fi
 
     if [ ! -z $only_benchmark ]
@@ -133,27 +132,27 @@ uninstall(){
 
     if [ ! -z $only_analyze ]
     then
-      pip3 uninstall ait-analyze ${all_uninstall}
+      pip3 uninstall analyze_tool ${all_uninstall}
     fi
 
     if [ ! -z $only_convert ]
     then
-      pip3 uninstall ait-convert ${all_uninstall}
+      pip3 uninstall convert_tool ${all_uninstall}
     fi
 
     if [ ! -z $only_transplt ]
     then
-      pip3 uninstall ait-transplt ${all_uninstall}
+      pip3 uninstall transplt ${all_uninstall}
     fi
 
     if [ ! -z $only_profile ]
     then
-      pip3 uninstall ait-profile ${all_uninstall}
+      pip3 uninstall msprof ${all_uninstall}
     fi
 
     if [ ! -z $only_llm ]
     then
-      pip3 uninstall ait-llm ${all_uninstall}
+      pip3 uninstall ait_llm ${all_uninstall}
     fi
   fi
   exit;
