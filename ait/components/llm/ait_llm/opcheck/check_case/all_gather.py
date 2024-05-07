@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import json
-import unittest
-import sys
 import torch
 import torch_npu
 
@@ -28,4 +24,4 @@ class OpcheckAllGatherOperation(operation_test.OperationTest):
         return [golden_result]        
 
     def test_all_gather(self):
-        self.excute()
+        self.execute()

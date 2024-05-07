@@ -13,11 +13,6 @@
 # limitations under the License.
 
 import os
-import json
-import unittest
-import sys
-import socket
-import random
 import torch
 import torch_npu
 
@@ -56,18 +51,12 @@ class OpcheckAllReduceOperation(operation_test.OperationTest):
         result = in_tensors[0]
         for i in range(1, len(in_tensors)):
             result = torch.mul(result, in_tensors[i])
-        return [result]
+        return [result] 
 
     def golden_calc(self, in_tensors):
-        all_reduce_type = self.op_param['allReduceType']
-        backend = self.op_param['backend']
-        logger_text1 = f"backend: {backend}, allreduceType: {all_reduce_type}"
-        logger_text2 = "env: {}".format(os.getenv("LCCL_DETERMINISTIC"))
-        logger_text3 = "env: {}".format(os.getenv("HCCL_DETERMINISTIC"))
-        logger.debug(logger_text1)
-        logger.debug(logger_text2)
-        logger.debug(logger_text3)
-        
+        all_reduce_type = self.op_param.get('allReduceType', None)
+        backend = self.op_param.get('backend', None)
+                    
         if all_reduce_type == "sum":
             if backend == "lccl":
                 golden = self.lccl_sum_cal(in_tensors)
@@ -83,4 +72,18 @@ class OpcheckAllReduceOperation(operation_test.OperationTest):
         return golden
 
     def test_all_reduce(self):
+        all_reduce_type = self.op_param.get('allReduceType', None)
+        backend = self.op_param.get('backend', None)
+
+        logger_text1 = f"backend: {backend}, allreduceType: {all_reduce_type}"
+        logger_text2 = "env: {}".format(os.getenv("LCCL_DETERMINISTIC", ""))
+        logger_text3 = "env: {}".format(os.getenv("HCCL_DETERMINISTIC", ""))
+        logger.debug(logger_text1)
+        logger.debug(logger_text2)
+        logger.debug(logger_text3)
+
+        if all_reduce_type is None or backend is None:
+            msg = "Cannot get golden data because opParam is not correctly set!"
+            logger.error(msg)
+            return
         self.execute()
