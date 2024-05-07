@@ -24,7 +24,7 @@ from components.utils.file_open_check import FileStat
 def check_input_path_legality(value):
     if not value:
         return value
-    if not value.endswith(".bin") or not value.endswith(".pth"):
+    if not value.endswith(".bin") and not value.endswith(".pth"):
         raise ValueError("only .bin or .pth file is accepted")
     try:
         file_stat = FileStat(value)
@@ -87,8 +87,6 @@ class TensorViewCommand(BaseCommand):
         parser.add_argument(
             "--output", "-o",
             type=check_output_path_legality,
-            default=os.getcwd(),
-            nargs="?",
             help="where the tensor should be saved (default: current directory)"
         )
 
