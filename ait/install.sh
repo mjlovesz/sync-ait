@@ -111,6 +111,7 @@ download_and_install_aclruntime() {
 
 
 uninstall(){
+  pip3 uninstall ait analyze_tool convert_tool compare auto_optimizer msprof transplt ait_llm
   if [ -z $only_debug ] && [ -z $only_compare ] && [ -z $only_surgen ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ] && [ -z $only_llm ]
   then
     pip3 uninstall ms-ait ait-analyze aclruntime ais_bench ait-convert ait-compare ait-surgeon ait-profile ait-transplt ait-llm ${all_uninstall}
