@@ -19,6 +19,7 @@ import torch
 from ait_tensor_view.atb import read_atb_data, write_atb_data
 from ait_tensor_view.operation import SliceOperation, PermuteOperation
 from ait_tensor_view.print_stat import print_stat
+from ait_tensor_view.logger import logger
 
 
 def replace(in_path: str, out_path: str) -> str:
@@ -35,16 +36,17 @@ def handle_tensor_view(args):
     tensor = read_atb_data(args.bin)
 
     in_ext = splitext(args.bin)[1]
-    print(f"【source tensor shape】: {tensor.shape}")
-    print("【Operations start】")
+    logger.info(f"source tensor shape: {tensor.shape}")
 
     if args.operations:
-        for op in args.operations:
-            print(f"{op.name} starts, current tensor shape: {tensor.shape}")
-            tensor = op.process(tensor)
-            print(f"{op.name} ends, current tensor shape: {tensor.shape}")
+        logger.info("Operations start")
 
-    print("【Operations end】")
+        for op in args.operations:
+            logger.info(f"{op.name} starts, current tensor shape: {tensor.shape}")
+            tensor = op.process(tensor)
+            logger.info(f"{op.name} ends, current tensor shape: {tensor.shape}")
+
+        logger.info("Operations end")
 
     print_stat(tensor)
 
@@ -62,6 +64,6 @@ def handle_tensor_view(args):
                 write_atb_data(tensor, out_path)
             else:
                 torch.save(tensor, out_path)
-            print(f'Tensor saved successfully to {out_path}')
+            logger.info(f'Tensor saved successfully to {out_path}')
         except Exception as e:
-            print(f"Error saving Tensor: {e}")
+            logger.error(f"Error saving Tensor: {e}")

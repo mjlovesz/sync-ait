@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# from components.utils.parser import load_command_instance
-#
-# tensor_view_cmd = load_command_instance('tensor_view_sub_task')
+from components.utils.parser import load_command_instance
+
+tensor_view_cmd = load_command_instance('tensor_view_sub_task')
