@@ -585,7 +585,7 @@ def execute_command(cmd, info_need=True):
     if process.returncode != 0:
         logger.error('Failed to execute command:%s' % " ".join(cmd))
         logger.error(f'\nais_bench error log:\n {ais_bench_logs}')
-        raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DATA_ERROR)R)
+        raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DATA_ERROR))
 
 
 def create_directory(dir_path):
