@@ -122,8 +122,8 @@ def register_custom_compare_algorithm(custom_compare_algorithm):
     except Exception as ee:
         raise ValueError(f"function {custom_compare_func} should recieve 2 torch tensor parameters")
 
-    if len(ret) != 2 or not isinstance(ret[0], (float, int, str) or not isinstance(ret[0], str):
-        raise ValueError(f"function {custom_compare_func} should return 2 value in type ((float, int, str), string)")
+    if len(ret) != 2 or not isinstance(ret[0], (float, int, str)) or not isinstance(ret[0], str):
+        raise ValueError(f"function {custom_compare_func} should return 2 value in type ((float, int, str), str)")
 
     logger.info(f"Added custom comparing algorithm: {func_name}")
     CMP_ALG_MAP[func_name] = custom_compare_func
