@@ -225,10 +225,10 @@ class CompareCommand(BaseCommand):
         set_log_level(args.log_level)
 
         # Adding custom comparing algorithms
-        if args.custom_metrics:
+        if args.custom_algorithms:
             from ait_llm.compare.cmp_algorithm import register_custom_compare_algorithm
 
-            for custom_compare_algorithm in args.custom_metrics:
+            for custom_compare_algorithm in args.custom_algorithms:
                 register_custom_compare_algorithm(custom_compare_algorithm)
 
         # accuracy comparing for different scenarios
@@ -319,10 +319,10 @@ class OpcheckCommand(BaseCommand):
 
     def handle(self, args, **kwargs):
         # Adding custom comparing algorithms
-        if args.custom_metrics:
+        if args.custom_algorithms:
             from ait_llm.compare.cmp_algorithm import register_custom_compare_algorithm
 
-            for custom_compare_algorithm in args.custom_metrics:
+            for custom_compare_algorithm in args.custom_algorithms:
                 register_custom_compare_algorithm(custom_compare_algorithm)
 
         op = OpChecker()
