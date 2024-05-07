@@ -23,7 +23,7 @@ import torch_npu
 
 from ait_llm.common.tool import read_atb_data
 from ait_llm.common.log import logger
-from ait_llm.compare.cmp_algorithm import CMP_ALG_MAP
+from ait_llm.compare.cmp_algorithm import CMP_ALG_MAP, CUSTOM_ALG_MAP
 
 
 FLOAT_EPSILON = torch.finfo(torch.float).eps
@@ -246,13 +246,18 @@ class OperationTest(unittest.TestCase):
             abs_pass_rate, max_abs, cos_sim, kl_div = self.get_other_precisions(out_tensors[i], golden_out_tensors[i], 
                                                                                 etol)
 
-            self.case_info['res_detail'].append({"precision_standard": ps_standard,
-                                                "rel_pass_rate": rel_pass_rate,
-                                                "max_rel": max_rel,
-                                                "abs_pass_rate": abs_pass_rate,
-                                                "max_abs": max_abs,
-                                                "cos_sim": cos_sim,
-                                                "kl_div": kl_div})
+            cur_result = {
+                "precision_standard": ps_standard,
+                "rel_pass_rate": rel_pass_rate,
+                "max_rel": max_rel,
+                "abs_pass_rate": abs_pass_rate,
+                "max_abs": max_abs,
+                "cos_sim": cos_sim,
+                "kl_div": kl_div,
+            }
+            for custom_name, custom_func in CUSTOM_ALG_MAP.items():
+                cur_result.update({custom_name: custom_func(out_tensors[i], golden_out_tensors[i])})
+            self.case_info['res_detail'].append(cur_result)
 
             if flag:
                 self.case_info['excuted_information'] = 'execution successful'

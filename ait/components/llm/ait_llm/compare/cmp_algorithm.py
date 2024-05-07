@@ -126,7 +126,7 @@ def register_custom_compare_algorithm(custom_compare_algorithm):
         raise ValueError(f"function {custom_compare_func} should return 2 value in type ((float, int, str), str)")
 
     logger.info(f"Added custom comparing algorithm: {func_name}")
-    CMP_ALG_MAP[func_name] = custom_compare_func
+    CUSTOM_ALG_MAP[func_name] = custom_compare_func
 
 
 CMP_ALG_MAP = {
@@ -138,3 +138,5 @@ CMP_ALG_MAP = {
     "kl_divergence": kl_divergence,
     "relative_euclidean_distance": relative_euclidean_distance,
 }
+
+CUSTOM_ALG_MAP = {}
