@@ -63,36 +63,26 @@ class SliceOperation:
         shape = prev.shape
         shape_size = len(shape)
 
-        if size == 1:
-            src = self.parts[0]
-            if ":" in src:
-                return prev[convert_slice(src)]
-            elif src == "...":
-                return prev
+        if size > shape_size:
+            raise ValueError(f"number of dimensions[{self.slice_raw}] is bigger than the shape size[{shape_size}]")
+        slices = []
+
+        for i, part in enumerate(self.parts):
+            if ":" in part:
+                slices.append(convert_slice(part))
+            elif part == "...":
+                slices.append(Ellipsis)
             else:
-                index = int(src)
-                dim_size0 = shape[0]
-                if index >= dim_size0 or -1 * index > dim_size0:
-                    raise IndexError(f"Index out of range , dim0_size is {dim_size0} while index={index}")
-                return prev[index]
-        else:
-            if size > shape_size:
-                raise ValueError(f"number of dimensions[{self.slice_raw}] is bigger than the shape size[{shape_size}]")
-            slices = []
+                index = int(part)
+                dim_size = shape[i]
+                if index >= dim_size or -1 * index > dim_size:
+                    raise IndexError(f"Index out of range, dim[{i}]_size is {dim_size} while index={index}")
+                slices.append(index)
 
-            for i, part in enumerate(self.parts):
-                if ":" in part:
-                    slices.append(convert_slice(part))
-                elif part == "...":
-                    slices.append(Ellipsis)
-                else:
-                    index = int(part)
-                    dim_size = shape[i]
-                    if index >= dim_size or -1 * index > dim_size:
-                        raise IndexError(f"Index out of range, dim[{i}]_size is {dim_size} while index={index}")
-                    slices.append(index)
+        if len(slices) == 1 and isinstance(slices[0], int):
+            slices = slices[0]
 
-            return prev[slices]
+        return prev[slices]
 
 
 class PermuteOperation:
@@ -123,3 +113,9 @@ class PermuteOperation:
     def check_permute_range(self, n: int):
         if not all(0 <= x < n for x in self.parts):
             raise ValueError(f"{self.permute_raw}: not all dimensions are between 0 and {n - 1}")
+
+
+tensor = torch.rand(4, 4)
+op1 = SliceOperation("[3]")
+print(op1.process(tensor))
+print(tensor[[3]])
