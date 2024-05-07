@@ -21,9 +21,11 @@ function copy_source_code_dir_to_tests() {
     cp -rf $CUR_PATH/../app_analyze $CUR_PATH/
 }
 
+
 function del_source_code_from_tests() {
     rm -rf $CUR_PATH/app_analyze
 }
+
 
 # download files from obs
 OBS_SOURCE=https://ait-resources.obs.cn-south-1.myhuaweicloud.com
