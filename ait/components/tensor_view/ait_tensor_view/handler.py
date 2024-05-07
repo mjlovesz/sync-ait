@@ -35,10 +35,16 @@ def handle_tensor_view(args):
     tensor = read_atb_data(args.bin)
 
     in_ext = splitext(args.bin)[1]
+    print(f"【source tensor shape】: {tensor.shape}")
+    print("【Operations start】")
 
     if args.operations:
         for op in args.operations:
+            print(f"{op.name} starts, current tensor shape: {tensor.shape}")
             tensor = op.process(tensor)
+            print(f"{op.name} ends, current tensor shape: {tensor.shape}")
+
+    print("【Operations end】")
 
     print_stat(tensor)
 
