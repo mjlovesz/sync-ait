@@ -33,6 +33,16 @@ def _get_lib_clang_path_win():
 
 
 def _get_lib_clang_path_linux():
+    import clang
+    from clang import cindex
+
+    libclang_so_path = os.path.join(os.path.dirname(clang.__file__), "native", "libclang.so")
+    if os.path.exists(libclang_so_path):
+        cindex.Config.set_library_file(libclang_so_path)
+    else:
+        loger.warning(f"libclang so: {libclang_so_path} not found, may meet error lately.")
+    return
+
     # default dirs
     candidate_lib_dirs = [
         "/lib", "/lib64", "/usr/lib", "/usr/lib64",

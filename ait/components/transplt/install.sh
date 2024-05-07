@@ -105,7 +105,7 @@ download_config_and_headers
 
 if [ $# -gt 0 ] && [ "$1" == '--full' ]; then
   # Install clang
-  install_clang
+  # install_clang
 
   $SHELL
 fi
