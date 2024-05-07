@@ -211,10 +211,27 @@ class CompareCommand(BaseCommand):
             default='',
             help='Operation mapping file directory.E.g:--op-mapping-file /xx/xxxx/xx')
 
+        parser.add_argument(
+            '--custom-algorithms',
+            required=False,
+            nargs='+',
+            help='custom comparing algorithms in format "python_file_path.py:function". \
+                  Should better be a standalong file, and function should in format like \
+                  "def foo(golden_tensor, my_tensor): return float_value, string_message"')
+
     def handle(self, args, **kwargs):
         from ait_llm.compare.torchair_acc_cmp import get_torchair_ge_graph_path
 
         set_log_level(args.log_level)
+
+        # Adding custom comparing algorithms
+        if args.custom_algorithms:
+            from ait_llm.compare.cmp_algorithm import register_custom_compare_algorithm
+
+            for custom_compare_algorithm in args.custom_algorithms:
+                register_custom_compare_algorithm(custom_compare_algorithm)
+
+        # accuracy comparing for different scenarios
         torchair_ge_graph_path = get_torchair_ge_graph_path(args.my_path)
         if torchair_ge_graph_path is not None:
             from ait_llm.compare.torchair_acc_cmp import acc_compare
