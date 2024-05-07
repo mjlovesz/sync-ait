@@ -73,7 +73,7 @@ class SliceOperation:
                 index = int(src)
                 dim_size0 = shape[0]
                 if index >= dim_size0 or -1 * index > dim_size0:
-                    raise ValueError(f"Index out of range , dim0_size is {dim_size0} while index={index}")
+                    raise IndexError(f"Index out of range , dim0_size is {dim_size0} while index={index}")
                 return prev[index]
         else:
             if size > shape_size:
@@ -121,5 +121,5 @@ class PermuteOperation:
             raise ValueError(f"{self.permute_raw} contains duplicate dimensions!")
 
     def check_permute_range(self, n: int):
-        if not all(0 <= x < n for x in set(self.parts)):
+        if not all(0 <= x < n for x in self.parts):
             raise ValueError(f"{self.permute_raw}: not all dimensions are between 0 and {n - 1}")
