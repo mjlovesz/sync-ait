@@ -23,8 +23,6 @@ import re
 import onnx
 import onnxruntime
 import numpy as np
-from skl2onnx.helpers.onnx_helper import enumerate_model_node_outputs
-from skl2onnx.helpers.onnx_helper import select_model_inputs_outputs
 
 from msquickcmp.common.dump_data import DumpData
 from msquickcmp.common import utils
@@ -123,10 +121,10 @@ class OnnxDumpData(DumpData):
             self.inputs_map.update(self.extend_inputs_map)
 
     def generate_dump_data(self, npu_dump_path=None, om_parser=None):
-        dump_model_with_inputs_contents = self._modify_model_add_outputs_nodes(
+        self._modify_model_add_outputs_nodes(
             self.model_with_inputs, self.dump_model_with_inputs_path
         )
-        session = self._load_session(dump_model_with_inputs_contents)
+        session = self._load_session(self.dump_model_with_inputs_path)
         dump_bins = self._run_model(session, self.inputs_map)
 
         net_output_node = [output_item.name for output_item in self.model_with_inputs_session.get_outputs()]
@@ -134,12 +132,12 @@ class OnnxDumpData(DumpData):
 
         return self.onnx_dump_data_dir
 
-    def _load_session(self, model_contents):
+    def _load_session(self, model_path):
         options = onnxruntime.SessionOptions()
         if not self.onnx_fusion_switch:
             options.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
         try:
-            infersession = onnxruntime.InferenceSession(model_contents, options)
+            infersession = onnxruntime.InferenceSession(model_path, options)
         except Exception as e:
             utils.logger.error(f"Please check onnx model can run in local env. Error: {e}")
             raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_MODEL_TYPE_ERROR)
@@ -150,7 +148,7 @@ class OnnxDumpData(DumpData):
         #                                 -> onnxruntime load as session
         with open(model_path, "rb") as ff:
             model_contents = ff.read()
-        onnx_model = onnx.load_model_from_string(model_contents)
+        onnx_model = onnx.load_model(model_path)
         for index, node in enumerate(onnx_model.graph.node):
             if not node.name:
                 node.name = node.op_type + "_" + str(index)
@@ -181,24 +179,26 @@ class OnnxDumpData(DumpData):
         return data_dir, onnx_dump_data_dir, model_dir
 
     def _modify_model_add_outputs_nodes(self, onnx_model, save_path):
-        if not self.dump:
-            origin_model_graph_output = onnx_model.graph.output
-            outputs_name_list = [output_node.name for output_node in origin_model_graph_output]
-            outputs_name = [name for name in enumerate_model_node_outputs(onnx_model) if name in outputs_name_list]
-        else:
-            outputs_name = [name for name in enumerate_model_node_outputs(onnx_model)]
-        new_onnx_model = select_model_inputs_outputs(onnx_model, outputs_name)
-        bytes_model = new_onnx_model.SerializeToString()
-        save_as_external_data_switch = sys.getsizeof(bytes_model) > MAX_PROTOBUF
+        if self.dump:
+            onnx_model.graph.output.extend(
+                onnx.ValueInfoProto(name=tensor_name) 
+                for node in onnx_model.graph.node 
+                for tensor_name in node.output
+            )
+        
+        model_size = onnx_model.ByteSize()
+        save_external_flag = model_size < 0 or model_size > MAX_PROTOBUF
+        
+        utils.logger.debug("Modfied model has size over 2G: %s", save_external_flag)
+        
         onnx.save_model(
-            new_onnx_model,
+            onnx_model, 
             save_path,
-            save_as_external_data=save_as_external_data_switch,
-            location=self.model_dir if save_as_external_data_switch else None,
+            save_as_external_data=save_external_flag
         )
-        utils.logger.info("modify model outputs success: %s", save_path)
-        return bytes_model
-
+        
+        utils.logger.info("Modified model has being saved successfully at: %s", os.path.abspath(save_path))
+        
     def _get_inputs_tensor_info(self):
         inputs_tensor_info = []
         input_tensor_names = [item.name for item in self.model_with_inputs_session.get_inputs()]
