@@ -19,16 +19,17 @@
 AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体化开发工具，用于辅助用户进行模型迁移以及性能与精度的调试调优，当前包括benchmark、debug、transplt、analyze、llm等组件。
 
 ### AIT各子功能介绍
-| 任务类型                        | 子功能                           | 说明                                      |
-|-----------------------------|-------------------------------|-----------------------------------------|
-| [benchmark](docs/benchmark) | -                             | 用来针对指定的推理模型运行推理程序，并能够测试推理模型的性能（包括吞吐率、时延） |
-| debug(一站式调试)                | [surgeon](docs/debug/surgeon) | 使能ONNX模型在昇腾芯片的优化，并提供基于ONNX的改图功能         |
-| debug(一站式调试)                | [compare](docs/debug/compare) | 提供自动化的推理场景精度比对，用来定位问题算子                 |
-| [analyze](components/analyze) | -                             | 提供其他平台模型迁移至昇腾平台的支持度分析功能                 |
-| [transplt](components/transplt) | -                             | 提供NV C++推理应用迁移分析以及昇腾API推荐功能             |
-| [convert](components/convert) | -                             | 提供推理模型转换功能                              |
-| [profile](docs/profile) | - | 提供profiling，提供整网详细的性能数据及相关信息            |
-| [llm](components/llm/doc/README.md) | - | 提供加速库（atb）大模型推理调试工具，包括数据dump功能和数据比对功能            |
+| 任务类型                                | 子功能                           | 说明                                       |
+|-------------------------------------|-------------------------------|------------------------------------------|
+| [benchmark](docs/benchmark)         | -                             | 用来针对指定的推理模型运行推理程序，并能够测试推理模型的性能（包括吞吐率、时延） |
+| debug(一站式调试)                        | [surgeon](docs/debug/surgeon) | 使能ONNX模型在昇腾芯片的优化，并提供基于ONNX的改图功能          |
+| debug(一站式调试)                        | [compare](docs/debug/compare) | 提供自动化的推理场景精度比对，用来定位问题算子                  |
+| [analyze](components/analyze)       | -                             | 提供其他平台模型迁移至昇腾平台的支持度分析功能                  |
+| [transplt](components/transplt)     | -                             | 提供NV C++推理应用迁移分析以及昇腾API推荐功能              |
+| [convert](components/convert)       | -                             | 提供推理模型转换功能                               |
+| [profile](docs/profile)             | -                             | 提供profiling，提供整网详细的性能数据及相关信息             |
+| [llm](components/llm/doc/README.md) | -                             | 提供加速库（atb）大模型推理调试工具，包括数据dump功能和数据比对功能    |
+| [tensor-view](docs/tensor_view)     | -                             | 提供查看、切片、转置、保存tensor的接口                   |
 
 
 ## 工具安装
