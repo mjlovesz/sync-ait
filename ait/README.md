@@ -28,7 +28,7 @@ AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体�
 | [transplt](components/transplt)     | -                             | 提供NV C++推理应用迁移分析以及昇腾API推荐功能              |
 | [convert](components/convert)       | -                             | 提供推理模型转换功能                               |
 | [profile](docs/profile)             | -                             | 提供profiling，提供整网详细的性能数据及相关信息             |
-| [llm](components/llm/doc/README.md) | -                             | 提供加速库（atb）大模型推理调试工具，包括数据dump功能和数据比对功能    |
+| [llm](docs/llm/README.md) | -                             | 提供加速库（atb）大模型推理调试工具，包括数据dump功能和数据比对功能    |
 | [tensor-view](docs/tensor_view)     | -                             | 提供查看、切片、转置、保存tensor的接口                   |
 
 
