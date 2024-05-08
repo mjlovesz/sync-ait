@@ -54,7 +54,7 @@ class OperationTest(unittest.TestCase):
         self.precision_standard = {
             'torch.double': [error1, 99.99], 'torch.uint32': [error1, 99.99], 'torch.int64': [error1, 99.99],
             'torch.float': [error1, 99.99], 'torch.int32': [error1, 99.99], 'torch.uint64': [error1, 99.99],
-            'torch.float16': [error3, 99.9], 'torch.bf16': [error4, 99.6], 'torch.int8': [error6, 99.9],
+            'torch.float16': [error3, 99.9], 'torch.bfloat16': [error4, 99.6], 'torch.int8': [error6, 99.9],
             'torch.uint8': [error6, 99], 'torch.int16': [error6, 99.9], 'torch.uint16': [error6, 99.9],
             'torch.bool': [error1, 100]
         }
@@ -129,6 +129,11 @@ class OperationTest(unittest.TestCase):
             out_tensors = self.rerun_op(excute_type)
         else:
             out_tensors = self.out_tensors
+        
+        if self.op_name == "AllGatherOperation":
+            rank = self.op_param.get("rank", 0)
+            out_tensors[0] = out_tensors[0][rank]
+
         golden_out_tensors = self.golden_calc(self.in_tensors)
         try:
             logger.debug("out_tensor", out_tensors[0].size())
@@ -243,16 +248,19 @@ class OperationTest(unittest.TestCase):
 
             rel_pass_rate = "%.16f" % float(rel_pass_rate)
             max_rel = "%.16f" % float(max_rel)
-            abs_pass_rate, max_abs, cos_sim, kl_div = self.get_other_precisions(out_tensors[i], golden_out_tensors[i], 
-                                                                                etol)
+            abs_pass_rate, max_abs, cos_sim, kl_div = self.get_other_precisions(
+                out_tensors[i], golden_out_tensors[i], etol)
 
-            self.case_info['res_detail'].append({"precision_standard": ps_standard,
-                                                "rel_pass_rate": rel_pass_rate,
-                                                "max_rel": max_rel,
-                                                "abs_pass_rate": abs_pass_rate,
-                                                "max_abs": max_abs,
-                                                "cos_sim": cos_sim,
-                                                "kl_div": kl_div})
+            cur_result = {
+                "precision_standard": ps_standard,
+                "rel_pass_rate": rel_pass_rate,
+                "max_rel": max_rel,
+                "abs_pass_rate": abs_pass_rate,
+                "max_abs": max_abs,
+                "cos_sim": cos_sim,
+                "kl_div": kl_div,
+            }
+            self.case_info['res_detail'].append(cur_result)
 
             if flag:
                 self.case_info['excuted_information'] = 'execution successful'
