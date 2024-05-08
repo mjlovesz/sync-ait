@@ -92,6 +92,11 @@ INSTALL_INFO_MAP = [
         "pkg-path": os.path.join("profile", "msprof"),
     },
     {
+        "arg-name": "tensor-view",
+        "pkg-name": "ait-tensor-view",
+        "pkg-path": "tensor_view"
+    },
+    {
         "arg-name": "benchmark",
         "pkg-name": "ait-benchmark",
         "pkg-path": "benchmark",

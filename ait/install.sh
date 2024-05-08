@@ -23,6 +23,7 @@ only_convert=
 only_transplt=
 only_profile=
 only_llm=
+only_tensor_view=
 arg_help=0
 
 while [[ "$#" -gt 0 ]]; do case $1 in
@@ -37,6 +38,7 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   --transplt) only_transplt=true;;
   --profile) only_profile=true;;
   --llm) only_llm=true;;
+  --tensor-view) only_tensor_view=true;;
   --uninstall) uninstall=true;;
   -y) all_uninstall=-y;;
   -h|--help) arg_help=1;;
@@ -65,6 +67,7 @@ if [ "$arg_help" -eq "1" ]; then
   echo " --transplt : only install transplt component"
   echo " --profile : only install profile component"
   echo " --llm : only install llm component"
+  echo "--tensor-view: only install tensor-view component"
   echo " --full : using with install, install all components and dependencies, may need sudo privileges"
   echo " --uninstall : uninstall"
   echo " -y : using with uninstall, don't ask for confirmation of uninstall deletions"
@@ -155,6 +158,11 @@ uninstall(){
     then
       pip3 uninstall ait-llm ${all_uninstall}
     fi
+
+    if [ ! -z $only_tensor_view ]
+        then
+          pip3 uninstall tensor_view ${all_uninstall}
+        fi
   fi
   exit;
 }
@@ -266,7 +274,13 @@ install(){
       build_opchecker_so
   fi
 
-  if [ -z $only_compare ] && [ -z $only_surgeon ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ] && [ -z $only_llm ]
+  if [ ! -z $only_tensor_view ]
+    then
+        pip3 install ${CURRENT_DIR}/components/tensor_view ${arg_force_reinstall}
+        build_opchecker_so
+    fi
+
+  if [ -z $only_compare ] && [ -z $only_surgeon ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ] && [ -z $only_llm ] && [ -z $only_tensor_view ]
   then
     pre_check_skl2onnx
     download_and_install_aclruntime
@@ -279,6 +293,7 @@ install(){
     ${CURRENT_DIR}/components/transplt \
     ${CURRENT_DIR}/components/profile/msprof \
     ${CURRENT_DIR}/components/llm \
+    ${CURRENT_DIR}/components/tensor_view \
     ${arg_force_reinstall}
 
     bash ${CURRENT_DIR}/components/convert/build.sh
