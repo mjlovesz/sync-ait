@@ -186,18 +186,18 @@ class OnnxDumpData(DumpData):
                 for tensor_name in node.output
             )
         
-        try:
-            onnx_model.SerializeToString()
-        except ValueError as e:
-            utils.logger.debug("Modified model has size over 2G.")
-            
-            onnx.save_model(onnx_model, save_path, save_as_external_data=True)
-            utils.logger.debug("All tensors have being saved as external data at %s")
-        else:
-            utils.logger.debug("Modified model has size less than 2G.")
-            onnx.save_model(onnx_model, save_path)
+        model_size = onnx_model.ByteSize()
+        save_external_flag = 0 < model_size < MAX_PROTOBUF
         
-        utils.logger.info("Modified model has being saved successfully: ", os.path.abspath(save_path))
+        utils.logger.debug("Modfied model has size less than 2G: %s", save_external_flag)
+        
+        onnx.save_model(
+            onnx_model, 
+            save_path,
+            save_as_external_data=save_external_flag
+        )
+        
+        utils.logger.info("Modified model has being saved successfully at: %s", os.path.abspath(save_path))
         
     def _get_inputs_tensor_info(self):
         inputs_tensor_info = []
