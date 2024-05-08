@@ -187,9 +187,9 @@ class OnnxDumpData(DumpData):
             )
         
         model_size = onnx_model.ByteSize()
-        save_external_flag = 0 < model_size < MAX_PROTOBUF
+        save_external_flag = model_size < 0 or model_size > MAX_PROTOBUF
         
-        utils.logger.debug("Modfied model has size less than 2G: %s", save_external_flag)
+        utils.logger.debug("Modfied model has size over 2G: %s", save_external_flag)
         
         onnx.save_model(
             onnx_model, 
