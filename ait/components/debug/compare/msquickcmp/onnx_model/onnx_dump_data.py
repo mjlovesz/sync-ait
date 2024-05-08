@@ -148,7 +148,7 @@ class OnnxDumpData(DumpData):
         #                                 -> onnxruntime load as session
         with open(model_path, "rb") as ff:
             model_contents = ff.read()
-        onnx_model = onnx.load_model_from_string(model_contents)
+        onnx_model = onnx.load_model(model_path)
         for index, node in enumerate(onnx_model.graph.node):
             if not node.name:
                 node.name = node.op_type + "_" + str(index)
@@ -191,10 +191,10 @@ class OnnxDumpData(DumpData):
         except ValueError as e:
             utils.logger.debug("Modified model has size over 2G.")
             
-            external_data_path = os.path.join(self.model_dir, "ait_tensor_files")
-            onnx.save_model(onnx_model, save_path, save_as_external_data=True, location=external_data_path)
-            utils.logger.debug("All tensors have being saved as external data at %s", external_data_path)
+            onnx.save_model(onnx_model, save_path, save_as_external_data=True)
+            utils.logger.debug("All tensors have being saved as external data at %s")
         else:
+            utils.logger.debug("Modified model has size less than 2G.")
             onnx.save_model(onnx_model, save_path)
         
         utils.logger.info("Modified model has being saved successfully: ", os.path.abspath(save_path))
