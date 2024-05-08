@@ -14,5 +14,6 @@
 
 from components.utils.install import AitInstaller
 
+
 class TensorViewInstaller(AitInstaller):
     pass
