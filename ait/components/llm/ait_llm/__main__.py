@@ -385,17 +385,6 @@ class Transform(BaseCommand):
         transform_quant.transform_quant(source_path=args.source, enable_sparse=args.enable_sparse)
 
 
-class LlmCommand(BaseCommand):
-    def __init__(self, name="", help_info="", children=None, has_handle=False, **kwargs):
-        super().__init__(name, help_info, children, has_handle, **kwargs)
-
-    def add_arguments(self, parser, **kwargs):
-        return super().add_arguments(parser, **kwargs)
-
-    def handle(self, args, **kwargs):
-        return super().handle(args, **kwargs)
-
-
 def get_cmd_instance():
     llm_help_info = "Large Language Model(llm) Debugger Tools."
     dump_cmd_instance = DumpCommand("dump", "Dump tool for ascend transformer boost", alias_name="dd")
@@ -409,4 +398,4 @@ def get_cmd_instance():
     instances = [
         dump_cmd_instance, compare_cmd_instance, opcheck_cmd_instance, errcheck_cmd_instance, transform_cmd_instance
     ]
-    return LlmCommand("llm", llm_help_info, instances)
+    return BaseCommand("llm", llm_help_info, instances)
