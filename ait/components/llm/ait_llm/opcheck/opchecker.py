@@ -25,6 +25,7 @@ import pandas as pd
 import torch
 
 from ait_llm.common.log import logger
+from ait_llm.compare.cmp_algorithm import CUSTOM_ALG_MAP
 
 
 class OpChecker:
@@ -348,6 +349,7 @@ class OpChecker:
         import openpyxl
 
         optional_idx = self.get_optional_idx()
+        custom_head = list(CUSTOM_ALG_MAP.keys())
         if not os.path.exists(self.output_path):
             wb = openpyxl.Workbook()
             ws = wb.active
@@ -357,7 +359,7 @@ class OpChecker:
             ]
             optional_head = ['abs_precision_result(%)', 'max_abs_error', 'cosine_similarity', 'kl_divergence']
             optional_head_cp = [optional_head[i] for i in optional_idx]
-            ws.append(required_head + optional_head_cp)
+            ws.append(required_head + optional_head_cp + custom_head)
             wb.save(self.output_path)
 
         wb = openpyxl.load_workbook(self.output_path)
@@ -383,7 +385,8 @@ class OpChecker:
                 ]
                 optional = [abs_pass_rate, max_abs, cos_sim, kl_div]
                 optional_cp = [optional[idx] for idx in optional_idx]
-                ws.append(required + optional_cp)
+                custom_res = [res_detail[custom_name] for custom_name in custom_head]
+                ws.append(required + optional_cp + custom_res)
         else:
             default_str = 'NaN'
             i, precision_standard, rel_pass_rate, max_rel, abs_pass_rate, max_abs, cos_sim, kl_div = default_str, \
@@ -394,5 +397,6 @@ class OpChecker:
             ]
             optional = [abs_pass_rate, max_abs, cos_sim, kl_div]
             optional_cp = [optional[idx] for idx in optional_idx]
-            ws.append(required + optional_cp)
+            custom_res = [default_str] * len(custom_head)
+            ws.append(required + optional_cp + custom_res)
         wb.save(self.output_path)
