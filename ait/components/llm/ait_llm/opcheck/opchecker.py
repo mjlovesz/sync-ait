@@ -336,9 +336,10 @@ class OpChecker:
 
     def _update_single_op_result(self, op_info, cur_id, res_detail):
         default_str = 'NaN'
+        excuted_information = op_info["excuted_information"]
         required = [
             op_info["op_id"], op_info["op_name"], op_info["op_param"], op_info["tensor_path"],
-            cur_id, res_detail.get('precision_standard', default_str), op_info["excuted_information"],
+            cur_id, res_detail.get('precision_standard', default_str), excuted_information,
             res_detail.get('rel_pass_rate', default_str), res_detail.get('max_rel', default_str),
         ]
         if 'abs' in self.precision_type:
@@ -350,7 +351,11 @@ class OpChecker:
             required.append(res_detail.get('kl_div', default_str))
 
         custom_ret = [res_detail.get(custom_name, default_str) for custom_name in CUSTOM_ALG_MAP]
-        return required + custom_ret + [op_info.get('fail_reason', default_str)]
+
+        fail_reason = op_info.get('fail_reason', default_str)
+        if fail_reason == "" and "fail" in excuted_information:
+            fail_reason = "precision_result(%) not met standard"
+        return required + custom_ret + [fail_reason]
 
     def write_op_result_to_csv(self, op_result):
         import openpyxl
