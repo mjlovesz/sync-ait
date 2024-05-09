@@ -213,6 +213,7 @@ class CompareCommand(BaseCommand):
 
         parser.add_argument(
             '--custom-algorithms',
+            '-alg',
             required=False,
             nargs='+',
             help='custom comparing algorithms in format "python_file_path.py:function". \
@@ -309,7 +310,23 @@ class OpcheckCommand(BaseCommand):
             default=False,
             help='Rerun atb operations if True. Compare outputs in dump data if False')
 
+        parser.add_argument(
+            '--custom-algorithms',
+            '-alg',
+            required=False,
+            nargs='+',
+            help='custom comparing algorithms in format "python_file_path.py:function". \
+                  Should better be a standalong file, and function should in format like \
+                  "def foo(golden_tensor, my_tensor): return float_value, string_message"')
+
     def handle(self, args, **kwargs):
+        # Adding custom comparing algorithms
+        if args.custom_algorithms:
+            from ait_llm.compare.cmp_algorithm import register_custom_compare_algorithm
+
+            for custom_compare_algorithm in args.custom_algorithms:
+                register_custom_compare_algorithm(custom_compare_algorithm)
+
         op = OpChecker()
         logger.info(f"===================Opcheck start====================")
         op.start_test(args)
