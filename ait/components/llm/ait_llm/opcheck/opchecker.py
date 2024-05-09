@@ -387,8 +387,8 @@ class OpChecker:
         
         if len(op_result['res_detail']) > 0:
             for cur_id, res_detail in enumerate(op_result['res_detail']):
-                ws.append(_update_single_op_result(op_info, cur_id, res_detail))
+                ws.append(self._update_single_op_result(op_info, cur_id, res_detail))
         else:
             cur_id, res_detail = 'NaN', {}
-            ws.append(_update_single_op_result(op_info, cur_id, res_detail))
+            ws.append(self._update_single_op_result(op_info, cur_id, res_detail))
         wb.save(self.output_path)
