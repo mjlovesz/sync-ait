@@ -96,10 +96,9 @@ if [ ! -e "$ATB_HOME_PATH/lib/libatb.so" ]; then
     exit 1
 fi
 
-NLOHMAN_JSON_LINE=`nm -D $ATB_HOME_PATH/lib/libatb.so | grep -i nlohmann -m 1`
+NLOHMAN_JSON_LINE=`nm -D $ATB_HOME_PATH/lib/libatb.so | grep -i nlohmann | head -n 1`
 if [ "$NLOHMAN_JSON_LINE" = "" ]; then
     echo "nlohmann json info not found in $ATB_HOME_PATH/lib/libatb.so. This shouldn't happen. make sure atb is installed correctly"
-    exit 1
 fi
 
 if [[ "$NLOHMAN_JSON_LINE" =~ "cxx11" ]]; then
