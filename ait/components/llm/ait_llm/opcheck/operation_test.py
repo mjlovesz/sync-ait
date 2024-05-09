@@ -178,7 +178,7 @@ class OperationTest(unittest.TestCase):
         return abs_pass_rate.item() * 100, max_abs_error.item()
 
     def get_other_precisions(self, out, golden, etol):
-        message = ""
+        message = []
         precision_type = self.case_info['precision_type']
         default_str = 'NaN'
         abs_pass_rate, max_abs_error, cos_sim, kl = None, None, None, None
@@ -188,16 +188,18 @@ class OperationTest(unittest.TestCase):
             abs_pass_rate, max_abs_error = self.get_abs_pass_rate(out, golden, etol)
         if 'cos_sim' in precision_type:
             cos_sim, cur_message = CMP_ALG_MAP["cosine_similarity"](golden, out)
-            message += cur_message
+            if cur_message:
+                message.append('cos_sim: ' + cur_message)
         if 'kl' in precision_type:
             kl, cur_message = CMP_ALG_MAP["kl_divergence"](golden, out)
-            message += cur_message
+            if cur_message:
+                message.append('kl_div: ' + cur_message)
         abs_pass_rate_str = "%.16f" % float(abs_pass_rate) if abs_pass_rate is not None else default_str
         max_abs_error_str = "%.16f" % float(max_abs_error) if max_abs_error is not None else default_str
         cos_sim_str = "%.10f" % cos_sim if cos_sim is not None else default_str
         kl_div_str = "%.16f" % kl if kl is not None else default_str
 
-        return (abs_pass_rate_str, max_abs_error_str, cos_sim_str, kl_div_str), message
+        return (abs_pass_rate_str, max_abs_error_str, cos_sim_str, kl_div_str), ", ".join(message)
 
     def get_npu_device(self):
         npu_device = os.environ.get("NPU_DEVICE")
@@ -271,7 +273,7 @@ class OperationTest(unittest.TestCase):
             for name, compare_func in CUSTOM_ALG_MAP.items():
                 cur_result[name], cur_message = compare_func(golden_out_tensor, out_tensor)
                 if cur_message:
-                    message.append(cur_message)
+                    message.append(f"{name}: {cur_message}")
             self.case_info['res_detail'].append(cur_result)
 
             if pass_flag:
