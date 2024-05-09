@@ -268,10 +268,10 @@ class OperationTest(unittest.TestCase):
                 cur_result[name], cur_message = compare_func(golden_out_tensor, out_tensor)
                 message += cur_message
             self.case_info['res_detail'].append(cur_result)
-            print(f"{cur_result = }")
-            print(f"{message = }")
 
             if message:
-                self.case_info['excuted_information'] = message
+                self.case_info['excuted_information'] = 'execution failed'
+                self.case_info['fail_reason'] = message
             else:
                 self.case_info['excuted_information'] = 'execution successful'
+                self.case_info['fail_reason'] = ''

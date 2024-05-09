@@ -350,8 +350,7 @@ class OpChecker:
             required.append(res_detail.get('kl_div', default_str))
 
         custom_ret = [res_detail.get(custom_name, default_str) for custom_name in CUSTOM_ALG_MAP]
-        print(f"{custom_ret = }")
-        return required + custom_ret
+        return required + custom_ret + [res_detail.get('fail_reason', default_str)]
 
     def write_op_result_to_csv(self, op_result):
         import openpyxl
@@ -371,7 +370,7 @@ class OpChecker:
             if 'kl' in self.precision_type:
                 required_head.append('kl_divergence')
             custom_header = list(CUSTOM_ALG_MAP.keys())
-            ws.append(required_head + custom_header)
+            ws.append(required_head + custom_header + ["fail_reason"])
             wb.save(self.output_path)
 
         wb = openpyxl.load_workbook(self.output_path)
