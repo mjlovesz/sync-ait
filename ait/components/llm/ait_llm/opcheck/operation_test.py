@@ -223,7 +223,7 @@ class OperationTest(unittest.TestCase):
         return soc_version
 
     def __golden_compare_all(self, out_tensors, golden_out_tensors):
-        message = ""
+        message = []
 
         my_data_len, golden_data_len = len(out_tensors), len(golden_out_tensors)
         if my_data_len != golden_data_len:
@@ -234,7 +234,7 @@ class OperationTest(unittest.TestCase):
             out_dtype = str(out_tensor.dtype)
             p_s = self.precision_standard.get(out_dtype, [])
             if len(p_s) != 2:
-                message += f"{out_dtype} not supported!"
+                message.append(f"{out_dtype} not supported!")
                 continue
             etol = self.erol_dict.get(p_s[0], 0.001)
             err_rate = p_s[1]
@@ -253,7 +253,7 @@ class OperationTest(unittest.TestCase):
             (abs_pass_rate, max_abs, cos_sim, kl_div), cur_message = self.get_other_precisions(
                 out_tensor, golden_out_tensor, etol
             )
-            message += cur_message
+            message.append(cur_message)
 
             cur_result = {
                 "precision_standard": ps_standard,
@@ -266,12 +266,12 @@ class OperationTest(unittest.TestCase):
             }
             for name, compare_func in CUSTOM_ALG_MAP.items():
                 cur_result[name], cur_message = compare_func(golden_out_tensor, out_tensor)
-                message += cur_message
+                message.append(cur_message)
             self.case_info['res_detail'].append(cur_result)
 
             if message:
                 self.case_info['excuted_information'] = 'execution failed'
-                self.case_info['fail_reason'] = message
+                self.case_info['fail_reason'] = ", ".join(message)
             else:
                 self.case_info['excuted_information'] = 'execution successful'
                 self.case_info['fail_reason'] = ''
