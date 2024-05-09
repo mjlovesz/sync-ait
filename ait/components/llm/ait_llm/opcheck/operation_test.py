@@ -101,8 +101,8 @@ class OperationTest(unittest.TestCase):
 
     def tearDown(self):
         self.excuted_ids.put(self.op_id)
-        if self.case_info['excuted_information'] != 'execution successful':
-            self.case_info['excuted_information'] = 'execution failed'
+        if self.case_info['excuted_information'] != 'PASS':
+            self.case_info['excuted_information'] = 'FAILED'
 
     def rerun_op(self, excute_type): 
         operation = torch.classes.OperationTorch.OperationTorch(self.op_name)
@@ -223,10 +223,11 @@ class OperationTest(unittest.TestCase):
         return soc_version
 
     def __golden_compare_all(self, out_tensors, golden_out_tensors):
-        message = []
+        message, pass_flag = [], True
 
         my_data_len, golden_data_len = len(out_tensors), len(golden_out_tensors)
         if my_data_len != golden_data_len:
+            pass_flag = False
             logger.info(f"Data count not equal, {my_data_len} != {golden_data_len}. Will compare only partial")
 
         tensor_count = len(out_tensors)
@@ -234,19 +235,21 @@ class OperationTest(unittest.TestCase):
             out_dtype = str(out_tensor.dtype)
             p_s = self.precision_standard.get(out_dtype, [])
             if len(p_s) != 2:
-                message.append(f"{out_dtype} not supported!")
-                continue
+                cur_message = f"{out_dtype} not supported!"
+                self.case_info['fail_reason'] = cur_message
+                raise RuntimeError(cur_message)
+
             etol = self.erol_dict.get(p_s[0], 0.001)
             err_rate = p_s[1]
             ps_standard = f"{err_rate}%(error<{etol})"
 
             rel_pass_rate, max_rel = self.get_rel_pass_rate(out_tensor, golden_out_tensor, etol)
 
-            try:
-                self.assertLess(err_rate, rel_pass_rate)
-            except AssertionError as e:
-                flag = False
-                logger.debug(e)
+            if err_rate >= rel_pass_rate:
+                pass_flag = False
+                cur_message = f"err_rate: {err_rate} not met standart: {rel_pass_rate}"
+                message.append(cur_message)
+                logger.debug(cur_message)
 
             rel_pass_rate = "%.16f" % float(rel_pass_rate)
             max_rel = "%.16f" % float(max_rel)
@@ -271,9 +274,9 @@ class OperationTest(unittest.TestCase):
                     message.append(cur_message)
             self.case_info['res_detail'].append(cur_result)
 
-            if message:
-                self.case_info['excuted_information'] = 'execution failed'
-                self.case_info['fail_reason'] = ", ".join(message)
+            if pass_flag:
+                self.case_info['excuted_information'] = 'PASS'
+                
             else:
-                self.case_info['excuted_information'] = 'execution successful'
-                self.case_info['fail_reason'] = ''
+                self.case_info['excuted_information'] = 'FAILED'
+            self.case_info['fail_reason'] = ", ".join(message)

@@ -351,11 +351,7 @@ class OpChecker:
             required.append(res_detail.get('kl_div', default_str))
 
         custom_ret = [res_detail.get(custom_name, default_str) for custom_name in CUSTOM_ALG_MAP]
-
-        fail_reason = op_info.get('fail_reason', default_str)
-        if fail_reason == "" and "fail" in excuted_information:
-            fail_reason = "precision_result(%) not met standard"
-        return required + custom_ret + [fail_reason]
+        return required + custom_ret + [op_info.get('fail_reason', default_str)]
 
     def write_op_result_to_csv(self, op_result):
         import openpyxl
@@ -365,7 +361,7 @@ class OpChecker:
             ws = wb.active
             required_head = [
                 'op_id', 'op_name', 'op_param', 'tensor_path', 'out_tensor_id', 'precision_standard',
-                'excuted_information', 'precision_result(%)', 'max_rel_error'
+                'op_precession_result', 'precision_result(%)', 'max_rel_error'
             ]
             if 'abs' in self.precision_type:
                 required_head.append('abs_precision_result(%)')
