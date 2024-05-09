@@ -35,7 +35,7 @@ download_and_install_aclruntime() {
     WHL_NAME="aclruntime-0.0.2-cp3${PYTHON3_MINI_VERSION}-cp3${PYTHON3_MINI_VERSION}${SUB_SUFFIX}-linux_$(uname -m).whl"
     BASE_URL="https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/ait/"
     echo "WHL_NAME=$WHL_NAME, URL=${BASE_URL}${WHL_NAME}"    
-    if [[ -n $AIT_INSTALL_FIND_LINKS ]]; then
+    if [ "$AIT_INSTALL_FIND_LINKS" != "" ]; then
         cp "$AIT_INSTALL_FIND_LINKS/$WHL_NAME" $WHL_NAME
     else 
         wget --no-check-certificate -c "${BASE_URL}${WHL_NAME}"
@@ -44,7 +44,7 @@ download_and_install_aclruntime() {
     if [ $? -ne 0  ]; then
         echo "Downloading from whl failed"
         echo "installing from whl failed, will install from source code"
-        if [[ -z $AIT_DOWNLOAD_PATH ]]; then 
+        if [ "$AIT_DOWNLOAD_PATH" == "" ]; then 
             pip install ${CURRENT_DIR}/../backend --force-reinstall
         else
             pip3 wheel ${CURRENT_DIR}/../backend -v
@@ -55,7 +55,7 @@ download_and_install_aclruntime() {
         return 
     fi
 
-    if [[ -z $AIT_DOWNLOAD_PATH ]]; then
+    if [ "$AIT_DOWNLOAD_PATH" == "" ]; then
         pip3 install $WHL_NAME --force-reinstall && rm -f $WHL_NAME
     else
         mv $WHL_NAME "$AIT_DOWNLOAD_PATH/$WHL_NAME"
