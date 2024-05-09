@@ -253,7 +253,8 @@ class OperationTest(unittest.TestCase):
             (abs_pass_rate, max_abs, cos_sim, kl_div), cur_message = self.get_other_precisions(
                 out_tensor, golden_out_tensor, etol
             )
-            message.append(cur_message)
+            if cur_message:
+                message.append(cur_message)
 
             cur_result = {
                 "precision_standard": ps_standard,
@@ -266,7 +267,8 @@ class OperationTest(unittest.TestCase):
             }
             for name, compare_func in CUSTOM_ALG_MAP.items():
                 cur_result[name], cur_message = compare_func(golden_out_tensor, out_tensor)
-                message.append(cur_message)
+                if cur_message:
+                    message.append(cur_message)
             self.case_info['res_detail'].append(cur_result)
 
             if message:
