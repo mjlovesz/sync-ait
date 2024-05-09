@@ -122,7 +122,7 @@ def register_custom_compare_algorithm(custom_compare_algorithm):
     except Exception as ee:
         raise ValueError(f"function {func_name} should recieve 2 torch tensor parameters")
 
-    if not isinstance(ret, (list, tuple)) or len(ret) != 2
+    if not isinstance(ret, (list, tuple)) or len(ret) != 2:
         raise ValueError(f"function {func_name} should return 2 value in type ((float, int, str), str)")
     if not isinstance(ret[0], (float, int, str)) or not isinstance(ret[1], str):
         raise ValueError(f"function {func_name} should return 2 value in type ((float, int, str), str)")
