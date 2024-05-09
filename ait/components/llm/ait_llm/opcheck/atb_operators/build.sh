@@ -49,7 +49,7 @@ function download_nlohmann_json()
     fi 
     
     if [ "$AIT_DOWNLOAD_PATH" != "" ]; then 
-        mv $JSON_URL "$AIT_DOWNLOAD_PATH"
+        mv $JSON_TAR "$AIT_DOWNLOAD_PATH"
         cd -
         exit 0
     fi
