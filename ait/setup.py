@@ -46,7 +46,7 @@ setup(
         '': [
             'LICENSE',
             'README.md',
-            'requirements.txt',
+            '*.txt',
             '*.bat',
             '*.sh',
             '*.cpp',
