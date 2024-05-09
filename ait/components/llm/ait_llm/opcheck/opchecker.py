@@ -350,7 +350,7 @@ class OpChecker:
             required.append(res_detail.get('kl_div', default_str))
 
         custom_ret = [res_detail.get(custom_name, default_str) for custom_name in CUSTOM_ALG_MAP]
-        return required + custom_ret + [res_detail.get('fail_reason', default_str)]
+        return required + custom_ret + [op_info.get('fail_reason', default_str)]
 
     def write_op_result_to_csv(self, op_result):
         import openpyxl
@@ -377,11 +377,12 @@ class OpChecker:
         ws = wb.active
 
         op_info = {
-            "op_id": op_result['op_id'],
-            "op_name": op_result['op_name'],
-            "op_param": json.dumps(op_result['op_param']),
-            "tensor_path": op_result['tensor_path'],
-            "excuted_information": op_result['excuted_information'],
+            "op_id": op_result.get('op_id', ""),
+            "op_name": op_result.get('op_name', ""),
+            "op_param": json.dumps(op_result.get('op_param', "")),
+            "tensor_path": op_result.get('tensor_path', ""),
+            "excuted_information": op_result.get('excuted_information', ""),
+            "excuted_information": op_result.get('fail_reason', ""),
         }
         
         if len(op_result['res_detail']) > 0:
