@@ -247,7 +247,7 @@ def install_tool(tool_info, find_links):
     pkg_path = get_real_pkg_path(tool_info.get("pkg-path"))
 
     if find_links is not None:
-        subprocess.run([sys.executable, "-m", "pip", "install", pkg_path, "-f", find_links])
+        subprocess.run([sys.executable, "-m", "pip", "install", pkg_path, "--no-index", "-f", find_links])
         subprocess.run([sys.executable, "-m", "components", "build-extra", arg_name, "-f", find_links])
     else:
         subprocess.run([sys.executable, "-m", "pip", "install", pkg_path])

@@ -16,43 +16,7 @@ set -e
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 AIT_LLM_INSTALL_PATH="$(python3 -c 'import ait_llm, os; print(os.path.dirname(os.path.abspath(ait_llm.__file__)))')"
 
-if [ "$AIT_LLM_INSTALL_PATH" == "" ]; then
-    echo "[ERROR] ait_llm not found in python packages. Make sure ait_llm is installed for pip"
-    exit 1
-fi
-
-if [ "$ASCEND_TOOLKIT_HOME" == "" ]; then
-    echo "[ERROR] ASCEND_TOOLKIT_HOME is empty. Make sure CANN toolkit is installed correctly"
-    exit 1
-fi
-
-if [ "$ATB_HOME_PATH" == "" ]; then
-    echo "[ERROR] ATB_HOME_PATH is empty. Make sure atb is installed correctly"
-    exit 1
-fi
-
-if [ "$ATB_SPEED_HOME_PATH" == "" ]; then
-    echo "[ERROR] ATB_SPEED_HOME_PATH is empty. Make sure mindie_atb_models is configured correctly"
-    exit 1
-fi
-
-if [ ! -e "$ATB_HOME_PATH/lib/libatb.so" ]; then
-    echo "[ERROR] $ATB_HOME_PATH/lib/libatb.so not exists. Make sure atb is installed correctly"
-    exit 1
-fi
-
-NLOHMAN_JSON_LINE=`nm -D $ATB_HOME_PATH/lib/libatb.so | grep -i nlohmann -m 1`
-if [ "$NLOHMAN_JSON_LINE" = "" ]; then
-    echo "nlohmann json info not found in $ATB_HOME_PATH/lib/libatb.so. This shouldn't happen. make sure atb is installed correctly"
-    exit 1
-fi
-
-if [[ "$NLOHMAN_JSON_LINE" =~ "cxx11" ]]; then
-    CMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=1"
-else
-    CMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0"
-fi
-echo "CMAKE_CXX_FLAGS=$CMAKE_CXX_FLAGS"
+echo SCRIPT_DIR: $SCRIPT_DIR
 
 function download_nlohmann_json()
 {
@@ -78,7 +42,17 @@ function download_nlohmann_json()
 
     mkdir -p $SCRIPT_DIR/dependency
     cd $SCRIPT_DIR/dependency
-    wget --no-check-certificate -c $JSON_URL
+    if [ "$AIT_INSTALL_FIND_LINKS" != "" ]; then 
+        cp "$AIT_INSTALL_FIND_LINKS/$JSON_TAR" ./
+    else
+        wget --no-check-certificate -c $JSON_URL
+    fi 
+    
+    if [ "$AIT_DOWNLOAD_PATH" != "" ]; then 
+        mv $JSON_TAR "$AIT_DOWNLOAD_PATH"
+        cd -
+        exit 0
+    fi
     tar xf $JSON_TAR
 
     JSON_FILE_NAME="json-$JSON_VERSION"
@@ -91,6 +65,49 @@ function download_nlohmann_json()
     rm -rf $JSON_FILE_NAME
     cd -
 }
+
+if [ "$AIT_DOWNLOAD_PATH" != "" ]; then 
+    download_nlohmann_json
+    exit
+fi
+
+if [ "$AIT_LLM_INSTALL_PATH" == "" ]; then
+    echo "[ERROR] ait_llm not found in python packages. Make sure ait_llm is installed for pip"
+    exit 1
+fi
+
+if [ "$ASCEND_TOOLKIT_HOME" == "" ]; then
+    echo "[ERROR] ASCEND_TOOLKIT_HOME is empty. Make sure CANN toolkit is installed correctly"
+    exit 1
+fi
+
+if [ "$ATB_HOME_PATH" == "" ]; then
+    echo "[ERROR] ATB_HOME_PATH is empty. Make sure atb is installed correctly"
+    exit 1
+fi
+
+if [ "$ATB_SPEED_HOME_PATH" == "" ]; then
+    echo "[ERROR] ATB_SPEED_HOME_PATH is empty. Make sure mindie_atb_models is configured correctly"
+    exit 1
+fi
+
+if [ ! -e "$ATB_HOME_PATH/lib/libatb.so" ]; then
+    echo "[ERROR] $ATB_HOME_PATH/lib/libatb.so not exists. Make sure atb is installed correctly"
+    exit 1
+fi
+
+NLOHMAN_JSON_LINE=`nm -D $ATB_HOME_PATH/lib/libatb.so | grep -i nlohmann | head -n 1`
+if [ "$NLOHMAN_JSON_LINE" = "" ]; then
+    echo "nlohmann json info not found in $ATB_HOME_PATH/lib/libatb.so. This shouldn't happen. make sure atb is installed correctly"
+fi
+
+if [[ "$NLOHMAN_JSON_LINE" =~ "cxx11" ]]; then
+    CMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=1"
+else
+    CMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0"
+fi
+echo "CMAKE_CXX_FLAGS=$CMAKE_CXX_FLAGS"
+
 
 download_nlohmann_json
 
