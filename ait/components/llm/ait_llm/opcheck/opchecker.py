@@ -382,7 +382,7 @@ class OpChecker:
             "op_param": json.dumps(op_result.get('op_param', "")),
             "tensor_path": op_result.get('tensor_path', ""),
             "excuted_information": op_result.get('excuted_information', ""),
-            "excuted_information": op_result.get('fail_reason', ""),
+            "fail_reason": op_result.get('fail_reason', ""),
         }
         
         if len(op_result['res_detail']) > 0:
