@@ -361,10 +361,10 @@ class OpChecker:
             ws = wb.active
             required_head = [
                 'op_id', 'op_name', 'op_param', 'tensor_path', 'out_tensor_id', 'precision_standard',
-                'op_precession_result', 'precision_result(%)', 'max_rel_error'
+                'precision_result', 'rel_precision_rate(%)', 'max_rel_error'
             ]
             if 'abs' in self.precision_type:
-                required_head.append('abs_precision_result(%)')
+                required_head.append('abs_precision_rate(%)')
                 required_head.append('max_abs_error')
             if 'cos_sim' in self.precision_type:
                 required_head.append('cosine_similarity')
