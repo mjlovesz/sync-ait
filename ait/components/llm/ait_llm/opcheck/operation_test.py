@@ -249,7 +249,7 @@ class OperationTest(unittest.TestCase):
 
             if err_rate >= rel_pass_rate:
                 pass_flag = False
-                cur_message = f"relative pass rate: {rel_pass_rate} not met standart: {err_rate}"
+                cur_message = f"relative pass rate: {rel_pass_rate} not met standart: {err_rate}."
                 message.append(cur_message)
                 logger.debug(cur_message)
 
