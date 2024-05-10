@@ -334,43 +334,71 @@ class OpChecker:
         case_manager.excute_cases()
         watching_thread.join()
 
-    def get_optional_idx(self):
-        optional_idx = []
+    def _update_single_op_result(self, op_info, cur_id, res_detail):
+        default_str = 'NaN'
+        excuted_information = op_info["excuted_information"]
+        required = [
+            op_info["op_id"], op_info["op_name"], op_info["op_param"], op_info["tensor_path"],
+            cur_id, res_detail.get('precision_standard', default_str), excuted_information,
+            res_detail.get('rel_pass_rate', default_str), res_detail.get('max_rel', default_str),
+        ]
         if 'abs' in self.precision_type:
-            optional_idx.append(0)
-            optional_idx.append(1)
+            required.append(res_detail.get('abs_pass_rate', default_str))
+            required.append(res_detail.get('max_abs', default_str))
         if 'cos_sim' in self.precision_type:
-            optional_idx.append(2)
+            required.append(res_detail.get('cos_sim', default_str))
         if 'kl' in self.precision_type:
-            optional_idx.append(3)
-        return optional_idx
+            required.append(res_detail.get('kl_div', default_str))
+
+        custom_ret = [res_detail.get(custom_name, default_str) for custom_name in CUSTOM_ALG_MAP]
+        return required + custom_ret + [op_info.get('fail_reason', default_str)]
 
     def write_op_result_to_csv(self, op_result):
         import openpyxl
 
+<<<<<<< HEAD
         optional_idx = self.get_optional_idx()
         custom_head = list(CUSTOM_ALG_MAP.keys())
+=======
+>>>>>>> master
         if not os.path.exists(self.output_path):
             wb = openpyxl.Workbook()
             ws = wb.active
             required_head = [
                 'op_id', 'op_name', 'op_param', 'tensor_path', 'out_tensor_id', 'precision_standard',
-                'excuted_information', 'precision_result(%)', 'max_rel_error'
+                'precision_result', 'rel_precision_rate(%)', 'max_rel_error'
             ]
+<<<<<<< HEAD
             optional_head = ['abs_precision_result(%)', 'max_abs_error', 'cosine_similarity', 'kl_divergence']
             optional_head_cp = [optional_head[i] for i in optional_idx]
             ws.append(required_head + optional_head_cp + custom_head)
+=======
+            if 'abs' in self.precision_type:
+                required_head.append('abs_precision_rate(%)')
+                required_head.append('max_abs_error')
+            if 'cos_sim' in self.precision_type:
+                required_head.append('cosine_similarity')
+            if 'kl' in self.precision_type:
+                required_head.append('kl_divergence')
+            custom_header = list(CUSTOM_ALG_MAP.keys())
+            ws.append(required_head + custom_header + ["fail_reason"])
+>>>>>>> master
             wb.save(self.output_path)
 
         wb = openpyxl.load_workbook(self.output_path)
         ws = wb.active
 
-        op_id = op_result['op_id']
-        op_name = op_result['op_name']
-        op_param = json.dumps(op_result['op_param'])
-        tensor_path = op_result['tensor_path']
-        excuted_information = op_result['excuted_information']
+        op_info = {
+            "op_id": op_result.get('op_id', ""),
+            "op_name": op_result.get('op_name', ""),
+            "op_param": json.dumps(op_result.get('op_param', "")),
+            "tensor_path": op_result.get('tensor_path', ""),
+            "excuted_information": op_result.get('excuted_information', ""),
+            "fail_reason": op_result.get('fail_reason', ""),
+        }
+        
         if len(op_result['res_detail']) > 0:
+<<<<<<< HEAD
             for i, res_detail in enumerate(op_result['res_detail']):
                 precision_standard = res_detail['precision_standard']
                 rel_pass_rate = res_detail['rel_pass_rate']
@@ -400,3 +428,11 @@ class OpChecker:
             custom_res = [default_str] * len(custom_head)
             ws.append(required + optional_cp + custom_res)
         wb.save(self.output_path)
+=======
+            for cur_id, res_detail in enumerate(op_result['res_detail']):
+                ws.append(self._update_single_op_result(op_info, cur_id, res_detail))
+        else:
+            cur_id, res_detail = 'NaN', {}
+            ws.append(self._update_single_op_result(op_info, cur_id, res_detail))
+        wb.save(self.output_path)
+>>>>>>> master

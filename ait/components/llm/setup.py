@@ -43,7 +43,7 @@ setup(
     description='Debug tools for large language model(llm)',
     url='https://gitee.com/ascend/ait/ait/components/llm',
     packages=find_packages(),    
-    package_data={'': ['*.sh', '*.cpp', '*.h', 'CMakeLists.txt']},
+    package_data={'': ['*.sh', '*.cpp', '*.h', '*.txt']},
     license='Apache-2.0',
     keywords='ait_llm',
     install_requires=required,

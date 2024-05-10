@@ -213,6 +213,7 @@ class CompareCommand(BaseCommand):
 
         parser.add_argument(
             '--custom-algorithms',
+            '-alg',
             required=False,
             nargs='+',
             help='custom comparing algorithms in format "python_file_path.py:function". \
@@ -311,6 +312,7 @@ class OpcheckCommand(BaseCommand):
 
         parser.add_argument(
             '--custom-algorithms',
+            '-alg',
             required=False,
             nargs='+',
             help='custom comparing algorithms in format "python_file_path.py:function". \

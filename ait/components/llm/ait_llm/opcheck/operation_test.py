@@ -101,8 +101,8 @@ class OperationTest(unittest.TestCase):
 
     def tearDown(self):
         self.excuted_ids.put(self.op_id)
-        if self.case_info['excuted_information'] != 'execution successful':
-            self.case_info['excuted_information'] = 'execution failed'
+        if self.case_info['excuted_information'] != 'PASS':
+            self.case_info['excuted_information'] = 'FAILED'
 
     def rerun_op(self, excute_type): 
         operation = torch.classes.OperationTorch.OperationTorch(self.op_name)
@@ -178,6 +178,7 @@ class OperationTest(unittest.TestCase):
         return abs_pass_rate.item() * 100, max_abs_error.item()
 
     def get_other_precisions(self, out, golden, etol):
+        message = []
         precision_type = self.case_info['precision_type']
         default_str = 'NaN'
         abs_pass_rate, max_abs_error, cos_sim, kl = None, None, None, None
@@ -186,15 +187,19 @@ class OperationTest(unittest.TestCase):
         if 'abs' in precision_type:
             abs_pass_rate, max_abs_error = self.get_abs_pass_rate(out, golden, etol)
         if 'cos_sim' in precision_type:
-            cos_sim, _ = CMP_ALG_MAP["cosine_similarity"](golden, out)
+            cos_sim, cur_message = CMP_ALG_MAP["cosine_similarity"](golden, out)
+            if cur_message:
+                message.append('cos_sim: ' + cur_message)
         if 'kl' in precision_type:
-            kl, _ = CMP_ALG_MAP["kl_divergence"](golden, out)
+            kl, cur_message = CMP_ALG_MAP["kl_divergence"](golden, out)
+            if cur_message:
+                message.append('kl_div: ' + cur_message)
         abs_pass_rate_str = "%.16f" % float(abs_pass_rate) if abs_pass_rate is not None else default_str
         max_abs_error_str = "%.16f" % float(max_abs_error) if max_abs_error is not None else default_str
         cos_sim_str = "%.10f" % cos_sim if cos_sim is not None else default_str
         kl_div_str = "%.16f" % kl if kl is not None else default_str
 
-        return abs_pass_rate_str, max_abs_error_str, cos_sim_str, kl_div_str
+        return (abs_pass_rate_str, max_abs_error_str, cos_sim_str, kl_div_str), ", ".join(message)
 
     def get_npu_device(self):
         npu_device = os.environ.get("NPU_DEVICE")
@@ -220,36 +225,41 @@ class OperationTest(unittest.TestCase):
         return soc_version
 
     def __golden_compare_all(self, out_tensors, golden_out_tensors):
-        flag = True
+        message, pass_flag = [], True
 
-        try:
-            self.assertEqual(len(out_tensors), len(golden_out_tensors))
-        except AssertionError as e:
-            flag = False
-            logger.debug(e)
+        my_data_len, golden_data_len = len(out_tensors), len(golden_out_tensors)
+        if my_data_len != golden_data_len:
+            pass_flag = False
+            logger.info(f"Data count not equal, {my_data_len} != {golden_data_len}. Will compare only partial")
 
         tensor_count = len(out_tensors)
-        for i in range(tensor_count):
-            out_dtype = str(out_tensors[i].dtype)
+        for out_tensor, golden_out_tensor in zip(out_tensors, golden_out_tensors):
+            out_dtype = str(out_tensor.dtype)
             p_s = self.precision_standard.get(out_dtype, [])
             if len(p_s) != 2:
-                raise RuntimeError(f"{out_dtype} not supported!")
+                cur_message = f"{out_dtype} not supported!"
+                self.case_info['fail_reason'] = cur_message
+                raise RuntimeError(cur_message)
+
             etol = self.erol_dict.get(p_s[0], 0.001)
             err_rate = p_s[1]
             ps_standard = f"{err_rate}%(error<{etol})"
 
-            rel_pass_rate, max_rel = self.get_rel_pass_rate(out_tensors[i], golden_out_tensors[i], etol)
+            rel_pass_rate, max_rel = self.get_rel_pass_rate(out_tensor, golden_out_tensor, etol)
 
-            try:
-                self.assertLess(err_rate, rel_pass_rate)
-            except AssertionError as e:
-                flag = False
-                logger.debug(e)
+            if err_rate >= rel_pass_rate:
+                pass_flag = False
+                cur_message = f"relative pass rate: {rel_pass_rate} not met standart: {err_rate}."
+                message.append(cur_message)
+                logger.debug(cur_message)
 
             rel_pass_rate = "%.16f" % float(rel_pass_rate)
             max_rel = "%.16f" % float(max_rel)
-            abs_pass_rate, max_abs, cos_sim, kl_div = self.get_other_precisions(
-                out_tensors[i], golden_out_tensors[i], etol)
+            (abs_pass_rate, max_abs, cos_sim, kl_div), cur_message = self.get_other_precisions(
+                out_tensor, golden_out_tensor, etol
+            )
+            if cur_message:
+                message.append(cur_message)
 
             cur_result = {
                 "precision_standard": ps_standard,
@@ -260,11 +270,15 @@ class OperationTest(unittest.TestCase):
                 "cos_sim": cos_sim,
                 "kl_div": kl_div,
             }
-            for custom_name, custom_func in CUSTOM_ALG_MAP.items():
-                cur_result.update({custom_name: custom_func(out_tensors[i], golden_out_tensors[i])})
+            for name, compare_func in CUSTOM_ALG_MAP.items():
+                cur_result[name], cur_message = compare_func(golden_out_tensor, out_tensor)
+                if cur_message:
+                    message.append(f"{name}: {cur_message}")
             self.case_info['res_detail'].append(cur_result)
 
-            if flag:
-                self.case_info['excuted_information'] = 'execution successful'
+            if pass_flag:
+                self.case_info['excuted_information'] = 'PASS'
+                
             else:
-                self.case_info['excuted_information'] = 'execution failed'
+                self.case_info['excuted_information'] = 'FAILED'
+            self.case_info['fail_reason'] = ", ".join(message)

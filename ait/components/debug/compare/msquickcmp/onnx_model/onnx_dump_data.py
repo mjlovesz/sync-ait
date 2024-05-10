@@ -19,6 +19,7 @@ This class is used to generate GUP dump data of the ONNX model.
 import sys
 import os
 import re
+import time
 
 import onnx
 import onnxruntime
@@ -298,16 +299,27 @@ class OnnxDumpData(DumpData):
 
     def _save_dump_data(self, dump_bins, old_onnx_model, net_output_node):
         res_idx = 0
+        file_name_map = []
         for node in old_onnx_model.graph.node:
             for j, output in enumerate(node.output):
                 if not self.dump and output not in net_output_node:
                     continue
                 file_name = self._generate_dump_data_file_name(node.name, j)
+                if len(file_name) > 255:
+                    new_file_name = str(round(time.time() * 1e6)) + str(len(file_name_map)) + ".npy"
+                    file_name_map.append(f"{new_file_name},{file_name}\n")
+                    file_name = new_file_name
+
                 file_path = os.path.join(self.onnx_dump_data_dir, file_name)
                 if output in net_output_node:
                     self.net_output[net_output_node.index(output)] = file_path
                 np.save(file_path, dump_bins[res_idx])
                 res_idx += 1
+
+        if len(file_name_map) > 0:
+            mapping_file_path = os.path.join(self.onnx_dump_data_dir, "mapping.csv")
+            with open(mapping_file_path, "w") as map_file:
+                map_file.writelines(file_name_map)
 
         if not self.single_op:
             for key, value in self.net_output.items():
