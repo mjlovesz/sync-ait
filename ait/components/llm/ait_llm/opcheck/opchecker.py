@@ -356,11 +356,6 @@ class OpChecker:
     def write_op_result_to_csv(self, op_result):
         import openpyxl
 
-<<<<<<< HEAD
-        optional_idx = self.get_optional_idx()
-        custom_head = list(CUSTOM_ALG_MAP.keys())
-=======
->>>>>>> master
         if not os.path.exists(self.output_path):
             wb = openpyxl.Workbook()
             ws = wb.active
@@ -368,11 +363,6 @@ class OpChecker:
                 'op_id', 'op_name', 'op_param', 'tensor_path', 'out_tensor_id', 'precision_standard',
                 'precision_result', 'rel_precision_rate(%)', 'max_rel_error'
             ]
-<<<<<<< HEAD
-            optional_head = ['abs_precision_result(%)', 'max_abs_error', 'cosine_similarity', 'kl_divergence']
-            optional_head_cp = [optional_head[i] for i in optional_idx]
-            ws.append(required_head + optional_head_cp + custom_head)
-=======
             if 'abs' in self.precision_type:
                 required_head.append('abs_precision_rate(%)')
                 required_head.append('max_abs_error')
@@ -382,7 +372,6 @@ class OpChecker:
                 required_head.append('kl_divergence')
             custom_header = list(CUSTOM_ALG_MAP.keys())
             ws.append(required_head + custom_header + ["fail_reason"])
->>>>>>> master
             wb.save(self.output_path)
 
         wb = openpyxl.load_workbook(self.output_path)
@@ -398,41 +387,9 @@ class OpChecker:
         }
         
         if len(op_result['res_detail']) > 0:
-<<<<<<< HEAD
-            for i, res_detail in enumerate(op_result['res_detail']):
-                precision_standard = res_detail['precision_standard']
-                rel_pass_rate = res_detail['rel_pass_rate']
-                max_rel = res_detail['max_rel']
-                abs_pass_rate = res_detail['abs_pass_rate']
-                max_abs = res_detail['max_abs']
-                cos_sim = res_detail['cos_sim']
-                kl_div = res_detail['kl_div']
-                required = [
-                    op_id, op_name, op_param, tensor_path, i, precision_standard, excuted_information, rel_pass_rate,
-                    max_rel
-                ]
-                optional = [abs_pass_rate, max_abs, cos_sim, kl_div]
-                optional_cp = [optional[idx] for idx in optional_idx]
-                custom_res = [res_detail[custom_name] for custom_name in custom_head]
-                ws.append(required + optional_cp + custom_res)
-        else:
-            default_str = 'NaN'
-            i, precision_standard, rel_pass_rate, max_rel, abs_pass_rate, max_abs, cos_sim, kl_div = default_str, \
-                default_str, default_str, default_str, default_str, default_str, default_str, default_str
-            required = [
-                op_id, op_name, op_param, tensor_path, i, precision_standard, excuted_information, rel_pass_rate,
-                max_rel
-            ]
-            optional = [abs_pass_rate, max_abs, cos_sim, kl_div]
-            optional_cp = [optional[idx] for idx in optional_idx]
-            custom_res = [default_str] * len(custom_head)
-            ws.append(required + optional_cp + custom_res)
-        wb.save(self.output_path)
-=======
             for cur_id, res_detail in enumerate(op_result['res_detail']):
                 ws.append(self._update_single_op_result(op_info, cur_id, res_detail))
         else:
             cur_id, res_detail = 'NaN', {}
             ws.append(self._update_single_op_result(op_info, cur_id, res_detail))
         wb.save(self.output_path)
->>>>>>> master
