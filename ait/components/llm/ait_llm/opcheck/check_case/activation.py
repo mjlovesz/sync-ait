@@ -29,7 +29,7 @@ class ActivationGolden:
     def gelu_golden(in_tensors, _):
         in_tensors = in_tensors.float()
         try:
-            float_result = 0.5 * in_tensors * (1 + torch.nn.functional.tanh(torch.sqrt(2 / torch.pi) * 
+            float_result = 0.5 * in_tensors * (1 + torch.nn.functional.tanh(torch.sqrt(torch.tensor(2 / torch.pi)) * 
                                                     (in_tensors + 0.044715 * torch.pow(in_tensors, 3))))
         except ZeroDivisionError as e:
             raise e
