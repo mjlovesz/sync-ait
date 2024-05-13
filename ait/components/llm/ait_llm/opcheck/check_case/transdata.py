@@ -21,24 +21,23 @@ from ait_llm.common.log import logger
 
 class OpcheckTransdataOperation(operation_test.OperationTest):
     @staticmethod
-    def round_up(self, x, align):
+    def round_up(x, align):
         if align == 0:
             return -1
         return (x + align - 1) // align * align
     
     @staticmethod
-    def custom_pad(self, x, pad_dims):
+    def custom_pad(x, pad_dims):
         return torch.nn.functional.pad(x, pad_dims)
 
     @staticmethod
-    def custom_reshape(self, x, target_shape):
+    def custom_reshape(x, target_shape):
         return x.reshape(target_shape)
     
     @staticmethod
-    def custom_transpose(self, x, dim1, dim2):
+    def custom_transpose(x, dim1, dim2):
         return x.transpose(dim1, dim2)
 
-    @staticmethod
     def golden_nd_to_nz_3d(self, in_tensors):
         align_int8 = 32
         default_align = 16
@@ -67,7 +66,6 @@ class OpcheckTransdataOperation(operation_test.OperationTest):
                     1, 2
                 ).contiguous()
 
-    @staticmethod
     def golden_nd_to_nz_2d(self, in_tensors):
         align_int8 = 32
         default_align = 16
@@ -96,7 +94,6 @@ class OpcheckTransdataOperation(operation_test.OperationTest):
                     1, 2
                 ).contiguous()
 
-    @staticmethod
     def golden_nz_to_nd(self, in_tensors, out_crops):
         aux_dims = [0, 0, 0]
         aux_dims[0] = in_tensors[0].size(0)
