@@ -23,10 +23,10 @@ from ait_llm.common.log import logger
 
 class OpcheckAllGatherOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
-        def get_tensor_path(tensor_type):
-            _tensor_path = [x for x in os.listdir(self.tensor_path) if x.startswith(tensor_type)]
+        def get_tensor_path(new_tensor_path, tensor_type):
+            _tensor_path = [x for x in os.listdir(new_tensor_path) if x.startswith(tensor_type)]
             _tensor_path.sort(key=lambda x:int(x.split(tensor_type)[1].split('.')[0]))  
-            _tensor_path = [os.path.join(self.tensor_path, x) for x in _tensor_path]
+            _tensor_path = [os.path.join(new_tensor_path, x) for x in _tensor_path]
             return _tensor_path
  
         rank = self.op_param.get("rank", None) 
@@ -39,7 +39,7 @@ class OpcheckAllGatherOperation(operation_test.OperationTest):
             new_tensor_path = self.tensor_path.replace(old_did_pid, new_did_pid)
             if new_tensor_path:
                 if os.path.isdir(new_tensor_path):
-                    _in_tensor_path = get_tensor_path("intensor")
+                    _in_tensor_path = get_tensor_path(new_tensor_path, "intensor")
                     for path in _in_tensor_path:
                         _in_tensor = read_atb_data(path).npu()
                         new_in_tensors.append(_in_tensor) 
