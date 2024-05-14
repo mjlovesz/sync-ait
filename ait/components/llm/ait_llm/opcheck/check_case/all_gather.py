@@ -50,7 +50,7 @@ class OpcheckAllGatherOperation(operation_test.OperationTest):
 
         golden_result = torch.stack(new_in_tensors, dim=0)
         return [golden_result]        
-  
+
     def test_all_gather(self):
         if self.pid is None:
             logger_text = f"Cannot get a valid pid, AllGatherOperation is not supported!"
