@@ -129,10 +129,6 @@ class OperationTest(unittest.TestCase):
             out_tensors = self.rerun_op(excute_type)
         else:
             out_tensors = self.out_tensors
-        
-        if self.op_name == "AllGatherOperation":
-            rank = self.op_param.get("rank", 0)
-            out_tensors[0] = out_tensors[0][rank]
 
         golden_out_tensors = self.golden_calc(self.in_tensors)
         try:
