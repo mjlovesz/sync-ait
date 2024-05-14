@@ -35,7 +35,7 @@ class OpcheckAllGatherOperation(operation_test.OperationTest):
         new_in_tensors = []
         for i in range(rank_root, rank_size):
             old_did_pid = "_".join([str(rank), str(self.pid)])
-            new_did_pid = "_".join([str(i), str(self.pid-rank+i)])
+            new_did_pid = "_".join([str(i), str(int(self.pid) - int(rank) + i)])
             new_tensor_path = self.tensor_path.replace(old_did_pid, new_did_pid)
             if new_tensor_path:
                 if os.path.isdir(new_tensor_path):
@@ -50,7 +50,7 @@ class OpcheckAllGatherOperation(operation_test.OperationTest):
 
         golden_result = torch.stack(new_in_tensors, dim=0)
         return [golden_result]        
-
+  
     def test_all_gather(self):
         if self.pid is None:
             logger_text = f"Cannot get a valid pid, AllGatherOperation is not supported!"
