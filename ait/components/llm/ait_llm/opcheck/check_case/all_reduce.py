@@ -103,6 +103,11 @@ class OpcheckAllReduceOperation(operation_test.OperationTest):
         return golden
 
     def test_all_reduce(self):
+        if self.pid is None:
+            logger_text = f"Cannot get a valid pid, AllReduceOperation is not supported!"
+            logger.error(logger_text)
+            return
+        
         all_reduce_type = self.op_param.get('allReduceType', None)
         backend = self.op_param.get('backend', None)
 
