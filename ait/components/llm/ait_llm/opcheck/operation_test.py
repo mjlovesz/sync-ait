@@ -39,7 +39,7 @@ class OperationTest(unittest.TestCase):
         self.op_id = case_info['op_id']
         self.op_name = case_info['op_name']
         self.op_param = case_info['op_param']
-        self.tensor_path = case_info['tensor_path']
+        self.pid = case_info['pid']
         self.in_tensors = []
         self.out_tensors = []
         self.rerun = self.case_info["rerun"]
