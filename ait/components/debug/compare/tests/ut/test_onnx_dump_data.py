@@ -60,14 +60,13 @@ def reshape_model():
     original_shape = [2, 3, 4]
     new_shape = [1, 1, 24]
     node = onnx.helper.make_node(
-        'Reshape', inputs=['data', 'shape'], outputs=['reshaped'],
-        name="Reshape_1"
+        'Reshape', inputs=['data', 'shape'], outputs=['reshaped'], name="Reshape_1"
     )
     node2 = onnx.helper.make_node(
         'Reshape', inputs=['data', 'shape'], outputs=['reshaped2']
     )
 
-    values = np.array([1,1, 24]).astype(np.int64)
+    values = np.array([1, 1, 24]).astype(np.int64)
     node_const = onnx.helper.make_node(
         "Constant",
         inputs=[],
@@ -79,21 +78,31 @@ def reshape_model():
             vals=values.flatten().astype(int),
         ),
     )
-    
+
     graph = onnx.helper.make_graph(
         [node, node2, node_const],
         'test_graph',
-        [onnx.helper.make_tensor_value_info('data', onnx.TensorProto.FLOAT, original_shape)],
-        [onnx.helper.make_tensor_value_info('reshaped', onnx.TensorProto.FLOAT, new_shape),
-         onnx.helper.make_tensor_value_info('reshaped2', onnx.TensorProto.FLOAT, new_shape)],
+        [
+            onnx.helper.make_tensor_value_info(
+                'data', onnx.TensorProto.FLOAT, original_shape
+            )
+        ],
+        [
+            onnx.helper.make_tensor_value_info(
+                'reshaped', onnx.TensorProto.FLOAT, new_shape
+            ),
+            onnx.helper.make_tensor_value_info(
+                'reshaped2', onnx.TensorProto.FLOAT, new_shape
+            ),
+        ],
     )
     model = onnx.helper.make_model(graph, producer_name='ONNX respace')
-    onnx.save(model, temp_onnx_name)  
+    onnx.save(model, temp_onnx_name)
 
     yield temp_onnx_name
 
-    # if os.path.exists(temp_onnx_name):
-    #     os.remove(temp_onnx_name)
+    if os.path.exists(temp_onnx_name):
+        os.remove(temp_onnx_name)
 
 
 @pytest.fixture(scope="function")
