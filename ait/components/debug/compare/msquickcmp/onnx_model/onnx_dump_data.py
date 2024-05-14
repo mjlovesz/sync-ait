@@ -150,9 +150,24 @@ class OnnxDumpData(DumpData):
         with open(model_path, "rb") as ff:
             model_contents = ff.read()
         onnx_model = onnx.load_model(model_path)
+        only_index = 999
+        name_set = set((node.name for node in onnx_model.graph.node))
+
+        def get_only_name(ori_name, index):
+            new_name = f"{ori_name}_{only_index}"
+            if new_name not in name_set:
+                return new_name, index + 1
+            else:
+                return get_only_name(ori_name, index + 1)
+
         for index, node in enumerate(onnx_model.graph.node):
-            if not node.name:
-                node.name = node.op_type + "_" + str(index)
+            if node.name:
+                continue
+            new_name = node.op_type + "_" + str(index)
+            if new_name in name_set:
+                new_name, only_index = get_only_name(new_name, only_index)
+            name_set.add(new_name)
+            node.name = new_name
         return onnx_model, model_contents
 
     def _new_model_save_path(self, origin_path):
