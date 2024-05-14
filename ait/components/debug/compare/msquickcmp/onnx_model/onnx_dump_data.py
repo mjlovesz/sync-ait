@@ -180,6 +180,8 @@ class OnnxDumpData(DumpData):
 
     def _modify_model_add_outputs_nodes(self, onnx_model, save_path):
         if self.dump:
+            del onnx_model.graph.output[:]
+            
             onnx_model.graph.output.extend(
                 onnx.ValueInfoProto(name=tensor_name) 
                 for node in onnx_model.graph.node 
