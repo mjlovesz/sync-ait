@@ -40,6 +40,7 @@ class OperationTest(unittest.TestCase):
         self.op_name = case_info['op_name']
         self.op_param = case_info['op_param']
         self.tensor_path = case_info['tensor_path']
+        self.pid = case_info['pid']
         self.in_tensors = []
         self.out_tensors = []
         self.rerun = self.case_info["rerun"]
@@ -77,27 +78,53 @@ class OperationTest(unittest.TestCase):
             suite.addTest(optest_class(name, case_info=case_info, excuted_ids=excuted_ids))
         return suite
 
-    def setUp(self):
-        def get_tensor_path(tensor_type):
-            _tensor_path = [x for x in os.listdir(self.tensor_path) if x.startswith(tensor_type)]
-            _tensor_path.sort(key=lambda x:int(x.split(tensor_type)[1].split('.')[0]))  
-            _tensor_path = [os.path.join(self.tensor_path, x) for x in _tensor_path]
-            return _tensor_path
+    def validate_param(self, *param_names):
+        ret = True
+        for param_name in param_names:
+            param = self.op_param.get(param_name, None)
+            if param is None:
+                ret = False
+                msg = f"Cannot get golden data because opParam {param_name} is not correctly set!"
+                logger.error(msg)
+        return ret
 
-        if self.tensor_path:
-            if os.path.isdir(self.tensor_path):
-                _in_tensor_path = get_tensor_path("intensor")
-                for path in _in_tensor_path:
-                    _in_tensor = read_atb_data(path).npu()
-                    self.in_tensors.append(_in_tensor)
-                _out_tensor_path = get_tensor_path("outtensor")
-                for path in _out_tensor_path:
-                    _out_tensor = read_atb_data(path).npu()
-                    self.out_tensors.append(_out_tensor)
-            else:
-                raise RuntimeError(f"{self.tensor_path} not valid")
-        else:
-            raise RuntimeError(f"{self.tensor_path} not valid")
+    def validate_path(self, path):
+        if not path or not os.path.exists(path):
+            raise RuntimeError(f"{path} not valid")
+
+    def get_tensor_path(self, path, tensor_type):
+        _tensor_path = [x for x in os.listdir(path) if x.startswith(tensor_type)]
+        _tensor_path.sort(key=lambda x:int(x.split(tensor_type)[1].split('.')[0]))  
+        tensor_files = [os.path.join(path, x) for x in _tensor_path]
+        return tensor_files
+
+    def read_tensor_from_file(self, tensor_files):
+        res = []
+        for tensor_file in tensor_files:
+            tensor = read_atb_data(tensor_file).npu()
+            res.append(tensor)
+        return res
+
+    def get_new_in_tensors(self):
+        rank = self.op_param.get("rank", None) 
+        rank_root = self.op_param.get("rankRoot", None)
+        rank_size = self.op_param.get("rankSize", None)
+        new_in_tensors = []
+        for i in range(rank_root, rank_size):
+            old_did_pid = f"{rank}_{self.pid}"
+            new_did_pid = f"{i}_{int(self.pid) - rank + i}"
+            new_tensor_path = self.tensor_path.replace(old_did_pid, new_did_pid)
+            self.validate_path(new_tensor_path)
+            _in_tensor_files = self.get_tensor_path(new_tensor_path, "intensor")
+            new_in_tensors.extend(self.read_tensor_from_file(_in_tensor_files))
+        return new_in_tensors
+
+    def setUp(self):
+        self.validate_path(self.tensor_path)
+        _in_tensor_files = self.get_tensor_path(self.tensor_path, "intensor")
+        self.in_tensors = self.read_tensor_from_file(_in_tensor_files)
+        _out_tensor_files = self.get_tensor_path(self.tensor_path, "outtensor")
+        self.out_tensors = self.read_tensor_from_file(_out_tensor_files)
 
     def tearDown(self):
         self.excuted_ids.put(self.op_id)
@@ -129,10 +156,6 @@ class OperationTest(unittest.TestCase):
             out_tensors = self.rerun_op(excute_type)
         else:
             out_tensors = self.out_tensors
-        
-        if self.op_name == "AllGatherOperation":
-            rank = self.op_param.get("rank", 0)
-            out_tensors[0] = out_tensors[0][rank]
 
         golden_out_tensors = self.golden_calc(self.in_tensors)
         try:

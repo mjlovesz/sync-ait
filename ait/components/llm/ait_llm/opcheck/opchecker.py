@@ -42,6 +42,7 @@ class OpChecker:
         self.completed_op_id_queue = queue.Queue()
         self.special_cases = ['KvCacheOperation', 'ReshapeAndCacheOperation', 'SelfAttentionOperation']
         self.base_path = ''
+        self.pid = None
         self.tensor_path = ''
         self.op_path = ''
         self.output_dir = ''
@@ -100,37 +101,42 @@ class OpChecker:
     def get_base_path(self, cur_path):
         dirseg = cur_path.split(os.path.sep)
         if len(dirseg) >= 4 and dirseg[-3] == 'tensors' and dirseg[-4] == 'ait_dump':
-            return cur_path
+            try:
+                pid = dirseg[-2].split("_")[1]
+            except:
+                pid = None
+            return cur_path, pid
         elif cur_path == os.path.dirname(cur_path):
-            return None
+            return None, None
         else:
             return self.get_base_path(os.path.dirname(cur_path))
 
     def check_input_legality(self, input_path):
         ret = False
         base_path = None
+        pid = None
 
         input_path = os.path.realpath(input_path)
         if not os.path.exists(input_path):
             logger_text = f"Input path not found: {input_path}"
             logger.error(logger_text)
-            return input_path, base_path, ret
+            return input_path, base_path, pid, ret
         
-        base_path = self.get_base_path(input_path)
+        base_path, pid = self.get_base_path(input_path)
         if base_path is None:
             logger_text = f"input path is not in ait_dump tensors directory: {input_path}"
             logger.error(logger_text)
-            return input_path, base_path, ret
+            return input_path, base_path, pid, ret
         
         ret = True
-        return input_path, base_path, ret
+        return input_path, base_path, pid, ret
 
     def args_init(self, args):
         import torch_npu
 
         execution_flag = True
 
-        self.tensor_path, self.base_path, ret = self.check_input_legality(args.input)
+        self.tensor_path, self.base_path, self.pid, ret = self.check_input_legality(args.input)
         if not ret:
             execution_flag = False
         
@@ -290,7 +296,7 @@ class OpChecker:
 
         case_info = {
             'op_id': op_id, 'op_name': op_name, 'op_param': op_param, 'tensor_path': tensor_path,
-            'precision_type': self.precision_type, 'rerun': self.rerun
+            'precision_type': self.precision_type, 'rerun': self.rerun, 'pid': self.pid
         }
 
         ret = self.is_exec_node(case_info)
