@@ -16,12 +16,23 @@ import torch
 import torch_npu
 
 from ait_llm.opcheck import operation_test
+from ait_llm.common.log import logger
 
 
 class OpcheckAllGatherOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
-        golden_result = torch.stack(in_tensors, dim=0)
+        new_in_tensors = self.get_new_in_tensors()
+        golden_result = torch.stack(new_in_tensors, dim=0)
         return [golden_result]        
 
     def test_all_gather(self):
+        if self.pid is None:
+            logger_text = f"Cannot get a valid pid, AllGatherOperation is not supported!"
+            logger.error(logger_text)
+            return
+
+        ret = self.validate_param("rank", "rankRoot", "rankSize")
+        if not ret:
+            return
+
         self.execute()
