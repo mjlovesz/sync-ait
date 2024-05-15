@@ -247,6 +247,11 @@ class OperationTest(unittest.TestCase):
         logger.debug(logger_text)
         return soc_version
 
+    def convert_data_format(self, data):
+        dim0, dim1 = data.shape[0], data.shape[1]
+        data = data.reshape([1, dim1 // 16, dim0, 16]).permute(0, 2, 1, 3).reshape([dim0, dim1])
+        return data
+
     def __golden_compare_all(self, out_tensors, golden_out_tensors):
         message, pass_flag = [], True
 

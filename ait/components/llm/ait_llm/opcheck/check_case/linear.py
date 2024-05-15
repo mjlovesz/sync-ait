@@ -16,7 +16,6 @@ import torch
 import torch_npu
 
 from ait_llm.opcheck import operation_test
-from ait_llm.common.log import logger
 
 
 class OpcheckLinearOperation(operation_test.OperationTest):
@@ -44,6 +43,9 @@ class OpcheckLinearOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         transpose_a = self.op_param.get("transposeA", None)
         transpose_b = self.op_param.get("transposeB", None)
+        soc_version = self.get_soc_version()
+        if soc_version == 'Ascend310P':
+            in_tensors[1] = self.convert_data_format(in_tensors[1])
         golden_result = self.golden_flp(transpose_a, transpose_b, in_tensors[0], in_tensors[1])
         has_bias = self.op_param.get("hasBias", False)
         if has_bias:
@@ -51,10 +53,7 @@ class OpcheckLinearOperation(operation_test.OperationTest):
         return [golden_result]
 
     def test(self):
-        transpose_a = self.op_param.get("transposeA", None)
-        transpose_b = self.op_param.get("transposeB", None)
-        if transpose_a is None or transpose_b is None:
-            msg = "Cannot get golden data because opParam is not correctly set!"
-            logger.error(msg)
+        ret = self.validate_param("transposeA", "transposeB")
+        if not ret:
             return
         self.execute()
