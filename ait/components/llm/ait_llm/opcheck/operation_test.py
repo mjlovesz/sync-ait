@@ -113,7 +113,7 @@ class OperationTest(unittest.TestCase):
         for i in range(rank_root, rank_size):
             old_did_pid = f"{rank}_{self.pid}"
             new_did_pid = f"{i}_{int(self.pid) - rank + i}"
-            new_tensor_path = self.tensor_path.replace(old_did_pid, new_did_pid)
+            new_tensor_path = self.tensor_path[::-1].replace(old_did_pid[::-1], new_did_pid[::-1], 1)[::-1]
             self.validate_path(new_tensor_path)
             _in_tensor_files = self.get_tensor_path(new_tensor_path, "intensor")
             new_in_tensors.extend(self.read_tensor_from_file(_in_tensor_files))
