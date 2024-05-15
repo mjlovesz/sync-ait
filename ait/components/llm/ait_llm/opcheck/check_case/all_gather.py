@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import torch
 import torch_npu
 
 from ait_llm.opcheck import operation_test
-from ait_llm.common.tool import read_atb_data
 from ait_llm.common.log import logger
 
 

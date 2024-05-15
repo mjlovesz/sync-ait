@@ -17,7 +17,6 @@ import torch
 import torch_npu
 
 from ait_llm.opcheck import operation_test
-from ait_llm.common.tool import read_atb_data
 from ait_llm.common.log import logger
 
 
