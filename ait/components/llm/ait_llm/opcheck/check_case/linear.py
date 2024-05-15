@@ -16,6 +16,7 @@ import torch
 import torch_npu
 
 from ait_llm.opcheck import operation_test
+from ait_llm.common.log import logger
 
 
 class OpcheckLinearOperation(operation_test.OperationTest):
@@ -46,6 +47,8 @@ class OpcheckLinearOperation(operation_test.OperationTest):
         soc_version = self.get_soc_version()
         if soc_version == 'Ascend310P':
             in_tensors[1] = self.convert_data_format(in_tensors[1])
+            logger_text = "The result of this case is unreliable on Ascend310P!"
+            logger.info(logger_text)
         golden_result = self.golden_flp(transpose_a, transpose_b, in_tensors[0], in_tensors[1])
         has_bias = self.op_param.get("hasBias", False)
         if has_bias:
