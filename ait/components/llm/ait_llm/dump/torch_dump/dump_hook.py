@@ -121,7 +121,11 @@ def wrap_torch_func(func):
         if not dump_config.dump_flag or not dump_config.is_dump_cur_device or not dump_config.dump_api:
             return output
 
-        api_dump_path = os.path.join(dump_config.dump_dir, dump_config.get_api_folder_name(func.__name__))
+        dump_name = dump_config.get_api_folder_name(func.__name__)
+        if not dump_config.is_dump_layer(dump_name, api=func):
+            return output
+
+        api_dump_path = os.path.join(dump_config.dump_dir, dump_name)
         if not os.path.exists(api_dump_path):
             os.makedirs(api_dump_path)
         dump_data(args, output, api_dump_path, dump_config.tensor_part)
@@ -184,7 +188,7 @@ def dump_module_data():
                 dump_config.last_logits = (module_name, outputs)
             return
 
-        if not dump_config.is_dump_layer(module_name, module):
+        if not dump_config.is_dump_layer(module_name, module=module):
             return
 
         dump_path = os.path.join(dump_config.dump_dir, str(dump_config.token_id), module_name)

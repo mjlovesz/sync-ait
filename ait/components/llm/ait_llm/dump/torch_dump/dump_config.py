@@ -57,6 +57,7 @@ class DumpConfig:
         dump_path=None,
         token_range=None,
         module_list=None,
+        api_list=None,
         tensor_part=2,
         device_id=None,
         dump_last_logits=False,
@@ -71,6 +72,7 @@ class DumpConfig:
         self.dump_api = "api" in self.mode
         self.token_range = token_range or [0]
         self.module_list = module_list or []
+        self.api_list = api_list or []
         self.tensor_part = tensor_part
         self.device_id = device_id
         self.is_dump_cur_device = True
@@ -108,17 +110,17 @@ class DumpConfig:
         if module_name not in self.module_ids:
             self.module_ids[module_name] = self.cur_module_id
 
-    def is_dump_layer(self, name, module=None):
+    def is_dump_layer(self, name, module=None, api=None):
         if not re.match(self.layer_name_reg, name):
             return False
 
-        if not self.module_list or not module:
-            return True
+        if self.module_list and module and not isinstance(module, tuple(self.module_list)):
+            return False
 
-        if isinstance(module, tuple(self.module_list)) or module in self.module_list:
-            return True
+        if self.api_list and api and api not in self.api_list:
+            return False
 
-        return False
+        return True
 
     def get_api_folder_name(self, api_name, index=0):
         if index == 0:
