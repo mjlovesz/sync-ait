@@ -25,7 +25,7 @@ from ait_llm.common.log import logger
 
 class DumpHookModule:
     def __init__(self, model, dump_config=None):
-        self.model = model
+        self.model: torch.nn.Module = model
         self.dump_config = dump_config
         self.ori_torch_attr = {}
         hook_ops.add_torch_ops()
@@ -34,6 +34,7 @@ class DumpHookModule:
     def add_hook(self):
         self._add_module_hook()
         self._add_api_hook()
+        self._dump_module_weight()
 
     def remove_hook(self):
         self._remove_module_hook()
@@ -88,6 +89,22 @@ class DumpHookModule:
                     continue
                 setattr(py_module, api_name, api)
 
+    def _dump_module_weight(self):
+        dump_config = DumpConfig()
+
+        if not dump_config.dump_weight:
+            return
+        
+        dump_path = os.path.join(dump_config.dump_dir, "weights")
+        if not os.path.exists(dump_path):
+            os.makedirs(dump_path)
+
+        for name, paramter in self.model.named_parameters():
+            if not dump_config.is_dump_layer(name):
+                continue
+
+            torch.save(paramter, os.path.join(dump_path, f"{name}.pth"))
+
 
 def wrap_torch_func(func):
     exec_count = 0
@@ -99,7 +116,7 @@ def wrap_torch_func(func):
         output = func(*args, **kwargs)
 
         dump_config = DumpConfig()
-        if not dump_config.dump_flag or not dump_config.is_dump_cur_device or dump_config.mode == "module":
+        if not dump_config.dump_flag or not dump_config.is_dump_cur_device or not dump_config.dump_api:
             return output
 
         api_dump_path = os.path.join(dump_config.dump_dir, func.__name__, str(exec_count))
@@ -140,32 +157,33 @@ def dump_module_data():
         nonlocal exec_count
         exec_count += 1
         dump_config = DumpConfig()
+        module_name = module.name
 
         if not dump_config.is_dump_cur_device:
             return
-        
+
         if dump_config.token_id == 0:
-            dump_config.update_module_ids(module.name)
+            dump_config.update_module_ids(module_name)
             # 将模型树状信息保存成json文件
             from ait_llm.dump.torch_dump.topo import ModelTree
+
             if not os.path.exists(dump_config.dump_dir):
                 os.makedirs(dump_config.dump_dir, mode=0o750)
             model_tree_path = os.path.join(dump_config.dump_dir, "model_tree.json")
             obj = ModelTree()
             obj.create_tree(module, dump_config.module_ids, model_tree_path)
 
-        if dump_config.mode == "api" or not dump_config.dump_flag:
+        if not dump_config.dump_module or not dump_config.dump_flag:
             return
-        
+
         if dump_config.dump_last_logits:
             if has_tensor(outputs):
-                dump_config.last_logits = (module.name, outputs)
-            return 
-
-        if dump_config.module_list and not isinstance(module, tuple(dump_config.module_list)):
+                dump_config.last_logits = (module_name, outputs)
             return
 
-        module_name = module.name
+        if not dump_config.is_dump_layer(module_name, module):
+            return
+
         dump_path = os.path.join(dump_config.dump_dir, str(dump_config.token_id), module_name)
         if not os.path.exists(dump_path):
             os.makedirs(dump_path, mode=0o750)
@@ -199,7 +217,7 @@ def has_tensor(feat):
             if has_tensor(tensor):
                 return True
     elif isinstance(feat, torch.Tensor):
-        return True 
+        return True
     return False
 
 
@@ -217,4 +235,3 @@ def dump_logits():
             dump_tensor(outputs, os.path.join(dump_path, "output"))
 
     return hook_func
-    

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+import re
 
 from ait_llm.common import utils
 from ait_llm.common.log import logger
@@ -28,11 +29,46 @@ def singleton(cls):
     return run
 
 
+def str_to_reg_str(name):
+    # 仅支持 *: 匹配0到N个随意字符
+    replace_name = (
+        name.replace("\\", "\\\\")
+        .replace(".", "\\.")
+        .replace("?", "\\?")
+        .replace("+", "\\+")
+        .replace("^", "\\^")
+        .replace("$", "\\$")
+        .replace("|", "\\|")
+        .replace("(", "\\(")
+        .replace(")", "\\)")
+        .replace("[", "\\[")
+        .replace("]", "\\]")
+        .replace("{", "\\{")
+        .replace("}", "\\}")
+        .replace("*", ".*")
+    )
+    return f'^{replace_name}$'
+
+
 @singleton
 class DumpConfig:
-    def __init__(self, dump_path=None, token_range=None, module_list=None, tensor_part=2, device_id=None, dump_last_logits=False):
+    def __init__(
+        self,
+        dump_path=None,
+        token_range=None,
+        module_list=None,
+        tensor_part=2,
+        device_id=None,
+        dump_last_logits=False,
+        mode=None,
+        dump_weight=False,
+        layer_name=None,
+    ):
         self.dump_path = dump_path or "./"
-        self.mode = "module"
+        self.mode = mode or ["module"]
+        self.mode = self.mode if isinstance(self.mode, (list, tuple)) else [self.mode]
+        self.dump_module = "module" in self.mode
+        self.dump_api = "api" in self.mode
         self.token_range = token_range or [0]
         self.module_list = module_list or []
         self.tensor_part = tensor_part
@@ -45,6 +81,8 @@ class DumpConfig:
         self.dump_dir = ""
         self.dump_last_logits = dump_last_logits
         self.last_logits = None
+        self.dump_weight = dump_weight
+        self.layer_name_reg = str_to_reg_str(layer_name) if layer_name is not None else ""  # 支持 *: 匹配0到N个随意支付
 
         if not self._check_args():
             raise ValueError("Invalid args of DumpConfig.")
@@ -52,7 +90,7 @@ class DumpConfig:
     def set_dump_device_and_dump_dir(self, device):
         if self.device_id is not None and device != "cpu":
             # Get the first position of a digit char, and cut out like cuda0 -> cuda, npu12 -> npu
-            device_type = device[:max(enumerate(device), key=lambda xx: str.isdigit(xx[1]))[0]]
+            device_type = device[: max(enumerate(device), key=lambda xx: str.isdigit(xx[1]))[0]]
             device_id_str = f"{device_type}{self.device_id}"  # -> npu0
             if device != device_id_str:
                 self.is_dump_cur_device = False
@@ -67,6 +105,18 @@ class DumpConfig:
         self.cur_module_id += 1
         if module_name not in self.module_ids:
             self.module_ids[module_name] = self.cur_module_id
+
+    def is_dump_layer(self, name, module=None):
+        if not re.match(self.layer_name_reg, name):
+            return False
+
+        if not self.module_list or not module:
+            return True
+        
+        if isinstance(module, tuple(self.module_list)) or module in self.module_list:
+            return True
+
+        return False
 
     def _check_args(self):
         utils.check_output_path_legality(self.dump_path)
