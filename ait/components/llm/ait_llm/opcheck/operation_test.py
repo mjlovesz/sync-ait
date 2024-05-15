@@ -78,27 +78,26 @@ class OperationTest(unittest.TestCase):
             suite.addTest(optest_class(name, case_info=case_info, excuted_ids=excuted_ids))
         return suite
 
-    def setUp(self):
-        def get_tensor_path(tensor_type):
-            _tensor_path = [x for x in os.listdir(self.tensor_path) if x.startswith(tensor_type)]
-            _tensor_path.sort(key=lambda x:int(x.split(tensor_type)[1].split('.')[0]))  
-            _tensor_path = [os.path.join(self.tensor_path, x) for x in _tensor_path]
-            return _tensor_path
+    def validate_path(self, path):
+        if not path or not os.path.exists(path):
+            raise RuntimeError(f"{path} not valid")
 
-        if self.tensor_path:
-            if os.path.isdir(self.tensor_path):
-                _in_tensor_path = get_tensor_path("intensor")
-                for path in _in_tensor_path:
-                    _in_tensor = read_atb_data(path).npu()
-                    self.in_tensors.append(_in_tensor)
-                _out_tensor_path = get_tensor_path("outtensor")
-                for path in _out_tensor_path:
-                    _out_tensor = read_atb_data(path).npu()
-                    self.out_tensors.append(_out_tensor)
-            else:
-                raise RuntimeError(f"{self.tensor_path} not valid")
-        else:
-            raise RuntimeError(f"{self.tensor_path} not valid")
+    def get_tensor_path(self, path, tensor_type):
+        _tensor_path = [x for x in os.listdir(path) if x.startswith(tensor_type)]
+        _tensor_path.sort(key=lambda x:int(x.split(tensor_type)[1].split('.')[0]))  
+        _tensor_path = [os.path.join(path, x) for x in _tensor_path]
+        return _tensor_path
+
+    def setUp(self):
+        self.validate_path(self.tensor_path)
+        _in_tensor_path = self.get_tensor_path(self.tensor_path, "intensor")
+        for path in _in_tensor_path:
+            _in_tensor = read_atb_data(path).npu()
+            self.in_tensors.append(_in_tensor)
+        _out_tensor_path = self.get_tensor_path(self.tensor_path, "outtensor")
+        for path in _out_tensor_path:
+            _out_tensor = read_atb_data(path).npu()
+            self.out_tensors.append(_out_tensor) 
 
     def tearDown(self):
         self.excuted_ids.put(self.op_id)
