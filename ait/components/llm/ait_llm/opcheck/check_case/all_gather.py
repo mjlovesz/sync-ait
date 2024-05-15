@@ -28,8 +28,8 @@ class OpcheckAllGatherOperation(operation_test.OperationTest):
         rank_size = self.op_param.get("rankSize", None)
         new_in_tensors = []
         for i in range(rank_root, rank_size):
-            old_did_pid = "_".join([str(rank), str(self.pid)])
-            new_did_pid = "_".join([str(i), str(int(self.pid) - int(rank) + i)])
+            old_did_pid = f"{rank}_{self.pid}"
+            new_did_pid = f"{i}_{int(self.pid) - rank + i}"
             new_tensor_path = self.tensor_path.replace(old_did_pid, new_did_pid)
             self.validate_path(new_tensor_path)
             _in_tensor_path = self.get_tensor_path(new_tensor_path, "intensor")

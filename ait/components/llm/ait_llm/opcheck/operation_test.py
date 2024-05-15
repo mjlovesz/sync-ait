@@ -85,18 +85,18 @@ class OperationTest(unittest.TestCase):
     def get_tensor_path(self, path, tensor_type):
         _tensor_path = [x for x in os.listdir(path) if x.startswith(tensor_type)]
         _tensor_path.sort(key=lambda x:int(x.split(tensor_type)[1].split('.')[0]))  
-        _tensor_path = [os.path.join(path, x) for x in _tensor_path]
-        return _tensor_path
+        tensor_files = [os.path.join(path, x) for x in _tensor_path]
+        return tensor_files
 
     def setUp(self):
         self.validate_path(self.tensor_path)
-        _in_tensor_path = self.get_tensor_path(self.tensor_path, "intensor")
-        for path in _in_tensor_path:
-            _in_tensor = read_atb_data(path).npu()
+        _in_tensor_files = self.get_tensor_path(self.tensor_path, "intensor")
+        for file in _in_tensor_files:
+            _in_tensor = read_atb_data(file).npu()
             self.in_tensors.append(_in_tensor)
-        _out_tensor_path = self.get_tensor_path(self.tensor_path, "outtensor")
-        for path in _out_tensor_path:
-            _out_tensor = read_atb_data(path).npu()
+        _out_tensor_files = self.get_tensor_path(self.tensor_path, "outtensor")
+        for file in _out_tensor_files:
+            _out_tensor = read_atb_data(file).npu()
             self.out_tensors.append(_out_tensor) 
 
     def tearDown(self):
