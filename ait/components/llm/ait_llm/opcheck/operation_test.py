@@ -98,16 +98,33 @@ class OperationTest(unittest.TestCase):
         tensor_files = [os.path.join(path, x) for x in _tensor_path]
         return tensor_files
 
+    def read_tensor_from_file(self, tensor_files):
+        res = []
+        for tensor_file in tensor_files:
+            tensor = read_atb_data(tensor_file).npu()
+            res.append(tensor)
+        return res
+
+    def get_new_in_tensors(self):
+        rank = self.op_param.get("rank", None) 
+        rank_root = self.op_param.get("rankRoot", None)
+        rank_size = self.op_param.get("rankSize", None)
+        new_in_tensors = []
+        for i in range(rank_root, rank_size):
+            old_did_pid = f"{rank}_{self.pid}"
+            new_did_pid = f"{i}_{int(self.pid) - rank + i}"
+            new_tensor_path = self.tensor_path.replace(old_did_pid, new_did_pid)
+            self.validate_path(new_tensor_path)
+            _in_tensor_files = self.get_tensor_path(new_tensor_path, "intensor")
+            new_in_tensors.extend(self.read_tensor_from_file(_in_tensor_files))
+        return new_in_tensors
+
     def setUp(self):
         self.validate_path(self.tensor_path)
         _in_tensor_files = self.get_tensor_path(self.tensor_path, "intensor")
-        for file in _in_tensor_files:
-            _in_tensor = read_atb_data(file).npu()
-            self.in_tensors.append(_in_tensor)
+        self.in_tensors = self.read_tensor_from_file(_in_tensor_files)
         _out_tensor_files = self.get_tensor_path(self.tensor_path, "outtensor")
-        for file in _out_tensor_files:
-            _out_tensor = read_atb_data(file).npu()
-            self.out_tensors.append(_out_tensor) 
+        self.out_tensors = self.read_tensor_from_file(_out_tensor_files)
 
     def tearDown(self):
         self.excuted_ids.put(self.op_id)

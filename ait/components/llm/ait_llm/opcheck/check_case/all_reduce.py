@@ -54,22 +54,6 @@ class OpcheckAllReduceOperation(operation_test.OperationTest):
             result = torch.mul(result, in_tensors[i])
         return [result]
 
-    def get_new_in_tensors(self):
-        rank = self.op_param.get("rank", None) 
-        rank_root = self.op_param.get("rankRoot", None)
-        rank_size = self.op_param.get("rankSize", None)
-        new_in_tensors = []
-        for i in range(rank_root, rank_size):
-            old_did_pid = f"{rank}_{self.pid}"
-            new_did_pid = f"{i}_{int(self.pid) - rank + i}"
-            new_tensor_path = self.tensor_path.replace(old_did_pid, new_did_pid)
-            self.validate_path(new_tensor_path)
-            _in_tensor_path = self.get_tensor_path(new_tensor_path, "intensor")
-            for path in _in_tensor_path:
-                _in_tensor = read_atb_data(path).npu()
-                new_in_tensors.append(_in_tensor) 
-        return new_in_tensors
-
     def golden_calc(self, in_tensors):
         all_reduce_type = self.op_param.get('allReduceType', None)
         backend = self.op_param.get('backend', None)
