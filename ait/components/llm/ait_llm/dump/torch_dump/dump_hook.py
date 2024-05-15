@@ -125,7 +125,7 @@ def wrap_torch_func(func):
         if not dump_config.is_dump_layer(dump_name, api=func):
             return output
 
-        api_dump_path = os.path.join(dump_config.dump_dir, dump_name)
+        api_dump_path = os.path.join(dump_config.dump_dir, str(dump_config.token_id), dump_name)
         if not os.path.exists(api_dump_path):
             os.makedirs(api_dump_path)
         dump_data(args, output, api_dump_path, dump_config.tensor_part)
