@@ -99,11 +99,13 @@ class DumpHookModule:
         if not os.path.exists(dump_path):
             os.makedirs(dump_path)
 
+        prefix = "root"
         for name, paramter in self.model.named_parameters():
-            if not dump_config.is_dump_layer(name):
+            dump_name = f"{prefix}.{name}" if name else prefix
+            if not dump_config.is_dump_layer(dump_name):
                 continue
 
-            torch.save(paramter, os.path.join(dump_path, f"{name}.pth"))
+            torch.save(paramter, os.path.join(dump_path, f"{dump_name}.pth"))
 
 
 def wrap_torch_func(func):
