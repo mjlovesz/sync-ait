@@ -95,10 +95,13 @@ class OpcheckAllReduceOperation(operation_test.OperationTest):
             logger_text = f"Cannot get a valid pid, AllReduceOperation is not supported!"
             logger.error(logger_text)
             return
-        
+
+        ret = self.validate_param("allReduceType", "backend", "rank", "rankRoot", "rankSize")
+        if not ret:
+            return
+
         all_reduce_type = self.op_param.get('allReduceType', None)
         backend = self.op_param.get('backend', None)
-
         logger_text1 = f"backend: {backend}, allreduceType: {all_reduce_type}"
         logger_text2 = "env: {}".format(os.getenv("LCCL_DETERMINISTIC", ""))
         logger_text3 = "env: {}".format(os.getenv("HCCL_DETERMINISTIC", ""))
@@ -106,8 +109,4 @@ class OpcheckAllReduceOperation(operation_test.OperationTest):
         logger.debug(logger_text2)
         logger.debug(logger_text3)
 
-        if all_reduce_type is None or backend is None:
-            msg = "Cannot get golden data because opParam is not correctly set!"
-            logger.error(msg)
-            return
         self.execute()

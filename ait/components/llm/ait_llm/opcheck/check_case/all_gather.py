@@ -49,13 +49,8 @@ class OpcheckAllGatherOperation(operation_test.OperationTest):
             logger.error(logger_text)
             return
 
-        rank = self.op_param.get("rank", None)
-        rank_root = self.op_param.get("rankRoot", None)
-        rank_size = self.op_param.get("rankSize", None)
-
-        if rank is None or rank_root is None or rank_size is None:
-            msg = "Cannot get golden data because opParam is not correctly set!"
-            logger.error(msg)
+        ret = self.validate_param("rank", "rankRoot", "rankSize")
+        if not ret:
             return
-                 
+
         self.execute()

@@ -78,6 +78,16 @@ class OperationTest(unittest.TestCase):
             suite.addTest(optest_class(name, case_info=case_info, excuted_ids=excuted_ids))
         return suite
 
+    def validate_param(self, *param_names):
+        ret = True
+        for param_name in param_names:
+            param = self.op_param.get(param_name, None)
+            if param is None:
+                ret = False
+                msg = f"Cannot get golden data because opParam {param_name} is not correctly set!"
+                logger.error(msg)
+        return ret
+
     def validate_path(self, path):
         if not path or not os.path.exists(path):
             raise RuntimeError(f"{path} not valid")
