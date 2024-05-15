@@ -45,6 +45,7 @@ class DumpHookModule:
 
         def add_hook(module, prefix=""):
             module.ait_forward_handle = module.register_forward_hook(dump_module_data())
+            module.ait_forward_pre_handle = module.register_forward_pre_hook(pre_forward_module())
             module.name = prefix
             for name, child_module in module.named_children():
                 add_hook(child_module, prefix + "." + name)
@@ -64,6 +65,8 @@ class DumpHookModule:
         def _remove_hook(module):
             if hasattr(module, "ait_forward_handle"):
                 module.ait_forward_handle.remove()
+            if hasattr(module, "ait_forward_pre_handle"):
+                module.ait_forward_pre_handle.remove()
             for _, _child_module in module.named_children():
                 _remove_hook(_child_module)
 
@@ -94,7 +97,7 @@ class DumpHookModule:
 
         if not dump_config.dump_weight:
             return
-        
+
         dump_path = os.path.join(dump_config.dump_dir, "weights")
         if not os.path.exists(dump_path):
             os.makedirs(dump_path)
@@ -109,19 +112,16 @@ class DumpHookModule:
 
 
 def wrap_torch_func(func):
-    exec_count = 0
 
     @functools.wraps(func)
     def dump_api_data(*args, **kwargs):
-        nonlocal exec_count
-        exec_count += 1
         output = func(*args, **kwargs)
 
         dump_config = DumpConfig()
         if not dump_config.dump_flag or not dump_config.is_dump_cur_device or not dump_config.dump_api:
             return output
 
-        api_dump_path = os.path.join(dump_config.dump_dir, func.__name__, str(exec_count))
+        api_dump_path = os.path.join(dump_config.dump_dir, dump_config.get_api_folder_name(func.__name__))
         if not os.path.exists(api_dump_path):
             os.makedirs(api_dump_path)
         dump_data(args, output, api_dump_path, dump_config.tensor_part)
@@ -160,6 +160,7 @@ def dump_module_data():
         exec_count += 1
         dump_config = DumpConfig()
         module_name = module.name
+        dump_config.cur_module_name.pop()
 
         if not dump_config.is_dump_cur_device:
             return
@@ -190,6 +191,16 @@ def dump_module_data():
         if not os.path.exists(dump_path):
             os.makedirs(dump_path, mode=0o750)
         dump_data(inputs, outputs, dump_path, dump_config.tensor_part)
+
+    return hook_func
+
+
+def pre_forward_module():
+
+    def hook_func(module: torch.nn.Module, _):
+        dump_config = DumpConfig()
+        module_name = module.name
+        dump_config.cur_module_name.append(module_name)
 
     return hook_func
 

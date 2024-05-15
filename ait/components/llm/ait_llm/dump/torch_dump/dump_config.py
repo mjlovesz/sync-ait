@@ -83,6 +83,8 @@ class DumpConfig:
         self.last_logits = None
         self.dump_weight = dump_weight
         self.layer_name_reg = str_to_reg_str(layer_name) if layer_name is not None else ""  # 支持 *: 匹配0到N个随意支付
+        self.cur_module_name = ["root"]
+        self.api_folder_name_set = set()
 
         if not self._check_args():
             raise ValueError("Invalid args of DumpConfig.")
@@ -112,11 +114,21 @@ class DumpConfig:
 
         if not self.module_list or not module:
             return True
-        
+
         if isinstance(module, tuple(self.module_list)) or module in self.module_list:
             return True
 
         return False
+
+    def get_api_folder_name(self, api_name, index=0):
+        if index == 0:
+            folder_name = f"{self.cur_module_name[-1]}.{api_name}"
+        else:
+            folder_name = f"{self.cur_module_name[-1]}.{api_name}.{index}"
+        if folder_name in self.api_folder_name_set:
+            return self.get_api_folder_name(api_name, index + 1)
+        else:
+            return folder_name
 
     def _check_args(self):
         utils.check_output_path_legality(self.dump_path)
