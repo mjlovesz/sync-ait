@@ -42,7 +42,13 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         mixed_q, mixed_k, mixed_v, cache_k, cache_v, attention_mask, token_offset, seq_len, layerid = in_tensors[0], \
             in_tensors[1], in_tensors[2], in_tensors[3], in_tensors[4], in_tensors[5], in_tensors[6], in_tensors[7], \
             int(in_tensors[8][0])
-        
+
+        soc_version = self.get_soc_version()
+        if soc_version == 'Ascend310P':
+            cache_k = self.nz_2_nd(cache_k)
+            cache_v = self.nz_2_nd(cache_v)
+            attention_mask = self.nz_2_nd(attention_mask)
+
         batch_run_status_enable = self.op_param.get("batchRunStatusEnable", False)
         if batch_run_status_enable:
             batch_status = in_tensors[9]
@@ -93,6 +99,10 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         mixed_q, mixed_k, mixed_v, attention_mask, seq_len = in_tensors[0], in_tensors[1], in_tensors[2], \
             in_tensors[3], in_tensors[4]
         
+        soc_version = self.get_soc_version()
+        if soc_version == 'Ascend310P':
+            attention_mask = self.nz_2_nd(attention_mask)
+
         dtype = mixed_q.dtype
         batch_run_status_enable = self.op_param.get("batchRunStatusEnable", False)
         if batch_run_status_enable:
@@ -117,7 +127,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             v_slice = torch.permute(v_slice, (1, 0, 2))
             score = self.group_matmul(heads, group_num, q_slice, k_slice_t)
             s = score.view(-1) if s is None else torch.concat((s, score.view(-1)), 0)
-            
+
             score = score / math.sqrt(1.0 * embed)
             score_max = torch.max(score, axis=-1).values
             score = score - score_max.view((heads, q_s, 1))
@@ -166,12 +176,6 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         return [out]
 
     def test(self):
-        soc_version = self.get_soc_version()
-        if soc_version != 'Ascend910B':
-            logger_text = f"{soc_version} is not supported! Only supports Ascend910B!"
-            logger.error(logger_text)
-            return
-        
         batch_run_status_enable = self.op_param.get("batchRunStatusEnable", False)
 
         if len(self.in_tensors) <= 6:
