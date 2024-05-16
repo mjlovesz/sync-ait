@@ -58,7 +58,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             self.op_param.get("headNum", 32), mixed_k.size(-1)
         
         offset = 0
-        context_list = [] 
+        context_list = []
 
         for i in range(batch_status):
             cur_seqlen = seq_len[i]
