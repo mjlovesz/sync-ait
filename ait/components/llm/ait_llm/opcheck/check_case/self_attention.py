@@ -45,9 +45,9 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
 
         soc_version = self.get_soc_version()
         if soc_version == 'Ascend310P':
-            cache_k = self.convert_data_format(cache_k)
-            cache_v = self.convert_data_format(cache_v)
-            attention_mask = self.convert_data_format(attention_mask)
+            cache_k = self.nz_2_nd(cache_k)
+            cache_v = self.nz_2_nd(cache_v)
+            attention_mask = self.nz_2_nd(attention_mask)
 
         batch_run_status_enable = self.op_param.get("batchRunStatusEnable", False)
         if batch_run_status_enable:
@@ -101,7 +101,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         
         soc_version = self.get_soc_version()
         if soc_version == 'Ascend310P':
-            attention_mask = self.convert_data_format(attention_mask)
+            attention_mask = self.nz_2_nd(attention_mask)
 
         dtype = mixed_q.dtype
         batch_run_status_enable = self.op_param.get("batchRunStatusEnable", False)
