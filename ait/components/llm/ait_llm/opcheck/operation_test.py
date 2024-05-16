@@ -247,6 +247,22 @@ class OperationTest(unittest.TestCase):
         logger.debug(logger_text)
         return soc_version
 
+    def convert_data_format(self, data):
+        dim0, dim1 = data.shape[0], data.shape[1]
+        data = data.reshape([1, dim1 // 16, dim0, 16]).permute(0, 2, 1, 3).reshape([dim0, dim1])
+        return data
+    
+    def nz_2_nd(self, data):
+        origin_shape = data.shape
+        dims = list(range(len(origin_shape)))
+        last_dims = dims[-4:]
+
+        perm = dims[:-4] + [last_dims[1]] + [last_dims[2]] + [last_dims[0]] + [last_dims[3]]
+        data = data.permute(perm)
+        nd_shape = data.shape[:-4] + (data.shape[-4] * data.shape[-3], data.shape[-2], data.shape[-1])
+        data = data.reshape(nd_shape)
+        return data
+
     def __golden_compare_all(self, out_tensors, golden_out_tensors):
         message, pass_flag = [], True
 
