@@ -134,10 +134,16 @@ class OpcheckUnpadRopeOperation(operation_test.OperationTest):
         head_size = in_tensors[2].size()[1]
         head_num = hidden_size // head_size
         head_num1 = hidden_size1 // head_size
-        q = in_tensors[0].view(batch, seqlen, head_num, head_size)
-        k = in_tensors[1].view(batch, seqlen, head_num1, head_size)
-        cos = in_tensors[2].view(batch, seqlen, head_size).unsqueeze(2)
-        sin = in_tensors[3].view(batch, seqlen, head_size).unsqueeze(2)
+        if batch != 0:
+            q = in_tensors[0].view(batch, seqlen, head_num, head_size)
+            k = in_tensors[1].view(batch, seqlen, head_num1, head_size)
+            cos = in_tensors[2].view(batch, seqlen, head_size).unsqueeze(2)
+            sin = in_tensors[3].view(batch, seqlen, head_size).unsqueeze(2)
+        else:
+            q = in_tensors[0].view(head_num, head_size)
+            k = in_tensors[1].view(head_num1, head_size)
+            cos = in_tensors[2]
+            sin = in_tensors[3]
         q_embed = ((q * cos) + (self.rotate_half(q) * sin)).view(ntoken, hidden_size)
         k_embed = ((k * cos) + (self.rotate_half(k) * sin)).view(ntoken, hidden_size1)
         return [q_embed, k_embed]
