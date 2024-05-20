@@ -42,13 +42,13 @@ class CompareCommand(BaseCommand):
             required=False,
             dest="golden_model",
             type=check_model_path_legality,
-            help='The original model (.onnx or .pb or .prototxt) file path')
+            help='The original model (.onnx or .pb or .prototxt or .om) file path')
         parser.add_argument(
             '-om',
             '--om-model',
             dest="om_model",
             type=check_om_path_legality,
-            help='The offline model (.om) file path')
+            help='The offline model (.om or .mindir) file path')
         parser.add_argument(
             '-w',
             '--weight',
