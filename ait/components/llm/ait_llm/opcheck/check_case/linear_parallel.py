@@ -74,7 +74,7 @@ class OpcheckLinearParallelOperation(operation_test.OperationTest):
         rank = self.op_param.get("rank", None) 
         rank_root = self.op_param.get("rankRoot", None)
         rank_size = self.op_param.get("rankSize", None)
-        golden_result = torch.zeros_like(in_tensors[0])
+        golden_result = torch.zeros_like(self.pure_linear(in_tensors, quant_type, group_size, out_data_type)[0])
         for i in range(rank_root, rank_size):
             old_did_pid = f"{rank}_{self.pid}"
             new_did_pid = f"{i}_{int(self.pid) - rank + i}"
