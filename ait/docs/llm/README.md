@@ -1,6 +1,6 @@
 # 大模型推理精度工具（Large Language Model Debug Tool）
 
-![精度问题工作流](./image/acc-workflow.png)
+![精度问题工作流](/ait/docs/llm/image/acc-workflow.png)
 
 ## 简介
 
