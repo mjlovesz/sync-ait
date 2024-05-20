@@ -226,7 +226,7 @@ def init_fx_dump_data_from_path(fx_dump_path):
             cur_op_map.setdefault("input" if is_input else "output", []).append(file_path)
             cur_dump_data[cur_op_name] = cur_op_map
         if len(cur_dump_data) > 0:
-            dump_data_with_token_id[token_id] = cur_dump_data
+            dump_data_with_token_id[token_id - 1] = cur_dump_data  # For FX data, token starts from 1, while GE is 0
     return dump_data_with_token_id
 
 
