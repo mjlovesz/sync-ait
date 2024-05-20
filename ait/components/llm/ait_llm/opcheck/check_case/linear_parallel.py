@@ -71,10 +71,18 @@ class OpcheckLinearParallelOperation(operation_test.OperationTest):
         return [result]
 
     def all_reduce(self, in_tensors, rank_size, quant_type=-1, group_size=0, out_data_type=-1):
-        linear_result = self.pure_linear(in_tensors, quant_type, group_size, out_data_type)[0]
-        # allReduce
-        golden_result = linear_result.clone()
-        for i in range(rank_size - 1):
+        rank = self.op_param.get("rank", None) 
+        rank_root = self.op_param.get("rankRoot", None)
+        rank_size = self.op_param.get("rankSize", None)
+        golden_result = torch.zeros_like(in_tensors[0])
+        for i in range(rank_root, rank_size):
+            old_did_pid = f"{rank}_{self.pid}"
+            new_did_pid = f"{i}_{int(self.pid) - rank + i}"
+            new_tensor_path = self.tensor_path[::-1].replace(old_did_pid[::-1], new_did_pid[::-1], 1)[::-1]
+            self.validate_path(new_tensor_path)
+            _in_tensor_files = self.get_tensor_path(new_tensor_path, "intensor")
+            new_in_tensors = self.read_tensor_from_file(_in_tensor_files)
+            linear_result = self.pure_linear(new_in_tensors, quant_type, group_size, out_data_type)[0]
             golden_result += linear_result
         golden_result = self.add_residual(golden_result, in_tensors)
         return [golden_result]
