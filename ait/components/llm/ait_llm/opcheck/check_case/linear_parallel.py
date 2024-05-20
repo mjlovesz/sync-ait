@@ -21,13 +21,10 @@ from ait_llm.common.log import logger
 
 
 class OpcheckLinearParallelOperation(operation_test.OperationTest):
-    def add_residual(self, data, in_tensors, is_quant=False):
+    def add_residual(self, data, in_tensors):
         has_residual = self.op_param.get("has_residual", False)
         if has_residual:
-            if is_quant:
-                data = data.to(torch.float) + in_tensors[2].to(torch.float)
-            else:
-                data += in_tensors[2]
+            data += in_tensors[2]
         return data
 
     def get_matmul_result(self, in_tensors):
@@ -45,14 +42,24 @@ class OpcheckLinearParallelOperation(operation_test.OperationTest):
     def get_quant_result(self, in_tensors, quant_type=-1, group_size=0, out_data_type=-1):
         is_quant_after = in_tensors[0].dtype == torch.int8 and in_tensors[1].dtype == torch.int8
         quant_tensor = self.get_matmul_result(in_tensors) if is_quant_after else in_tensors[1].to(torch.float32)
-        quant_tensor = self.add_residual(quant_tensor, in_tensors, is_quant=True)
 
-        scale = None
-        if quant_type == 2:
-            dequantized_groups = [group * scale[i] for i, group in enumerate(quant_tensor.split(group_size, dim=0))]
-            quant_tensor = torch.cat(dequantized_groups, dim=0)
-        else:
-            quant_tensor *= scale
+        try:
+            bias = in_tensors[2]
+        except:
+            bias = None
+        if bias is not None and bias.nelement() != 0:
+            quant_tensor = quant_tensor.to(torch.float) + bias.to(torch.float)
+
+        try:
+            scale = in_tensors[3]
+        except:
+            scale = None
+        if scale is not None:
+            if quant_type == 2:
+                dequantized_groups = [group * scale[i] for i, group in enumerate(quant_tensor.split(group_size, dim=0))]
+                quant_tensor = torch.cat(dequantized_groups, dim=0)
+            else:
+                quant_tensor *= scale
 
         if is_quant_after: 
              result_dtype = torch.float16 if out_data_type == 1 else torch.bfloat16
