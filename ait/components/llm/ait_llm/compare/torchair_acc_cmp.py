@@ -67,10 +67,11 @@ def set_msaccucmp_path_from_cann():
 def get_torchair_ge_graph_path(my_path):
     if not os.path.isdir(my_path):
         return None
-    for ff in os.listdir(my_path):
-        cur_file = os.path.join(my_path, ff)
-        if os.path.isfile(cur_file) and ff.startswith(GE_GRAPH_FILE_PREFIX) and ff.endswith(".txt"):
-            return cur_file
+
+    for cur_path, dirs, file_names in os.walk(my_path):
+        for file_name in file_names:
+            if file_name.startswith(GE_GRAPH_FILE_PREFIX) and file_name.endswith(".txt"):
+                return os.path.join(cur_path, file_name)
     return None
 
 
