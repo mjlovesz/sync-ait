@@ -25,6 +25,7 @@ FUSION_OP_TYPE = "AutomaticBufferFusionOp"
 DUMP_FILE_FILTER_SUFIX = [".txt", ".npy", ".bin"]
 IS_MSACCUCMP_PATH_SET = False
 GLOBAL_TENSOR_CONVERTER = None
+MAX_TOKEN_LEN = 12
 
 
 def default_tensor_converter(tensor):
@@ -49,6 +50,7 @@ def set_msaccucmp_path_from_cann():
     if msaccucmp_path not in sys.path:
         sys.path.append(msaccucmp_path)
     IS_MSACCUCMP_PATH_SET = True
+    logger.info(f"Set msaccucmp_path={msaccucmp_path}")
 
     if GLOBAL_TENSOR_CONVERTER is None:
         from conversion import tensor_conversion
@@ -128,13 +130,23 @@ def parse_pbtxt_to_dict(pbtxt_path):
 
 
 def gather_data_with_token_id(data_path):
-    gathered_files, cur_token_id = {}, 0
+    token_dirs, gathered_files, cur_token_id = [], {}, 0
+    # Detect where sub dirs are all digits, and regard as tokens level
     for cur_path, dirs, file_names in os.walk(data_path):
-        if cur_path != data_path:
-            cur_basename = os.path.basename(cur_path)
-            cur_token_id = int(cur_basename) if str.isdigit(cur_basename) else 0
-        for file_name in file_names:
-            gathered_files.setdefault(cur_token_id, []).append(os.path.join(cur_path, file_name))
+        if len(dirs) == 0:
+            continue
+        if all([len(ii) < MAX_TOKEN_LEN and str.isdigit(ii) for ii in dirs]):
+            token_dirs = [os.path.join(cur_path, dir_name) for dir_name in dirs]
+            break
+    if len(token_dirs) == 0:
+        token_dirs.append(data_path)  # Just use data_path if found no token like dirs
+
+    for token_dir in token_dirs:
+        cur_basename = os.path.basename(cur_path)
+        cur_token_id = int(cur_basename) if str.isdigit(cur_basename) else 0
+        for cur_path, dirs, file_names in os.walk(data_path):
+            file_names = [os.path.join(cur_path, file_name) for file_name in file_names]
+            gathered_files.setdefault(cur_token_id, []).extend(file_names)
     return gathered_files
 
 
@@ -270,12 +282,12 @@ def compare_ge_with_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
                 logger.debug(f"ge_outputs length: {len(ge_outputs)}, fx_outputs length:, {len(fx_outputs)}")
 
                 for cur_id, (fx_input, ge_input) in enumerate(zip(fx_inputs, ge_inputs)):
-                    cur_ge_data = "{},{},{}".format(cur_ge_data, "inputs", cur_id)
-                    row_data = compare_single_data(fx_input, cur_ge_data, token_id, my_data=ge_input)
+                    cur_ge_data_sub = "{},{},{}".format(cur_ge_data, "inputs", cur_id)
+                    row_data = compare_single_data(fx_input, cur_ge_data_sub, token_id, my_data=ge_input)
                     gathered_row_data.append(row_data)
                 for cur_id, (fx_output, ge_output) in enumerate(zip(fx_outputs, ge_outputs)):
-                    cur_ge_data = "{},{},{}".format(cur_ge_data, "outputs", cur_id)
-                    row_data = compare_single_data(fx_output, cur_ge_data, token_id, my_data=ge_output)
+                    cur_ge_data_sub = "{},{},{}".format(cur_ge_data, "outputs", cur_id)
+                    row_data = compare_single_data(fx_output, cur_ge_data_sub, token_id, my_data=ge_output)
                     gathered_row_data.append(row_data)
     return gathered_row_data
 
@@ -381,7 +393,7 @@ def compare_ge_with_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
     return gathered_row_data
 
 
-""" Main entrance:qa """
+""" Main entrance """
 
 
 def acc_compare(golden_path, my_path, output_path=".", ge_graph_path=None):
