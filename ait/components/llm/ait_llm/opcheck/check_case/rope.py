@@ -127,8 +127,6 @@ class OpcheckUnpadRopeOperation(operation_test.OperationTest):
 
     def golden_func4(self, in_tensors):
         ntoken = in_tensors[0].size()[0]
-        seqlen = int(in_tensors[4][0])
-        batch = ntoken // seqlen
         hidden_size = in_tensors[0].size()[1]
         hidden_size1 = in_tensors[1].size()[1]
         head_size = in_tensors[2].size()[1]
