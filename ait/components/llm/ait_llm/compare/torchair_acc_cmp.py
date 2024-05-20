@@ -68,10 +68,14 @@ def get_torchair_ge_graph_path(my_path):
     if not os.path.isdir(my_path):
         return None
 
+    my_path_depth = len(my_path.split(os.sep))
     for cur_path, dirs, file_names in os.walk(my_path):
         for file_name in file_names:
             if file_name.startswith(GE_GRAPH_FILE_PREFIX) and file_name.endswith(".txt"):
                 return os.path.join(cur_path, file_name)
+            cur_depth = len(cur_path.split(os.sep)) - my_path_depth
+            if cur_depth > 5:  # Avoid going too deep
+                break
     return None
 
 
