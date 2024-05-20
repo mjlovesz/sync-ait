@@ -142,9 +142,9 @@ def gather_data_with_token_id(data_path):
         token_dirs.append(data_path)  # Just use data_path if found no token like dirs
 
     for token_dir in token_dirs:
-        cur_basename = os.path.basename(cur_path)
+        cur_basename = os.path.basename(token_dir)
         cur_token_id = int(cur_basename) if str.isdigit(cur_basename) else 0
-        for cur_path, dirs, file_names in os.walk(data_path):
+        for cur_path, dirs, file_names in os.walk(token_dir):
             file_names = [os.path.join(cur_path, file_name) for file_name in file_names]
             gathered_files.setdefault(cur_token_id, []).extend(file_names)
     return gathered_files
