@@ -33,6 +33,12 @@ class OpcheckLinearParallelOperation(operation_test.OperationTest):
     def get_matmul_result(self, in_tensors):
         x = in_tensors[0]
         weight = in_tensors[1]
+        trans_weight = self.op_param.get("transWeight", True)
+        if trans_weight:
+            if len(weight.shape) == 2:
+                weight = torch.permute(weight, (1, 0))
+            if len(weight.shape) == 3:
+                weight = torch.permute(weight, (0, 2, 1))
         matmul_result = torch.matmul(x, weight)
         return matmul_result
 
@@ -63,7 +69,7 @@ class OpcheckLinearParallelOperation(operation_test.OperationTest):
         else:
             result = self.get_matmul_result(in_tensors)
         return [result]
-    
+
     def all_reduce(self, in_tensors, rank_size, quant_type=-1, group_size=0, out_data_type=-1):
         linear_result = self.pure_linear(in_tensors, quant_type, group_size, out_data_type)[0]
         # allReduce
@@ -72,7 +78,7 @@ class OpcheckLinearParallelOperation(operation_test.OperationTest):
             golden_result += linear_result
         golden_result = self.add_residual(golden_result, in_tensors)
         return [golden_result]
-    
+
     def reduce_scatter(self, in_tensors, rank, rank_size):
         matmul_result = self.get_matmul_result(in_tensors)
         sum_tensor = matmul_result.clone()
@@ -102,7 +108,7 @@ class OpcheckLinearParallelOperation(operation_test.OperationTest):
         backend = self.op_param.get('backend', None)
         rank = self.op_param.get('rank', None)
         rank_size = self.op_param.get("rankSize", None)
-  
+
         if backend != "lcoc":
             golden_result = self.all_reduce(in_tensors, rank_size)
         else:
@@ -110,7 +116,7 @@ class OpcheckLinearParallelOperation(operation_test.OperationTest):
             quant_type = self.op_param.get("quantType", -1)
             group_size = self.op_param.get("quantGroupSize", 0)
             out_data_type = self.op_param.get("outDataType", -1)
- 
+
             if cal_type == 0:
                 golden_result = self.all_reduce(in_tensors, rank_size, quant_type, group_size, out_data_type)
             elif cal_type == 1:
