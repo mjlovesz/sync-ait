@@ -71,26 +71,21 @@ class OpcheckLinearParallelOperation(operation_test.OperationTest):
         return [result]
 
     def all_reduce(self, in_tensors, rank_size, quant_type=-1, group_size=0, out_data_type=-1):
-        rank = self.op_param.get("rank", None) 
-        rank_root = self.op_param.get("rankRoot", None)
-        rank_size = self.op_param.get("rankSize", None)
+        rank, rank_root, rank_size = self.get_rank_info()
         golden_result = torch.zeros_like(self.pure_linear(in_tensors, quant_type, group_size, out_data_type)[0])
         for i in range(rank_root, rank_size):
-            old_did_pid = f"{rank}_{self.pid}"
-            new_did_pid = f"{i}_{int(self.pid) - rank + i}"
-            new_tensor_path = self.tensor_path[::-1].replace(old_did_pid[::-1], new_did_pid[::-1], 1)[::-1]
-            self.validate_path(new_tensor_path)
-            _in_tensor_files = self.get_tensor_path(new_tensor_path, "intensor")
-            new_in_tensors = self.read_tensor_from_file(_in_tensor_files)
+            new_in_tensors = self.get_in_tensors_from_single_device(i, rank) 
             linear_result = self.pure_linear(new_in_tensors, quant_type, group_size, out_data_type)[0]
             golden_result += linear_result
         golden_result = self.add_residual(golden_result, in_tensors)
         return [golden_result]
 
     def reduce_scatter(self, in_tensors, rank, rank_size):
-        matmul_result = self.get_matmul_result(in_tensors)
-        sum_tensor = matmul_result.clone()
-        for i in range(rank_size - 1):
+        rank, rank_root, rank_size = self.get_rank_info()
+        sum_tensor = torch.zeros_like(self.get_matmul_result(in_tensors))
+        for i in range(rank_root, rank_size):
+            new_in_tensors = self.get_in_tensors_from_single_device(i, rank) 
+            matmul_result = self.get_matmul_result(new_in_tensors)
             sum_tensor += matmul_result
         chunks = torch.split(sum_tensor, int(in_tensors[0].shape[0] / rank_size))
         golden_result = chunks[rank]
@@ -98,9 +93,14 @@ class OpcheckLinearParallelOperation(operation_test.OperationTest):
         return [golden_result]
 
     def all_gather_linear(self, in_tensors, rank_size):
-        golden_mid_tensor = in_tensors[0].clone()
-        for i in range(rank_size - 1):
-            golden_mid_tensor = torch.cat((golden_mid_tensor, in_tensors[0]), dim=0)
+        rank, rank_root, rank_size = self.get_rank_info()
+        golden_mid_tensor = None
+        for i in range(rank_root, rank_size):
+            new_in_tensors = self.get_in_tensors_from_single_device(i, rank) 
+            if golden_mid_tensor is None:
+                golden_mid_tensor = new_in_tensors[0].clone()
+            else:
+                golden_mid_tensor = torch.cat((golden_mid_tensor, new_in_tensors[0]), dim=0)
         golden_result = self.get_matmul_result([golden_mid_tensor, in_tensors[1]])
         golden_result = self.add_residual(golden_result, in_tensors)
 

@@ -105,18 +105,26 @@ class OperationTest(unittest.TestCase):
             res.append(tensor)
         return res
 
-    def get_new_in_tensors(self):
+    def get_in_tensors_from_single_device(self, i, rank):
+        old_did_pid = f"{rank}_{self.pid}"
+        new_did_pid = f"{i}_{int(self.pid) - rank + i}"
+        new_tensor_path = self.tensor_path[::-1].replace(old_did_pid[::-1], new_did_pid[::-1], 1)[::-1]
+        self.validate_path(new_tensor_path)
+        _in_tensor_files = self.get_tensor_path(new_tensor_path, "intensor")
+        return self.read_tensor_from_file(_in_tensor_files)
+
+    def get_rank_info(self):
         rank = self.op_param.get("rank", None) 
         rank_root = self.op_param.get("rankRoot", None)
         rank_size = self.op_param.get("rankSize", None)
+        return rank, rank_root, rank_size
+
+    def get_new_in_tensors(self):
+        rank, rank_root, rank_size = self.get_rank_info()
         new_in_tensors = []
         for i in range(rank_root, rank_size):
-            old_did_pid = f"{rank}_{self.pid}"
-            new_did_pid = f"{i}_{int(self.pid) - rank + i}"
-            new_tensor_path = self.tensor_path[::-1].replace(old_did_pid[::-1], new_did_pid[::-1], 1)[::-1]
-            self.validate_path(new_tensor_path)
-            _in_tensor_files = self.get_tensor_path(new_tensor_path, "intensor")
-            new_in_tensors.extend(self.read_tensor_from_file(_in_tensor_files))
+            _in_tensors = self.get_in_tensors_from_single_device(self, i, rank)
+            new_in_tensors.extend(_in_tensors)
         return new_in_tensors
 
     def setUp(self):
@@ -251,7 +259,7 @@ class OperationTest(unittest.TestCase):
         dim0, dim1 = data.shape[0], data.shape[1]
         data = data.reshape([1, dim1 // 16, dim0, 16]).permute(0, 2, 1, 3).reshape([dim0, dim1])
         return data
-    
+
     def nz_2_nd(self, data):
         origin_shape = data.shape
         dims = list(range(len(origin_shape)))
