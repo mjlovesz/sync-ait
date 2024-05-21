@@ -270,16 +270,16 @@ def compare_ge_with_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
     gathered_row_data = []
     graph_map_dict = {ii["op"]["name"]: ii["op"] for ii in graph_map if "op" in ii and "name" in ii["op"]}
     for op_name, my_path in ge_dump_data.items():
+        if "Cast" in my_path.split('\\')[-1] or "TransData" in my_path.split('\\')[-1]:
+            ge_inputs, ge_outputs = parse_torchair_bin_dump_data(my_path)
+            logger.debug(f"ge_inputs length: {len(ge_inputs)}")
+            logger.debug(f"ge_outputs length:, {len(ge_outputs)}")
+            compare_specials_private_ops(ge_inputs, ge_outputs, token_id, my_path)
+            continue
         all_ops = get_all_ops_from_fusion_op(op_name, graph_map_dict, ge_dump_data)
         for cur_op_name in all_ops:
             op_info = graph_map_dict[cur_op_name]
-            if op_info.get("type") == "Cast" or op_info.get("type") == "TransData":
-                ge_inputs, ge_outputs = parse_torchair_bin_dump_data(my_path)
-                logger.debug(f"ge_inputs length: {len(ge_inputs)}")
-                logger.debug(f"ge_outputs length:, {len(ge_outputs)}")
-                gathered_row_data = compare_specials_private_ops(ge_inputs, ge_outputs, token_id, my_path)
-            else:
-                gathered_row_data = compare_ge_with_fx_non_private(op_info, fx_dump_data, op_name, my_path, token_id)
+            gathered_row_data = compare_ge_with_fx_non_private(op_info, fx_dump_data, op_name, my_path, token_id)
 
     return gathered_row_data
 
