@@ -33,6 +33,13 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
         logger.debug(score.shape)
         return score
 
+    def convert_nz_to_nd(self, nz_tensor):
+        print(nz_tensor.shape)
+        nd_tensor = torch.permute(nz_tensor, (1, 2, 0, 3))
+        print(nd_tensor.shape)
+        nd_tensor = torch.reshape(nd_tensor, (nd_tensor.shape[0], nd_tensor.shape[1], -1))
+        return nd_tensor
+
     def ref_masked_attention(
             self,
             query, # (1, num_heads, head_size)
@@ -76,12 +83,12 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
 
         for i in range(num_input_tokens):
             q = torch.unsqueeze(query[i], 0)
-            block_tables = block_tables[i]
+            block_table = block_tables[i]
             context_len = int(context_lens[i])
             keys = []
             values = []
             for j in range(context_len):
-                block_number = int(block_tables[j // block_size])
+                block_number = int(block_table[j // block_size])
                 block_offset = j % block_size
                 k = key_cache[block_number, block_offset, :, :]
                 k = k.reshape(kv_heads, head_size)
@@ -112,13 +119,7 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
         else:
             query, key_cache, value_cache, block_tables, context_lens = in_tensors[:5]
 
-        if soc_version == "Ascend310P":
-            key_cache = self.nz_2_nd(key_cache_nz)
-            value_cache = self.nz_2_nd(value_cache_nz)
-            if is_support_alibi:
-                alibi_mask = self.nz_2_nd(alibi_mask_nz)
-
-        ref_output = torch.zeros_like(query)
+        ref_output = torch.zeros_like( query)
         paged_input = query, key_cache, value_cache, block_tables, context_lens
         self.ref_single_query_cached_kv_attention(ref_output, paged_input, alibi_mask)
         return ref_output
