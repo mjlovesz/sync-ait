@@ -35,14 +35,15 @@
   ...
   ```
 
-  输出路径为当前文件夹下的 `gm_{time stamp}_dump`
+  - 输出路径与 torchair 版本相关，新版本中为当前文件夹下的 `data_dump/{token_id}/gm_{time stamp}_dump`，老版本中为 `gm_{time stamp}_dump`
+  - **其中 `{token_id}` 是从 1 开始的，相对于 GE 模式是从 0 开始的，比对时会将 FX 模式的 token_id 减 1**
 
 ### 2）Compare 精度比对
 
   - 执行 `ait llm compare --my-path [GE dump data] --golden-path [FX dump data]`，输出比对结果 csv 文件
 
     ```sh
-    ait llm compare --my-path {dump_path}/dump_{time_stamp} --golden-path gm_{time stamp}_dump
+    ait llm compare --my-path {dump_path}/dump_{time_stamp} --golden-path data_dump
     ```
 
 ***

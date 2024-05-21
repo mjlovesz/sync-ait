@@ -127,17 +127,15 @@ class OpcheckUnpadRopeOperation(operation_test.OperationTest):
 
     def golden_func4(self, in_tensors):
         ntoken = in_tensors[0].size()[0]
-        seqlen = int(in_tensors[4][0])
-        batch = ntoken // seqlen
         hidden_size = in_tensors[0].size()[1]
         hidden_size1 = in_tensors[1].size()[1]
         head_size = in_tensors[2].size()[1]
         head_num = hidden_size // head_size
         head_num1 = hidden_size1 // head_size
-        q = in_tensors[0].view(batch, seqlen, head_num, head_size)
-        k = in_tensors[1].view(batch, seqlen, head_num1, head_size)
-        cos = in_tensors[2].view(batch, seqlen, head_size).unsqueeze(2)
-        sin = in_tensors[3].view(batch, seqlen, head_size).unsqueeze(2)
+        q = in_tensors[0].view(ntoken, head_num, head_size)
+        k = in_tensors[1].view(ntoken, head_num1, head_size)
+        cos = in_tensors[2].view(ntoken, 1, head_size)
+        sin = in_tensors[3].view(ntoken, 1, head_size)
         q_embed = ((q * cos) + (self.rotate_half(q) * sin)).view(ntoken, hidden_size)
         k_embed = ((k * cos) + (self.rotate_half(k) * sin)).view(ntoken, hidden_size1)
         return [q_embed, k_embed]
