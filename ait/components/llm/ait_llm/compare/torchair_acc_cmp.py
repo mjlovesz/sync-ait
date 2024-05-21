@@ -60,8 +60,8 @@ def set_msaccucmp_path_from_cann():
         else:
             GLOBAL_TENSOR_CONVERTER = default_tensor_converter
             logger.warning("ConvertSingleTensorFormat not found in msaccucmp, connot convert tensor format."
-                " Try installing the latest CANN toolkit."
-            )
+                           " Try installing the latest CANN toolkit."
+                           )
 
 
 def get_torchair_ge_graph_path(my_path):
@@ -190,9 +190,9 @@ def init_ge_dump_data_from_bin_path(ge_dump_path):
                 keep_one = file_name if cur_file_size > exists_file_size else exists_file
                 cur_dump_data[cur_op_name] = keep_one
                 logger.warning(f"duplicated op name: {cur_op_name}."
-                    f" [{os.path.basename(file_name)}, {os.path.basename(exists_file)}]."
-                    f" Will keep the larger one {os.path.basename(keep_one)}."
-                )
+                               f" [{os.path.basename(file_name)}, {os.path.basename(exists_file)}]."
+                               f" Will keep the larger one {os.path.basename(keep_one)}."
+                               )
             else:
                 cur_dump_data[cur_op_name] = file_name
         dump_data_with_token_id[token_id] = cur_dump_data
@@ -253,6 +253,7 @@ def filter_valid_fx_desc_tensor_info(desc_key, desc_value):
         return False
     return True
 
+
 def get_all_ops_from_fusion_op(op_name, graph_map_dict, ge_dump_data):
     all_ops = []
     while len(op_name) > 0:
@@ -263,6 +264,7 @@ def get_all_ops_from_fusion_op(op_name, graph_map_dict, ge_dump_data):
         all_ops.append(cur_op_name)
         op_name = op_name[len(cur_op_name):]
     return all_ops
+
 
 def compare_ge_with_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
     gathered_row_data = []
@@ -297,6 +299,7 @@ def compare_ge_with_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
                         gathered_row_data = compare_ops(fx_inputs, fx_outputs, ge_inputs, ge_outputs, token_id, my_path)
 
     return gathered_row_data
+
 
 def compare_ops(fx_inputs, fx_outputs, ge_inputs, ge_outputs, token_id, my_path):
     gathered_row_data = []
@@ -395,7 +398,8 @@ def compare_ge_with_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
         logger.debug(f"golden_inputs length: {len(golden_inputs)}, my_inputs length:, {len(my_inputs)}")
         logger.debug(f"golden_outputs length: {len(golden_outputs)}, my_outputs length:, {len(my_outputs)}")
 
-        for cur_id, (golden_input, my_input, golden_input_path) in enumerate(zip(golden_inputs, my_inputs, golden_input_pathes)):
+        for cur_id, (golden_input, my_input, golden_input_path) in enumerate(
+                zip(golden_inputs, my_inputs, golden_input_pathes)):
             my_path = "{},{},{}".format(my_path, "inputs", cur_id)
             if ",inputs," not in golden_output_path:
                 golden_output_path = "{},{},{}".format(golden_output_path, "inputs", cur_id)
