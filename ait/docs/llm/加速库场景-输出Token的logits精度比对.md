@@ -12,7 +12,7 @@
 
 ## 第一步：dump torch 模型 token 的输出 logits
 
-使用[在线图例 DUMP 功能](./在线推理DUMP功能使用说明.md)。将模型最后的输出的 logits dump 下来。
+使用[在线图例 DUMP 功能](/ait/docs/llm/工具-DUMP在线推理数据使用说明.md)。将模型最后的输出的 logits dump 下来。
 
 ```python
 from ait_llm import DumpConfig, register_hook #在模型py文件中文件开头导入DumpConfig和register_hook
@@ -31,7 +31,7 @@ register_hook(model, dump_config)  # model是要dump中间tensor的模型实例�
 
 ## 第二步：dump 加速库 token 的输出 logits
 
-使用[加速库 Dump 功能](./加速库DUMP功能使用说明.md)。需要 Dump 两次：
+使用[加速库 Dump 功能](/ait/docs/llm/工具-DUMP加速库数据使用说明.md)。需要 Dump 两次：
 
 1. 先 dump 网络模型，获取到网络最后一层的编号
 2. 再通过编号，指定 Dump 最后一层的输出
@@ -63,7 +63,7 @@ register_hook(model, dump_config)  # model是要dump中间tensor的模型实例�
 
 ## 第三步：将上面两个步骤生成的 dump 文件，输入到 ait llm compare 中完成比对
 
-使用[自动比对功能](./自动比对功能使用说明.md)。比对标杆数据和加速库数据。
+使用[自动比对功能](/ait/docs/llm/工具-自动比对功能使用说明.md)。比对标杆数据和加速库数据。
 
 ### 使用方式
 
@@ -77,4 +77,4 @@ ait llm compare 提供有精度问题的数据与标杆数据之间的比对能�
 > - --my-path 参数为第二步中 `atb_tensor`所在目录 `{DUMP_DIR}/ait_dump/tensors/{device_id}_{PID}/`
 > - -cl token 参数指定比对的token 数据。
 > - 完成比对后会在 `output_dir`下生成一个 `ait_cmp_report_{TIMESTAMP}.csv`，保存比对的最终结果。
-> - csv报告查看参考[精度比对结果参数说明](./精度比对结果参数说明.md)
+> - csv报告查看参考[精度比对结果参数说明](/ait/docs/llm/精度比对结果参数说明.md)
