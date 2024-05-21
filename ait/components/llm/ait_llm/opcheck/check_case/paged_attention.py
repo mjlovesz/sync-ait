@@ -91,7 +91,6 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
                 values.append(v)
             keys = torch.stack(keys, axis=0)
             values = torch.stack(values, axis=0)
-            #scale = 1.0 / (head_size**0.5)
             scale = self.op_param.get('qkScale', 1)
             if alibi is None:
                 out = self.ref_masked_attention(q, keys, values, scale)
@@ -112,7 +111,13 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
             query, key_cache, value_cache, block_tables, context_lens, alibi_mask = in_tensors[:6]
         else:
             query, key_cache, value_cache, block_tables, context_lens = in_tensors[:5]
-        
+
+        if soc_version == "Ascend310P":
+            key_cache = self.nz_2_nd(key_cache_nz)
+            value_cache = self.nz_2_nd(value_cache_nz)
+            if is_support_alibi:
+                alibi_mask = self.nz_2_nd(alibi_mask_nz)
+
         ref_output = torch.zeros_like(query)
         paged_input = query, key_cache, value_cache, block_tables, context_lens
         self.ref_single_query_cached_kv_attention(ref_output, paged_input, alibi_mask)
