@@ -10,6 +10,10 @@ def convert(module: Module):
 
     if "rms" in lowered:
         return rms_norm(module)
+    elif module_class is Linear:
+        return linear(module)
+    elif module_class is Embedding:
+        return embedding(module)
     elif module_class is LayerNorm:
         return layernorm(module)
     elif "rotary" in lowered and "embedding" in lowered:
@@ -18,7 +22,7 @@ def convert(module: Module):
         return {"children": []}
 
 
-def linear(module: Linear):
+def linear(module):
     return {
         "kind": "Linear",
         "in_features": module.in_features,
@@ -27,7 +31,7 @@ def linear(module: Linear):
     }
 
 
-def embedding(module: Embedding):
+def embedding(module):
     return {
         "kind": "Embedding",
         "num_embeddings": module.num_embeddings,
@@ -80,10 +84,12 @@ def mlp(modules: List[Module]):
         else:
             ret["act"] = activation(m)
 
+    return ret
 
-def layernorm(module: Module):
+
+def layernorm(module):
     return {
-        "kind": LayerNorm,
+        "kind": "LayerNorm",
         "normalized_shape": str(module.normalized_shape),
         "eps": module.eps,
         "element_affine": module.elementwise_affine,

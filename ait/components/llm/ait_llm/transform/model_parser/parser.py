@@ -87,5 +87,5 @@ def build_model_tree(module: nn.Module):
 
 
 def model_to_json(model: nn.Module, name: str):
-    with open(f"./json/{name}.json", "w") as o:
+    with open(f"{name}.json", "w") as o:
         dump(build_model_tree(model), o)
