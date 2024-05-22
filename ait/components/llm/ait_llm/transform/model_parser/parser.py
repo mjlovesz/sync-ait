@@ -16,11 +16,7 @@ from json import dump
 
 import torch.nn as nn
 
-from kind import mlp, attention, convert
-
-
-def mname(module: nn.Module):
-    return module.__class__.__name__
+from kind import mlp, attention, convert, mname
 
 
 def add_child(arr, node):
@@ -79,7 +75,7 @@ def process_layer(layer: nn.Module):
 
 
 def build_model_tree(module: nn.Module):
-    root = {"name": "root", "children": []}
+    root = {"name": mname(module), "children": []}
     stack = [(root, module)]
 
     while stack:

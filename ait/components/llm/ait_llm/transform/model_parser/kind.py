@@ -17,6 +17,10 @@ from typing import List
 from torch.nn import Module, Linear, Embedding, LayerNorm, GELU
 
 
+def mname(module: Module):
+    return module.__class__.__name__
+
+
 def convert(module: Module):
     module_class = module.__class__
     module_name = module_class.__name__
@@ -33,7 +37,7 @@ def convert(module: Module):
     elif "rotary" in lowered and "embedding" in lowered:
         return rope(module)
     else:
-        return {"children": []}
+        return {"name": mname(module), "children": []}
 
 
 def linear(module):
