@@ -75,6 +75,9 @@ def process_layer(layer: nn.Module):
 
 
 def build_model_tree(module: nn.Module):
+    if not isinstance(module, nn.Module):
+        raise ValueError("input should be torch.nn.Module")
+
     root = {"name": mname(module), "children": []}
     stack = [(root, module)]
 
