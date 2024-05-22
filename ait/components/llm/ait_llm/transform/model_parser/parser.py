@@ -54,7 +54,7 @@ def process_layer(layer: nn.Module):
             elif "attention" in lowered_name:
                 ret["attention"] = attention(sub, size)
             else:
-                pass
+                continue
         else:
             if "input_layernorm" in ret:
                 ret["post_attention_layernorm"] = convert(child)
@@ -71,7 +71,7 @@ def build_model_tree(module: nn.Module):
     while stack:
         parent, current = stack.pop()
 
-        for name, child in current.named_modules():
+        for name, child in current.named_children():
             if isinstance(child, nn.ModuleList) or isinstance(child, nn.Sequential):
                 repeat_count, layer = find_duplicate(child)
                 repeat_block = process_layer(layer)

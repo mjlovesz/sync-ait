@@ -81,7 +81,7 @@ def mlp(modules: List[Module]):
             ret["act"] = activation(m)
 
 
-def layernorm(module: LayerNorm):
+def layernorm(module: Module):
     return {
         "kind": LayerNorm,
         "normalized_shape": str(module.normalized_shape),
