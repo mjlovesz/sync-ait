@@ -1,228 +1,219 @@
-
 var protobuf = protobuf || {};
 var base = base || require('./base');
 var text = text || require('./text');
 
 protobuf.get = (name) => {
-    protobuf._map = protobuf._map || new Map();
-    if (!protobuf._map.has(name)) {
-        protobuf._map.set(name, {});
-    }
-    return protobuf._map.get(name);
+  protobuf._map = protobuf._map || new Map();
+  if (!protobuf._map.has(name)) {
+    protobuf._map.set(name, {});
+  }
+  return protobuf._map.get(name);
 };
 
 protobuf.BinaryReader = class {
+  static open(buffer) {
+    return new protobuf.BinaryReader(buffer);
+  }
 
-    static open(buffer) {
-        return new protobuf.BinaryReader(buffer);
-    }
+  constructor(data) {
+    const buffer = data instanceof Uint8Array ? data : data.peek();
+    this._buffer = buffer;
+    this._length = buffer.length;
+    this._position = 0;
+    this._view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+    this._utf8Decoder = new TextDecoder('utf-8');
+  }
 
-    constructor(data) {
-        const buffer = data instanceof Uint8Array ? data : data.peek();
-        this._buffer = buffer;
-        this._length = buffer.length;
-        this._position = 0;
-        this._view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-        this._utf8Decoder = new TextDecoder('utf-8');
-    }
-
-    signature() {
-        const tags = new Map();
-        this._position = 0;
-        try {
-            if (this._length > 0) {
-                const type = this._buffer[0] & 7;
-                if (type !== 4 && type !== 6 && type !== 7) {
-                    const length = this.length;
-                    while (this._position < length) {
-                        const tag = this.uint32();
-                        const field = tag >>> 3;
-                        const type = tag & 7;
-                        if (type > 5 || field === 0) {
-                            tags.clear();
-                            break;
-                        }
-                        tags.set(field, type);
-                        if (!this._skipType(type)) {
-                            tags.clear();
-                            break;
-                        }
-                    }
-                }
+  signature() {
+    const tags = new Map();
+    this._position = 0;
+    try {
+      if (this._length > 0) {
+        const type = this._buffer[0] & 7;
+        if (type !== 4 && type !== 6 && type !== 7) {
+          const length = this.length;
+          while (this._position < length) {
+            const tag = this.uint32();
+            const field = tag >>> 3;
+            const type = tag & 7;
+            if (type > 5 || field === 0) {
+              tags.clear();
+              break;
             }
-        }
-        catch (err) {
-            tags.clear();
-        }
-        this._position = 0;
-        return tags;
-    }
-
-    decode() {
-        let tags = {};
-        this._position = 0;
-        try {
-            const decodeMessage = (max) => {
-                const length = this._uint32();
-                if (length === undefined) {
-                    return undefined;
-                }
-                if (length === 0) {
-                    // return 2;
-                }
-                const end = this.position + length;
-                if (end > max) {
-                    return undefined;
-                }
-                try {
-                    const tags = {};
-                    while (this.position < end) {
-                        const tag = this._uint32();
-                        if (tag === undefined) {
-                            this.seek(end);
-                            return 2;
-                        }
-                        const field = tag >>> 3;
-                        const type = tag & 7;
-                        if (type > 5 || field === 0) {
-                            this.seek(end);
-                            return 2;
-                        }
-                        if (type === 2) {
-                            const type = tags[field];
-                            if (type !== 2) {
-                                const inner = decodeMessage(end);
-                                if (this.position > end) {
-                                    this.seek(end);
-                                    return 2;
-                                }
-                                if (inner === undefined) {
-                                    this.seek(end);
-                                    return 2;
-                                }
-                                if (inner === 2) {
-                                    tags[field] = inner;
-                                }
-                                else if (!type) {
-                                    tags[field] = inner;
-                                }
-                                else {
-                                    for (const pair of Object.entries(inner)) {
-                                        if (type[pair[0]] === 2 && pair[1] !== 2) {
-                                            continue;
-                                        }
-                                        type[pair[0]] = pair[1];
-                                    }
-                                }
-                                continue;
-                            }
-                        }
-                        tags[field] = type;
-                        if (!this._skipType(type)) {
-                            this.seek(end);
-                            return 2;
-                        }
-                    }
-                    if (this.position === end) {
-                        return tags;
-                    }
-                }
-                catch (err) {
-                    // continue regardless of error
-                }
-                this.seek(end);
-                return 2;
-            };
-            if (this._length > 0) {
-                const type = this._buffer[0] & 7;
-                if (type !== 4 && type !== 6 && type !== 7) {
-                    const length = this.length;
-                    while (this.position < length) {
-                        const tag = this.uint32();
-                        const field = tag >>> 3;
-                        const type = tag & 7;
-                        if (type > 5 || field === 0) {
-                            tags = {};
-                            break;
-                        }
-                        if (type === 2) {
-                            const type = tags[field];
-                            if (type !== 2) {
-                                const inner = decodeMessage(length);
-                                if (inner === undefined) {
-                                    tags = {};
-                                    break;
-                                }
-                                if (inner === 2) {
-                                    tags[field] = inner;
-                                }
-                                else if (!type) {
-                                    tags[field] = inner;
-                                }
-                                else {
-                                    for (const pair of Object.entries(inner)) {
-                                        if (type[pair[0]] === 2 && pair[1] !== 2) {
-                                            continue;
-                                        }
-                                        type[pair[0]] = pair[1];
-                                    }
-                                }
-                                continue;
-                            }
-                        }
-                        tags[field] = type;
-                        if (!this._skipType(type)) {
-                            tags = {};
-                            break;
-                        }
-                    }
-                }
+            tags.set(field, type);
+            if (!this._skipType(type)) {
+              tags.clear();
+              break;
             }
+          }
         }
-        catch (err) {
-            tags = {};
+      }
+    } catch (err) {
+      tags.clear();
+    }
+    this._position = 0;
+    return tags;
+  }
+
+  decode() {
+    let tags = {};
+    this._position = 0;
+    try {
+      const decodeMessage = (max) => {
+        const length = this._uint32();
+        if (length === undefined) {
+          return undefined;
         }
-        this._position = 0;
-        return tags;
-    }
-
-    get length() {
-        return this._length;
-    }
-
-    get position() {
-        return this._position;
-    }
-
-    get buffer() {
-        return this._buffer;
-    }
-
-    seek(position) {
-        this._position = position >= 0 ? position : this._length + position;
-    }
-
-    string() {
-        return this._utf8Decoder.decode(this.bytes());
-    }
-
-    bool() {
-        return this.uint32() !== 0;
-    }
-
-    byte() {
-        if (this._position < this._length) {
-            return this._buffer[this._position++];
+        if (length === 0) {
+          // return 2;
         }
-        throw new RangeError('Unexpected end of file.');
+        const end = this.position + length;
+        if (end > max) {
+          return undefined;
+        }
+        try {
+          const tags = {};
+          while (this.position < end) {
+            const tag = this._uint32();
+            if (tag === undefined) {
+              this.seek(end);
+              return 2;
+            }
+            const field = tag >>> 3;
+            const type = tag & 7;
+            if (type > 5 || field === 0) {
+              this.seek(end);
+              return 2;
+            }
+            if (type === 2) {
+              const type = tags[field];
+              if (type !== 2) {
+                const inner = decodeMessage(end);
+                if (this.position > end) {
+                  this.seek(end);
+                  return 2;
+                }
+                if (inner === undefined) {
+                  this.seek(end);
+                  return 2;
+                }
+                if (inner === 2) {
+                  tags[field] = inner;
+                } else if (!type) {
+                  tags[field] = inner;
+                } else {
+                  for (const pair of Object.entries(inner)) {
+                    if (type[pair[0]] === 2 && pair[1] !== 2) {
+                      continue;
+                    }
+                    type[pair[0]] = pair[1];
+                  }
+                }
+                continue;
+              }
+            }
+            tags[field] = type;
+            if (!this._skipType(type)) {
+              this.seek(end);
+              return 2;
+            }
+          }
+          if (this.position === end) {
+            return tags;
+          }
+        } catch (err) {
+          // continue regardless of error
+        }
+        this.seek(end);
+        return 2;
+      };
+      if (this._length > 0) {
+        const type = this._buffer[0] & 7;
+        if (type !== 4 && type !== 6 && type !== 7) {
+          const length = this.length;
+          while (this.position < length) {
+            const tag = this.uint32();
+            const field = tag >>> 3;
+            const type = tag & 7;
+            if (type > 5 || field === 0) {
+              tags = {};
+              break;
+            }
+            if (type === 2) {
+              const type = tags[field];
+              if (type !== 2) {
+                const inner = decodeMessage(length);
+                if (inner === undefined) {
+                  tags = {};
+                  break;
+                }
+                if (inner === 2) {
+                  tags[field] = inner;
+                } else if (!type) {
+                  tags[field] = inner;
+                } else {
+                  for (const pair of Object.entries(inner)) {
+                    if (type[pair[0]] === 2 && pair[1] !== 2) {
+                      continue;
+                    }
+                    type[pair[0]] = pair[1];
+                  }
+                }
+                continue;
+              }
+            }
+            tags[field] = type;
+            if (!this._skipType(type)) {
+              tags = {};
+              break;
+            }
+          }
+        }
+      }
+    } catch (err) {
+      tags = {};
     }
+    this._position = 0;
+    return tags;
+  }
 
-    bytes() {
-        const length = this.uint32();
-        const position = this._position;
-        this.skip(length);
-        return this._buffer.slice(position, this._position);
+  get length() {
+    return this._length;
+  }
+
+  get position() {
+    return this._position;
+  }
+
+  get buffer() {
+    return this._buffer;
+  }
+
+  seek(position) {
+    this._position = position >= 0 ? position : this._length + position;
+  }
+
+  string() {
+    return this._utf8Decoder.decode(this.bytes());
+  }
+
+  bool() {
+    return this.uint32() !== 0;
+  }
+
+  byte() {
+    if (this._position < this._length) {
+      return this._buffer[this._position++];
     }
+    throw new RangeError('Unexpected end of file.');
+  }
+
+  bytes() {
+    const length = this.uint32();
+    const position = this._position;
+    this.skip(length);
+    return this._buffer.slice(position, this._position);
+  }
 
     uint32() {
         let c;
@@ -1311,42 +1302,40 @@ protobuf.Int64 = base.Int64;
 protobuf.Uint64 = base.Uint64;
 
 protobuf.LongBits = class {
+  constructor(lo, hi) {
+    this.lo = lo >>> 0;
+    this.hi = hi >>> 0;
+  }
 
-    constructor(lo, hi) {
-        this.lo = lo >>> 0;
-        this.hi = hi >>> 0;
-    }
+  zzDecode() {
+    const mask = -(this.lo & 1);
+    this.lo = (((this.lo >>> 1) | (this.hi << 31)) ^ mask) >>> 0;
+    this.hi = ((this.hi >>> 1) ^ mask) >>> 0;
+    return this;
+  }
 
-    zzDecode() {
-        const mask = -(this.lo & 1);
-        this.lo  = ((this.lo >>> 1 | this.hi << 31) ^ mask) >>> 0;
-        this.hi  = ( this.hi >>> 1                  ^ mask) >>> 0;
-        return this;
-    }
+  toUint64() {
+    return new base.Uint64(this.lo, this.hi);
+  }
 
-    toUint64() {
-        return new base.Uint64(this.lo, this.hi);
-    }
-
-    toInt64() {
-        return new base.Int64(this.lo, this.hi);
-    }
+  toInt64() {
+    return new base.Int64(this.lo, this.hi);
+  }
 };
 
 protobuf.Error = class extends Error {
-
-    constructor(message) {
-        super(message);
-        this.name = 'Protocol Buffer Error';
-        this.message = message;
-    }
+  constructor(message) {
+    super(message);
+    this.name = 'Protocol Buffer Error';
+    this.message = message;
+  }
 };
 
 if (typeof module !== 'undefined' && typeof module.exports === 'object') {
-    module.exports.BinaryReader = protobuf.BinaryReader;
-    module.exports.TextReader = protobuf.TextReader;
-    module.exports.Error = protobuf.Error;
-    module.exports.Int64 = protobuf.Int64;
-    module.exports.Uint64 = protobuf.Uint64;
-    module.exports.get = protobuf.get;
+  module.exports.BinaryReader = protobuf.BinaryReader;
+  module.exports.TextReader = protobuf.TextReader;
+  module.exports.Error = protobuf.Error;
+  module.exports.Int64 = protobuf.Int64;
+  module.exports.Uint64 = protobuf.Uint64;
+  module.exports.get = protobuf.get;
 }
