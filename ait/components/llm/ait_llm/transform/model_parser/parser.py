@@ -1,4 +1,4 @@
-from typing import List
+from json import dump
 
 import torch.nn as nn
 
@@ -27,7 +27,7 @@ def filter_dropout_module(module: nn.Module):
     return ret
 
 
-def find_duplicate(modules: List[nn.Module]):
+def find_duplicate(modules):
     reprs = [repr(item) for item in modules]
 
     count = 1
@@ -37,7 +37,7 @@ def find_duplicate(modules: List[nn.Module]):
         if r == block:
             count += 1
 
-    return count, block
+    return count, modules[0]
 
 
 def process_layer(layer: nn.Module):
@@ -62,3 +62,30 @@ def process_layer(layer: nn.Module):
                 ret["input_layernorm"] = convert(child)
 
     return ret
+
+
+def build_module_tree(module: nn.Module):
+    root = {"name": "root", "children": []}
+    stack = [(root, module)]
+
+    while stack:
+        parent, current = stack.pop()
+
+        for name, child in current.named_modules():
+            if isinstance(child, nn.ModuleList) or isinstance(child, nn.Sequential):
+                repeat_count, layer = find_duplicate(child)
+                repeat_block = process_layer(layer)
+
+                root["repeat_count"] = repeat_count
+                root["repeat_block"] = repeat_block
+            else:
+                child_node = convert(child)
+                add_child(parent, child_node)
+                stack.append((child_node, child))
+
+    return root
+
+
+def module_to_json(model: nn.Module, name: str):
+    with open(f"./{name}.json", "w") as o:
+        dump(build_module_tree(model), o)
