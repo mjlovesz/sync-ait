@@ -18,10 +18,11 @@ set -u
 
 pwd_dir=$(dirname $(readlink -f "$0"))
 
-# copy llm to test file, and test
+# copy ait_llm to test file, and test
 cp ${pwd_dir}/../llm ${pwd_dir}/ -rf
 
 coverage run -m -p pytest testcase/*/test_*.py
+
 ret=$?
 if [ $ret != 0 ]; then
     echo "coverage run failed! "

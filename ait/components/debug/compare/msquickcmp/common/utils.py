@@ -30,6 +30,7 @@ import argparse
 import numpy as np
 import pandas as pd
 
+from components.utils.security_check import get_valid_write_path
 from msquickcmp.common.dynamic_argument_bean import DynamicArgumentEnum
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
@@ -578,11 +579,12 @@ def execute_command(cmd, info_need=True):
     if info_need:
         logger.info('Execute command:%s' % " ".join(cmd))
     process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    ais_bench_logs = ""
     while process.poll() is None:
-        line = process.stdout.readline()
-        line = line.strip()
+        ais_bench_logs += process.stdout.readline().decode()
     if process.returncode != 0:
         logger.error('Failed to execute command:%s' % " ".join(cmd))
+        logger.error(f'\nais_bench error log:\n {ais_bench_logs}')
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DATA_ERROR)
 
 
@@ -648,3 +650,17 @@ def merge_csv(csv_list, output_dir, output_csv_name):
     summary_csv_path = os.path.join(output_dir, output_csv_name)
     merged_df.to_csv(summary_csv_path, index=False)
     return summary_csv_path
+
+
+def safe_delete_path_if_exists(path, is_log=False):
+    if os.path.exists(path):
+        is_dir = os.path.isdir(path)
+        path = get_valid_write_path(path, extensions=None, check_user_stat=False, is_dir=is_dir)
+        if os.path.isfile(path):
+            if is_log:
+                utils.logger.info("File %s exist and will be deleted.", path)
+            os.remove(path)
+        else:
+            if is_log:
+                utils.logger.info("Folder %s exist and will be deleted.", path)
+            shutil.rmtree(path)

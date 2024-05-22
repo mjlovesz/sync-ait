@@ -16,7 +16,7 @@ import os.path
 import pytest
 import torch
 
-from llm.compare.cmp_algorithm import cosine_similarity, max_relative_error, mean_relative_error, \
+from ait_llm.compare.cmp_algorithm import cosine_similarity, max_relative_error, mean_relative_error, \
     relative_euclidean_distance
 
 
@@ -34,7 +34,7 @@ def test_data():
 
 def test_cosine_similarity(golden_data, test_data):
     res, message = cosine_similarity(golden_data.reshape(-1), test_data.reshape(-1))
-    assert res == '1.000000'
+    assert res == 1.0
     assert message == ''
 
 
