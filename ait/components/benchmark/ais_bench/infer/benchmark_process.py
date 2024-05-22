@@ -751,6 +751,7 @@ def benchmark_process(args:BenchMarkArgsAdapter):
 
     if type(args.device) == list:
         # args has multiple device, run single process for each device
+        # test ci
         ret = multidevice_run(args)
         return ret
 
