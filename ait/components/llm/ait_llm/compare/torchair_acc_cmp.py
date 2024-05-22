@@ -273,11 +273,11 @@ def compare_ge_with_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
     for op_name, my_path in ge_dump_data.items():
         all_ops = get_all_ops_from_fusion_op(op_name, graph_map_dict, ge_dump_data)
         if len(all_ops) == 1:
-            op_info = graph_map_dict[all_ops[0]]
+            op_info = graph_map_dict.get(all_ops[0])
             gathered_row_data.extend(compare_ge_with_fx_single_op(op_info, fx_dump_data, op_name, my_path, token_id))
         elif len(all_ops) > 1:
-            first_op_info = graph_map_dict[all_ops[0]]
-            last_op_info = graph_map_dict[all_ops[-1]]
+            first_op_info = graph_map_dict.get(all_ops[0])
+            last_op_info = graph_map_dict.get(all_ops[-1])
             gathered_row_data.extend(compare_ge_with_fx_multiple_ops(first_op_info, last_op_info, fx_dump_data, op_name,
                                                                      my_path, token_id))
         else:
