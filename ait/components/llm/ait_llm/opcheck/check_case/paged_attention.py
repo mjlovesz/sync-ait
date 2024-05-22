@@ -114,14 +114,15 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
 
         if soc_version == 'Ascend310P':
             num_blocks = key_cache_nz.shape[0]
-            num_heads = self.op_param.get('headNum', 32) 
+            kv_heads = self.op_param.get('kvHeadNum', 1) 
             block_size = key_cache_nz.shape[2]
 
-            key_cache = torch.permute(key_cache_nz, (0, 2, 1, 3)).reshape(num_blocks, block_size, num_heads, -1)
-            value_cache = torch.permute(value_cache_nz, (0, 2, 1, 3)).reshape(num_blocks, block_size, num_heads, -1)
+            key_cache = torch.permute(key_cache_nz, (0, 2, 1, 3)).reshape(num_blocks, block_size, kv_heads, -1)
+            value_cache = torch.permute(value_cache_nz, (0, 2, 1, 3)).reshape(num_blocks, block_size, kv_heads, -1)
 
             if is_support_alibi:
                 batch = alibi_mask.shape[0]
+                num_heads = self.op_param.get('headNum', 8)
                 alibi_mask = torch.permute(alibi_mask_nz,(0, 2, 1, 3)).reshape(batch, num_heads, 1, -1)
 
         ref_output = torch.zeros_like(query)
