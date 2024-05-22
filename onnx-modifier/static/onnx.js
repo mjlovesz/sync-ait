@@ -2086,660 +2086,661 @@ onnx.Runtime.Reader = class {
 onnx.Text = {};
 
 onnx.Text.Reader = class {
-
-    static open(stream) {
-        try {
-            if (stream.length > 0 && stream.peek(1)[0] < 0x80 || stream.peek(1)[0] >= 0xFE) {
-                const reader = text.Reader.open(stream);
-                const lines = [];
-                for (let i = 0; i < 32; i++) {
-                    const line = reader.read();
-                    if (line === undefined) {
-                        break;
-                    }
-                    lines.push(line);
-                }
-                const content = lines.join('\n');
-                if (/^\s*<\s*ir_version\s*:/m.exec(content) ||
-                    /^\s*[a-zA-Z][a-zA-Z0-9]*\s*\(.*\)\s=>\s\(/m.exec(content)) {
-                    return new onnx.Text.Reader(stream);
-                }
-            }
+  static open(stream) {
+    try {
+      if ((stream.length > 0 && stream.peek(1)[0] < 0x80) || stream.peek(1)[0] >= 0xfe) {
+        const reader = text.Reader.open(stream);
+        const lines = [];
+        for (let i = 0; i < 32; i++) {
+          const line = reader.read();
+          if (line === undefined) {
+            break;
+          }
+          lines.push(line);
         }
-        catch (err) {
-            // continue regardless of error
+        const content = lines.join('\n');
+        if (/^\s*<\s*ir_version\s*:/m.exec(content) || /^\s*[a-zA-Z][a-zA-Z0-9]*\s*\(.*\)\s=>\s\(/m.exec(content)) {
+          return new onnx.Text.Reader(stream);
         }
-        return null;
+      }
+    } catch (err) {
+      // continue regardless of error
     }
+    return null;
+  }
 
-    constructor(stream) {
-        this._stream = stream;
-        this._dataTypes = new Map([
-            [ 'float', 1 ], [ 'uint8', 2 ], [ 'int8', 3 ], [ 'uint16', 4 ],
-            [ 'int16', 5 ], [ 'int32', 6 ], [ 'int64', 7 ], [ 'string', 8 ],
-            [ 'bool', 9 ], [ 'float16', 10 ], [ 'double', 11 ], [ 'uint32', 12 ],
-            [ 'uint64', 13 ], [ 'complex64', 14 ], [ 'complex128', 15 ], [ 'bfloat16', 16 ]
-        ]);
-        this._attributeTypes = new Map([
-            [ 'float', 1 ], [ 'int', 2 ], [ 'string', 3 ],
-            [ 'tensor', 4 ], [ 'graph', 5 ], [ 'sparse_tensor', 11 ], [ 'type_proto', 13 ],
-            [ 'floats', 6 ], [ 'ints', 7 ], [ 'strings', 8 ],
-            [ 'tensors', 9 ], [ 'graphs', 10 ], [ 'sparse_tensors', 12 ], [ 'type_protos', 14 ]
-        ]);
-    }
+  constructor(stream) {
+    this._stream = stream;
+    this._dataTypes = new Map([
+      ['float', 1],
+      ['uint8', 2],
+      ['int8', 3],
+      ['uint16', 4],
+      ['int16', 5],
+      ['int32', 6],
+      ['int64', 7],
+      ['string', 8],
+      ['bool', 9],
+      ['float16', 10],
+      ['double', 11],
+      ['uint32', 12],
+      ['uint64', 13],
+      ['complex64', 14],
+      ['complex128', 15],
+      ['bfloat16', 16],
+    ]);
+    this._attributeTypes = new Map([
+      ['float', 1],
+      ['int', 2],
+      ['string', 3],
+      ['tensor', 4],
+      ['graph', 5],
+      ['sparse_tensor', 11],
+      ['type_proto', 13],
+      ['floats', 6],
+      ['ints', 7],
+      ['strings', 8],
+      ['tensors', 9],
+      ['graphs', 10],
+      ['sparse_tensors', 12],
+      ['type_protos', 14],
+    ]);
+  }
 
-    read() {
-        const decoder = text.Decoder.open(this._stream);
-        this._decoder = decoder;
-        this._position = 0;
-        this._char = decoder.decode();
-        return this._model();
-    }
+  read() {
+    const decoder = text.Decoder.open(this._stream);
+    this._decoder = decoder;
+    this._position = 0;
+    this._char = decoder.decode();
+    return this._model();
+  }
 
-    _seek(position) {
-        this._decoder.position = position;
-        this._char = '';
-        this._next();
-    }
+  _seek(position) {
+    this._decoder.position = position;
+    this._char = '';
+    this._next();
+  }
 
-    _model() {
-        this._whitespace();
-        const model = new onnx.proto.ModelProto();
-        if (this._match('<')) {
-            do {
-                const keyword = this._identifier();
-                this._expect(':');
-                switch (keyword) {
-                    case 'ir_version':
-                    case 'model_version':
-                        model[keyword] = this._integer();
-                        break;
-                    case 'opset_import':
-                        model[keyword] = this._operatorSetId();
-                        break;
-                    case 'producer_name':
-                    case 'producer_version':
-                    case 'domain':
-                    case 'doc_string':
-                        model[keyword] = this._string();
-                        break;
-                    case 'metadata_props':
-                        this._expect('[');
-                        if (!this._match(']')) {
-                            do {
-                                const entry = new onnx.proto.StringStringEntryProto();
-                                entry.key = this._string();
-                                this._expect(':');
-                                entry.value = this._string();
-                                model.metadata_props.push(entry);
-                            } while (this._match(','));
-                            this._expect(']');
-                        }
-                        break;
-                    default:
-                        this._throw("Unknown keyword '" + keyword + "'.");
-                        break;
-                }
-            } while (this._match(','));
-            this._expect('>');
-        }
-        model.graph = this._graph();
-        this._whitespace();
-        while (this._char !== undefined) {
-            const func = this._function();
-            if (func) {
-                model.functions.push(func);
-            }
-            this._whitespace();
-        }
-        return model;
-    }
-
-    _graph() {
-        const graph = new onnx.proto.GraphProto();
-        graph.name = this._identifier();
-        if (this._match('(')) {
-            if (!this._match(')')) {
-                do {
-                    const valueInfo = this._valueInfo();
-                    if (this._match('=')) {
-                        const tensor = this._tensor(valueInfo.type);
-                        tensor.name = valueInfo.name;
-                        graph.initializer.push(tensor);
-                    }
-                    graph.input.push(valueInfo);
-                }
-                while (this._match(','));
-                this._expect(')');
-            }
-        }
-        this._expect('=>');
-        graph.output = this._valueInfoList();
-        if (this._match('<')) {
-            if (!this._match('>')) {
-                do {
-                    const valueInfo = this._valueInfo();
-                    if (this._match('=')) {
-                        const tensor = this._tensor(valueInfo.type);
-                        tensor.name = valueInfo.name;
-                        graph.initializer.push(tensor);
-                    }
-                    else {
-                        graph.value_info.push(valueInfo);
-                    }
-                }
-                while (this._match(','));
-                this._expect('>');
-            }
-        }
-        graph.node = this._nodeList();
-        return graph;
-    }
-
-    _nodeList() {
-        const list = [];
-        this._expect('{');
-        while (!this._match('}')) {
-            list.push(this._node());
-        }
-        return list;
-    }
-
-    _node() {
-        const node = new onnx.proto.NodeProto();
-        node.output = this._identifierList();
-        this._expect('=');
-        let identifier = this._identifier();
-        let domain = '';
-        while (this._match('.')) {
-            if (domain) {
-                domain += '.';
-            }
-            domain += identifier;
-            identifier = this._identifier();
-        }
-        node.domain = domain;
-        node.op_type = identifier;
-        node.attribute = this._attributeList();
-        this._expect('(');
-        node.input = this._identifierList();
-        this._expect(')');
-        if (!node.attribute || node.attribute.length === 0) {
-            node.attribute = this._attributeList();
-        }
-        return node;
-    }
-
-    _attributeList() {
-        const list = [];
-        if (this._match('<')) {
-            do {
-                list.push(this._attribute());
-            }
-            while (this._match(','));
-            this._expect('>');
-        }
-        return list;
-    }
-
-    _attribute() {
-        const attribute = new onnx.proto.AttributeProto();
-        attribute.name = this._identifier();
-        if (this._match(':')) {
-            const type = this._identifier();
-            if (!this._attributeTypes.has(type)) {
-                this._throw("Unexpected attribute type '" + type + "'.");
-            }
-            attribute.type = this._attributeTypes.get(type);
-        }
-        this._expect('=');
-        if (this._match('[')) {
-            const list = [];
-            do {
-                list.push(this._literal());
-            }
-            while (this._match(','));
-            this._expect(']');
-            if (list.every((value) => typeof value === 'string')) {
-                attribute.type = onnx.AttributeType.STRINGS;
-                attribute.strings = list;
-            }
-            else if (list.every((value) => typeof value === 'number' && Number.isInteger(value))) {
-                attribute.type = onnx.AttributeType.INTS;
-                attribute.ints = list;
-            }
-            else if (list.every((value) => typeof value === 'number')) {
-                attribute.type = onnx.AttributeType.FLOATS;
-                attribute.floats = list;
-            }
-            else {
-                this._throw("Unexpected value '" + JSON.stringify(list) + "'.");
-            }
-        }
-        else {
-            if ((this._char >= 'a' && this._char <= 'z') || (this._char >= 'A' && this._char <= 'Z') || this._char === '_') {
-                const identifier = this._identifier();
-                if (this._dataTypes.has(identifier)) {
-                    attribute.type = onnx.AttributeType.TENSOR;
-                    if (!this._dataTypes.has(identifier)) {
-                        this._throw("Unexpected type '" + identifier + "'.");
-                    }
-                    const type = this._type(this._dataTypes.get(identifier));
-                    if (!type.tensor_type.elem_type) {
-                        this._throw('Expected tensor data type.');
-                    }
-                    if (!type.tensor_type.shape || !type.tensor_type.shape.dim) {
-                        this._throw('Expected tensor shape.');
-                    }
-                    attribute.t = this._tensor(type);
-                }
-                else {
-                    attribute.type = onnx.AttributeType.GRAPH;
-                    attribute.g = this._graph();
-                }
-            }
-            else if (this._match('@')) {
-                attribute.ref_attr_name = this._identifier();
-            }
-            else {
-                const value = this._literal();
-                switch (typeof value) {
-                    case 'number':
-                        if (Number.isInteger(value)) {
-                            attribute.type = onnx.AttributeType.INT;
-                            attribute.i = value;
-                        }
-                        else {
-                            attribute.type = onnx.AttributeType.FLOAT;
-                            attribute.f = value;
-                        }
-                        break;
-                    case 'string':
-                        attribute.type = onnx.AttributeType.STRING;
-                        attribute.s = value;
-                        break;
-                    default: {
-                        this._throw("Unexpected value '" + JSON.stringify(value) + "'.");
-                    }
-                }
-            }
-        }
-        return attribute;
-    }
-
-    _valueInfoList() {
-        const list = [];
-        this._expect('(');
-        if (!this._match(')')) {
-            do {
-                list.push(this._valueInfo());
-            } while (this._match(','));
-            this._expect(')');
-        }
-        return list;
-    }
-
-    _valueInfo() {
-        const valueInfo = new onnx.proto.ValueInfoProto();
-        let identifier = this._identifier();
-        if (this._dataTypes.has(identifier)) {
-            valueInfo.type = this._type(this._dataTypes.get(identifier));
-            identifier = this._identifier();
-        }
-        valueInfo.name = identifier;
-        return valueInfo;
-    }
-
-    _type(elem_type) {
-        const type = new onnx.proto.TypeProto();
-        type.tensor_type = new onnx.proto.TypeProto.Tensor();
-        type.tensor_type.elem_type = elem_type;
-        if (this._match('[')) {
+  _model() {
+    this._whitespace();
+    const model = new onnx.proto.ModelProto();
+    if (this._match('<')) {
+      do {
+        const keyword = this._identifier();
+        this._expect(':');
+        switch (keyword) {
+          case 'ir_version':
+          case 'model_version':
+            model[keyword] = this._integer();
+            break;
+          case 'opset_import':
+            model[keyword] = this._operatorSetId();
+            break;
+          case 'producer_name':
+          case 'producer_version':
+          case 'domain':
+          case 'doc_string':
+            model[keyword] = this._string();
+            break;
+          case 'metadata_props':
+            this._expect('[');
             if (!this._match(']')) {
-                type.tensor_type.shape = this._shape();
-                this._expect(']');
-            }
-        }
-        else {
-            type.tensor_type.shape = new onnx.proto.TensorShapeProto();
-        }
-        return type;
-    }
-
-    _shape() {
-        const shape = new onnx.proto.TensorShapeProto();
-        do {
-            const dimension = new onnx.proto.TensorShapeProto.Dimension();
-            if (!this._match('?')) {
-                const identifier = this._identifier(true);
-                if (identifier) {
-                    dimension.dim_param = identifier;
-                }
-                else {
-                    dimension.dim_value = this._integer();
-                }
-            }
-            shape.dim.push(dimension);
-        }
-        while (this._match(','));
-        return shape;
-    }
-
-    _tensor(type) {
-        const tensor = new onnx.proto.TensorProto();
-        if (!type.tensor_type || !type.tensor_type.elem_type) {
-            this._throw('Expected tensor type.');
-        }
-        if (!type.tensor_type.shape || !type.tensor_type.shape.dim || !type.tensor_type.shape.dim.every((dim) => dim.dim_value)) {
-            this._throw('Expected numeric tensor shape.');
-        }
-        const elem_type = type.tensor_type.elem_type;
-        tensor.data_type = elem_type;
-        tensor.dims = type.tensor_type.shape.dim.map((dim) => dim.dim_value);
-        this._match('=');
-        this._expect('{');
-        if (!this._match('}')) {
-            do {
-                switch (elem_type) {
-                    case onnx.DataType.INT8:
-                    case onnx.DataType.INT16:
-                    case onnx.DataType.INT32:
-                    case onnx.DataType.UINT8:
-                    case onnx.DataType.UINT16:
-                    case onnx.DataType.BOOL:
-                        tensor.int32_data.push(this._integer());
-                        break;
-                    case onnx.DataType.INT64:
-                        tensor.int64_data.push(this._integer());
-                        break;
-                    case onnx.DataType.UINT32:
-                    case onnx.DataType.UINT64:
-                        tensor.uint64_data.push(this._integer());
-                        break;
-                    case onnx.DataType.FLOAT:
-                        tensor.float_data.push(this._float());
-                        break;
-                    case onnx.DataType.DOUBLE:
-                        tensor.double_data.push(this._float());
-                        break;
-                    case onnx.DataType.STRING:
-                        tensor.string_data.push(this.string());
-                        break;
-                    default:
-                        return this._throw("Unsupported tensor element type '" + elem_type.toString() + "'.");
-                }
-            } while (this._match(','));
-            this._expect('}');
-        }
-        return tensor;
-    }
-
-    _function() {
-        const func = new onnx.proto.FunctionProto();
-        if (this._match('<')) {
-            do {
-                const keyword = this._identifier();
+              do {
+                const entry = new onnx.proto.StringStringEntryProto();
+                entry.key = this._string();
                 this._expect(':');
-                switch (keyword) {
-                    case 'opset_import':
-                        func[keyword] = this._operatorSetId();
-                        break;
-                    case 'domain':
-                    case 'doc_string':
-                        func[keyword] = this._string();
-                        break;
-                    default:
-                        this._throw("Unknown keyword '" + keyword + "'.");
-                        break;
-                }
+                entry.value = this._string();
+                model.metadata_props.push(entry);
+              } while (this._match(','));
+              this._expect(']');
             }
-            while (this._match(','));
-            this._expect('>');
+            break;
+          default:
+            this._throw("Unknown keyword '" + keyword + "'.");
+            break;
         }
-        func.name = this._identifier();
-        if (this._match('<')) {
-            func.attribute = this._identifierList();
-            this._expect('>');
-        }
-        if (this._match('(')) {
-            func.input = this._identifierList();
-            this._expect(')');
-        }
-        this._expect('=>');
-        if (this._match('(')) {
-            func.output = this._identifierList();
-            this._expect(')');
-        }
-        func.node = this._nodeList();
-        return func;
+      } while (this._match(','));
+      this._expect('>');
     }
+    model.graph = this._graph();
+    this._whitespace();
+    while (this._char !== undefined) {
+      const func = this._function();
+      if (func) {
+        model.functions.push(func);
+      }
+      this._whitespace();
+    }
+    return model;
+  }
 
-    _identifierList() {
-        const list = [];
+  _graph() {
+    const graph = new onnx.proto.GraphProto();
+    graph.name = this._identifier();
+    if (this._match('(')) {
+      if (!this._match(')')) {
+        do {
+          const valueInfo = this._valueInfo();
+          if (this._match('=')) {
+            const tensor = this._tensor(valueInfo.type);
+            tensor.name = valueInfo.name;
+            graph.initializer.push(tensor);
+          }
+          graph.input.push(valueInfo);
+        } while (this._match(','));
+        this._expect(')');
+      }
+    }
+    this._expect('=>');
+    graph.output = this._valueInfoList();
+    if (this._match('<')) {
+      if (!this._match('>')) {
+        do {
+          const valueInfo = this._valueInfo();
+          if (this._match('=')) {
+            const tensor = this._tensor(valueInfo.type);
+            tensor.name = valueInfo.name;
+            graph.initializer.push(tensor);
+          } else {
+            graph.value_info.push(valueInfo);
+          }
+        } while (this._match(','));
+        this._expect('>');
+      }
+    }
+    graph.node = this._nodeList();
+    return graph;
+  }
+
+  _nodeList() {
+    const list = [];
+    this._expect('{');
+    while (!this._match('}')) {
+      list.push(this._node());
+    }
+    return list;
+  }
+
+  _node() {
+    const node = new onnx.proto.NodeProto();
+    node.output = this._identifierList();
+    this._expect('=');
+    let identifier = this._identifier();
+    let domain = '';
+    while (this._match('.')) {
+      if (domain) {
+        domain += '.';
+      }
+      domain += identifier;
+      identifier = this._identifier();
+    }
+    node.domain = domain;
+    node.op_type = identifier;
+    node.attribute = this._attributeList();
+    this._expect('(');
+    node.input = this._identifierList();
+    this._expect(')');
+    if (!node.attribute || node.attribute.length === 0) {
+      node.attribute = this._attributeList();
+    }
+    return node;
+  }
+
+  _attributeList() {
+    const list = [];
+    if (this._match('<')) {
+      do {
+        list.push(this._attribute());
+      } while (this._match(','));
+      this._expect('>');
+    }
+    return list;
+  }
+
+  _attribute() {
+    const attribute = new onnx.proto.AttributeProto();
+    attribute.name = this._identifier();
+    if (this._match(':')) {
+      const type = this._identifier();
+      if (!this._attributeTypes.has(type)) {
+        this._throw("Unexpected attribute type '" + type + "'.");
+      }
+      attribute.type = this._attributeTypes.get(type);
+    }
+    this._expect('=');
+    if (this._match('[')) {
+      const list = [];
+      do {
+        list.push(this._literal());
+      } while (this._match(','));
+      this._expect(']');
+      if (list.every((value) => typeof value === 'string')) {
+        attribute.type = onnx.AttributeType.STRINGS;
+        attribute.strings = list;
+      } else if (list.every((value) => typeof value === 'number' && Number.isInteger(value))) {
+        attribute.type = onnx.AttributeType.INTS;
+        attribute.ints = list;
+      } else if (list.every((value) => typeof value === 'number')) {
+        attribute.type = onnx.AttributeType.FLOATS;
+        attribute.floats = list;
+      } else {
+        this._throw("Unexpected value '" + JSON.stringify(list) + "'.");
+      }
+    } else {
+      if ((this._char >= 'a' && this._char <= 'z') || (this._char >= 'A' && this._char <= 'Z') || this._char === '_') {
+        const identifier = this._identifier();
+        if (this._dataTypes.has(identifier)) {
+          attribute.type = onnx.AttributeType.TENSOR;
+          if (!this._dataTypes.has(identifier)) {
+            this._throw("Unexpected type '" + identifier + "'.");
+          }
+          const type = this._type(this._dataTypes.get(identifier));
+          if (!type.tensor_type.elem_type) {
+            this._throw('Expected tensor data type.');
+          }
+          if (!type.tensor_type.shape || !type.tensor_type.shape.dim) {
+            this._throw('Expected tensor shape.');
+          }
+          attribute.t = this._tensor(type);
+        } else {
+          attribute.type = onnx.AttributeType.GRAPH;
+          attribute.g = this._graph();
+        }
+      } else if (this._match('@')) {
+        attribute.ref_attr_name = this._identifier();
+      } else {
+        const value = this._literal();
+        switch (typeof value) {
+          case 'number':
+            if (Number.isInteger(value)) {
+              attribute.type = onnx.AttributeType.INT;
+              attribute.i = value;
+            } else {
+              attribute.type = onnx.AttributeType.FLOAT;
+              attribute.f = value;
+            }
+            break;
+          case 'string':
+            attribute.type = onnx.AttributeType.STRING;
+            attribute.s = value;
+            break;
+          default: {
+            this._throw("Unexpected value '" + JSON.stringify(value) + "'.");
+          }
+        }
+      }
+    }
+    return attribute;
+  }
+
+  _valueInfoList() {
+    const list = [];
+    this._expect('(');
+    if (!this._match(')')) {
+      do {
+        list.push(this._valueInfo());
+      } while (this._match(','));
+      this._expect(')');
+    }
+    return list;
+  }
+
+  _valueInfo() {
+    const valueInfo = new onnx.proto.ValueInfoProto();
+    let identifier = this._identifier();
+    if (this._dataTypes.has(identifier)) {
+      valueInfo.type = this._type(this._dataTypes.get(identifier));
+      identifier = this._identifier();
+    }
+    valueInfo.name = identifier;
+    return valueInfo;
+  }
+
+  _type(elem_type) {
+    const type = new onnx.proto.TypeProto();
+    type.tensor_type = new onnx.proto.TypeProto.Tensor();
+    type.tensor_type.elem_type = elem_type;
+    if (this._match('[')) {
+      if (!this._match(']')) {
+        type.tensor_type.shape = this._shape();
+        this._expect(']');
+      }
+    } else {
+      type.tensor_type.shape = new onnx.proto.TensorShapeProto();
+    }
+    return type;
+  }
+
+  _shape() {
+    const shape = new onnx.proto.TensorShapeProto();
+    do {
+      const dimension = new onnx.proto.TensorShapeProto.Dimension();
+      if (!this._match('?')) {
         const identifier = this._identifier(true);
         if (identifier) {
-            list.push(identifier);
-            while (this._match(',')) {
-                list.push(this._identifier());
-            }
+          dimension.dim_param = identifier;
+        } else {
+          dimension.dim_value = this._integer();
         }
-        return list;
-    }
+      }
+      shape.dim.push(dimension);
+    } while (this._match(','));
+    return shape;
+  }
 
-    _identifier(optional) {
-        this._whitespace();
-        const value = [];
-        if ((this._char >= 'a' && this._char <= 'z') || (this._char >= 'A' && this._char <= 'Z')) {
-            value.push(this._char);
-            this._next();
-            while ((this._char >= 'a' && this._char <= 'z') || (this._char >= 'A' && this._char <= 'Z') || (this._char >= '0' && this._char <= '9') || this._char === '_') {
-                value.push(this._char);
-                this._next();
-            }
-        }
-        if (optional !== true && value.length == 0) {
-            this._throw('Identifier expected.');
-        }
-        return value.join('');
+  _tensor(type) {
+    const tensor = new onnx.proto.TensorProto();
+    if (!type.tensor_type || !type.tensor_type.elem_type) {
+      this._throw('Expected tensor type.');
     }
-
-    _literal() {
-        this._whitespace();
-        let decimal_point = false;
-        if (this._char === '"') {
-            const value = [];
-            this._next();
-            while (this._char !== undefined && this._char !== '"') {
-                value.push(this._char);
-                this._next();
-            }
-            if (this._char !== undefined) {
-                this._next();
-            }
-            return value.join('');
-        }
-        else if ((this._char >= '0' && this._char <= '9') || this._char === '-') {
-            const value = [ this._char ];
-            this._next();
-            while ((this._char >= '0' && this._char <= '9') || this._char === '.') {
-                if (this._char === '.') {
-                    if (decimal_point) {
-                        this._throw();
-                    }
-                    decimal_point = true;
-                }
-                value.push(this._char);
-                this._next();
-            }
-            if (value.length === 0) {
-                this._throw('Value expected.');
-            }
-            if (this._char === 'e' || this._char === 'E') {
-                decimal_point = true;
-                value.push(this._char);
-                this._next();
-                if (this._char === '+' || this._char === '-') {
-                    value.push(this._char);
-                    this._next();
-                }
-                while ((this._char >= '0' && this._char <= '9')) {
-                    value.push(this._char);
-                    this._next();
-                }
-            }
-            return decimal_point ? Number.parseFloat(value.join('')) : Number.parseInt(value.join(''), 10);
-        }
-        return undefined;
+    if (
+      !type.tensor_type.shape ||
+      !type.tensor_type.shape.dim ||
+      !type.tensor_type.shape.dim.every((dim) => dim.dim_value)
+    ) {
+      this._throw('Expected numeric tensor shape.');
     }
-
-    _integer() {
-        const value = this._literal();
-        if (!Number.isInteger(value)) {
-            this._throw('Integer value expected.');
+    const elem_type = type.tensor_type.elem_type;
+    tensor.data_type = elem_type;
+    tensor.dims = type.tensor_type.shape.dim.map((dim) => dim.dim_value);
+    this._match('=');
+    this._expect('{');
+    if (!this._match('}')) {
+      do {
+        switch (elem_type) {
+          case onnx.DataType.INT8:
+          case onnx.DataType.INT16:
+          case onnx.DataType.INT32:
+          case onnx.DataType.UINT8:
+          case onnx.DataType.UINT16:
+          case onnx.DataType.BOOL:
+            tensor.int32_data.push(this._integer());
+            break;
+          case onnx.DataType.INT64:
+            tensor.int64_data.push(this._integer());
+            break;
+          case onnx.DataType.UINT32:
+          case onnx.DataType.UINT64:
+            tensor.uint64_data.push(this._integer());
+            break;
+          case onnx.DataType.FLOAT:
+            tensor.float_data.push(this._float());
+            break;
+          case onnx.DataType.DOUBLE:
+            tensor.double_data.push(this._float());
+            break;
+          case onnx.DataType.STRING:
+            tensor.string_data.push(this.string());
+            break;
+          default:
+            return this._throw("Unsupported tensor element type '" + elem_type.toString() + "'.");
         }
-        return value;
+      } while (this._match(','));
+      this._expect('}');
     }
+    return tensor;
+  }
 
-    _float() {
-        const value = this._literal();
-        if (typeof value !== 'number') {
-            this._throw('Float value expected.');
+  _function() {
+    const func = new onnx.proto.FunctionProto();
+    if (this._match('<')) {
+      do {
+        const keyword = this._identifier();
+        this._expect(':');
+        switch (keyword) {
+          case 'opset_import':
+            func[keyword] = this._operatorSetId();
+            break;
+          case 'domain':
+          case 'doc_string':
+            func[keyword] = this._string();
+            break;
+          default:
+            this._throw("Unknown keyword '" + keyword + "'.");
+            break;
         }
-        return value;
+      } while (this._match(','));
+      this._expect('>');
     }
-
-    _string() {
-        const value = this._literal();
-        if (typeof value !== 'string') {
-            this._throw('String value expected.');
-        }
-        return value;
+    func.name = this._identifier();
+    if (this._match('<')) {
+      func.attribute = this._identifierList();
+      this._expect('>');
     }
-
-    _operatorSetId() {
-        const list = [];
-        this._expect('[');
-        if (!this._match(']')) {
-            do {
-                const value = new onnx.proto.OperatorSetIdProto();
-                value.domain = this._string();
-                this._expect(':');
-                value.version = this._integer();
-                list.push(value);
-            }
-            while (this._match(','));
-            this._expect(']');
-        }
-        return list;
+    if (this._match('(')) {
+      func.input = this._identifierList();
+      this._expect(')');
     }
-
-    _match(value) {
-        this._whitespace();
-        if (this._char !== value[0]) {
-            return false;
-        }
-        if (value.length === 1) {
-            this._next();
-            return true;
-        }
-        const position = this._position;
-        for (let i = 0; i < value.length; i++) {
-            if (this._char !== value[i]) {
-                this._seek(position);
-                return false;
-            }
-            this._next();
-        }
-        return true;
+    this._expect('=>');
+    if (this._match('(')) {
+      func.output = this._identifierList();
+      this._expect(')');
     }
+    func.node = this._nodeList();
+    return func;
+  }
 
-    _expect(value) {
-        if (!this._match(value)) {
-            this._unexpected();
-        }
-        return true;
+  _identifierList() {
+    const list = [];
+    const identifier = this._identifier(true);
+    if (identifier) {
+      list.push(identifier);
+      while (this._match(',')) {
+        list.push(this._identifier());
+      }
     }
+    return list;
+  }
 
-    _whitespace() {
-        for (;;) {
-            while (this._char === ' ' || this._char === '\n' || this._char === '\r' || this._char === '\t') {
-                this._next();
-            }
-            if (this._char === undefined || this._char !== '#') {
-                break;
-            }
-            while (this._char !== undefined && this._char !== '\n') {
-                this._next();
-            }
-        }
+  _identifier(optional) {
+    this._whitespace();
+    const value = [];
+    if ((this._char >= 'a' && this._char <= 'z') || (this._char >= 'A' && this._char <= 'Z')) {
+      value.push(this._char);
+      this._next();
+      while (
+        (this._char >= 'a' && this._char <= 'z') ||
+        (this._char >= 'A' && this._char <= 'Z') ||
+        (this._char >= '0' && this._char <= '9') ||
+        this._char === '_'
+      ) {
+        value.push(this._char);
+        this._next();
+      }
     }
-
-    _next() {
-        if (this._char === undefined) {
-            this._unexpected();
-        }
-        this._position = this._decoder.position;
-        this._char = this._decoder.decode();
+    if (optional !== true && value.length == 0) {
+      this._throw('Identifier expected.');
     }
+    return value.join('');
+  }
 
-    _unexpected() {
-        let c = this._char;
-        if (c === undefined) {
-            throw new onnx.Error('Unexpected end of input.');
+  _literal() {
+    this._whitespace();
+    let decimal_point = false;
+    if (this._char === '"') {
+      const value = [];
+      this._next();
+      while (this._char !== undefined && this._char !== '"') {
+        value.push(this._char);
+        this._next();
+      }
+      if (this._char !== undefined) {
+        this._next();
+      }
+      return value.join('');
+    } else if ((this._char >= '0' && this._char <= '9') || this._char === '-') {
+      const value = [this._char];
+      this._next();
+      while ((this._char >= '0' && this._char <= '9') || this._char === '.') {
+        if (this._char === '.') {
+          if (decimal_point) {
+            this._throw();
+          }
+          decimal_point = true;
         }
-        else if (c === '"') {
-            c = 'string';
+        value.push(this._char);
+        this._next();
+      }
+      if (value.length === 0) {
+        this._throw('Value expected.');
+      }
+      if (this._char === 'e' || this._char === 'E') {
+        decimal_point = true;
+        value.push(this._char);
+        this._next();
+        if (this._char === '+' || this._char === '-') {
+          value.push(this._char);
+          this._next();
         }
-        else if ((c >= '0' && c <= '9') || c === '-') {
-            c = 'number';
+        while (this._char >= '0' && this._char <= '9') {
+          value.push(this._char);
+          this._next();
         }
-        else {
-            if (c < ' ' || c > '\x7F') {
-                const name = Object.keys(this._escape).filter((key) => this._escape[key] === c);
-                c = (name.length === 1) ? '\\' + name : '\\u' + ('000' + c.charCodeAt(0).toString(16)).slice(-4);
-            }
-            c = "token '" + c + "'";
-        }
-        this._throw('Unexpected ' + c);
+      }
+      return decimal_point ? Number.parseFloat(value.join('')) : Number.parseInt(value.join(''), 10);
     }
+    return undefined;
+  }
 
-    _throw(message) {
-        throw new onnx.Error(message.replace(/\.$/, '') + this._location());
+  _integer() {
+    const value = this._literal();
+    if (!Number.isInteger(value)) {
+      this._throw('Integer value expected.');
     }
+    return value;
+  }
 
-    _location() {
-        let line = 1;
-        let column = 1;
-        this._decoder.position = 0;
-        let c;
-        do {
-            if (this._decoder.position === this._position) {
-                return ' at ' + line.toString() + ':' + column.toString() + '.';
-            }
-            c = this._decoder.decode();
-            if (c === '\n') {
-                line++;
-                column = 1;
-            }
-            else {
-                column++;
-            }
-        }
-        while (c !== undefined);
+  _float() {
+    const value = this._literal();
+    if (typeof value !== 'number') {
+      this._throw('Float value expected.');
+    }
+    return value;
+  }
+
+  _string() {
+    const value = this._literal();
+    if (typeof value !== 'string') {
+      this._throw('String value expected.');
+    }
+    return value;
+  }
+
+  _operatorSetId() {
+    const list = [];
+    this._expect('[');
+    if (!this._match(']')) {
+      do {
+        const value = new onnx.proto.OperatorSetIdProto();
+        value.domain = this._string();
+        this._expect(':');
+        value.version = this._integer();
+        list.push(value);
+      } while (this._match(','));
+      this._expect(']');
+    }
+    return list;
+  }
+
+  _match(value) {
+    this._whitespace();
+    if (this._char !== value[0]) {
+      return false;
+    }
+    if (value.length === 1) {
+      this._next();
+      return true;
+    }
+    const position = this._position;
+    for (let i = 0; i < value.length; i++) {
+      if (this._char !== value[i]) {
+        this._seek(position);
+        return false;
+      }
+      this._next();
+    }
+    return true;
+  }
+
+  _expect(value) {
+    if (!this._match(value)) {
+      this._unexpected();
+    }
+    return true;
+  }
+
+  _whitespace() {
+    for (;;) {
+      while (this._char === ' ' || this._char === '\n' || this._char === '\r' || this._char === '\t') {
+        this._next();
+      }
+      if (this._char === undefined || this._char !== '#') {
+        break;
+      }
+      while (this._char !== undefined && this._char !== '\n') {
+        this._next();
+      }
+    }
+  }
+
+  _next() {
+    if (this._char === undefined) {
+      this._unexpected();
+    }
+    this._position = this._decoder.position;
+    this._char = this._decoder.decode();
+  }
+
+  _unexpected() {
+    let c = this._char;
+    if (c === undefined) {
+      throw new onnx.Error('Unexpected end of input.');
+    } else if (c === '"') {
+      c = 'string';
+    } else if ((c >= '0' && c <= '9') || c === '-') {
+      c = 'number';
+    } else {
+      if (c < ' ' || c > '\x7F') {
+        const name = Object.keys(this._escape).filter((key) => this._escape[key] === c);
+        c = name.length === 1 ? '\\' + name : '\\u' + ('000' + c.charCodeAt(0).toString(16)).slice(-4);
+      }
+      c = "token '" + c + "'";
+    }
+    this._throw('Unexpected ' + c);
+  }
+
+  _throw(message) {
+    throw new onnx.Error(message.replace(/\.$/, '') + this._location());
+  }
+
+  _location() {
+    let line = 1;
+    let column = 1;
+    this._decoder.position = 0;
+    let c;
+    do {
+      if (this._decoder.position === this._position) {
         return ' at ' + line.toString() + ':' + column.toString() + '.';
-    }
+      }
+      c = this._decoder.decode();
+      if (c === '\n') {
+        line++;
+        column = 1;
+      } else {
+        column++;
+      }
+    } while (c !== undefined);
+    return ' at ' + line.toString() + ':' + column.toString() + '.';
+  }
 };
 
 onnx.Error = class extends Error {
-
-    constructor(message) {
-        super(message);
-        this.name = 'Error loading ONNX model.';
-    }
+  constructor(message) {
+    super(message);
+    this.name = 'Error loading ONNX model.';
+  }
 };
 
 if (typeof module !== 'undefined' && typeof module.exports === 'object') {
-    module.exports.ModelFactory = onnx.ModelFactory;
+  module.exports.ModelFactory = onnx.ModelFactory;
 }
-
-
