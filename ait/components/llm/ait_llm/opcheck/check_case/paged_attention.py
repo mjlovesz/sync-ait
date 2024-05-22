@@ -33,13 +33,6 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
         logger.debug(score.shape)
         return score
 
-    def convert_nz_to_nd(self, nz_tensor):
-        print(nz_tensor.shape)
-        nd_tensor = torch.permute(nz_tensor, (1, 2, 0, 3))
-        print(nd_tensor.shape)
-        nd_tensor = torch.reshape(nd_tensor, (nd_tensor.shape[0], nd_tensor.shape[1], -1))
-        return nd_tensor
-
     def ref_masked_attention(
             self,
             query, # (1, num_heads, head_size)
@@ -98,7 +91,7 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
                 values.append(v)
             keys = torch.stack(keys, axis=0)
             values = torch.stack(values, axis=0)
-            scale = self.op_param.get('qkScale', 1)
+            scale = self.op_param.get('qkScale', 1.0 / (head_size ** 0.5))
             if alibi is None:
                 out = self.ref_masked_attention(q, keys, values, scale)
             else:
@@ -119,7 +112,19 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
         else:
             query, key_cache, value_cache, block_tables, context_lens = in_tensors[:5]
 
-        ref_output = torch.zeros_like( query)
+        if soc_version == 'Ascend310P':
+            num_blocks = key_cache_nz.shape[0]
+            num_heads = self.op_param.get('headNum', 32) 
+            block_size = key_cache_nz.shape[2]
+
+            key_cache = torch.permute(key_cache_nz, (0, 2, 1, 3)).reshape(num_blocks, block_size, num_heads, -1)
+            value_cache = torch.permute(value_cache_nz, (0, 2, 1, 3)).reshape(num_blocks, block_size, num_heads, -1)
+
+            if is_support_alibi:
+                batch = alibi_mask.shape[0]
+                alibi_mask = torch.permute(alibi_mask_nz,(0, 2, 1, 3)).reshape(batch, num_heads, 1, -1)
+
+        ref_output = torch.zeros_like(query)
         paged_input = query, key_cache, value_cache, block_tables, context_lens
         self.ref_single_query_cached_kv_attention(ref_output, paged_input, alibi_mask)
         return ref_output
