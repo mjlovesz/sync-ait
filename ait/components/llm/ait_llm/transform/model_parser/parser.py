@@ -2,7 +2,7 @@ from json import dump
 
 import torch.nn as nn
 
-from components.llm.ait_llm.transform.model_parser.kind import mlp, attention, convert
+from kind import mlp, attention, convert
 
 
 def mname(module: nn.Module):
@@ -64,7 +64,7 @@ def process_layer(layer: nn.Module):
     return ret
 
 
-def build_module_tree(module: nn.Module):
+def build_model_tree(module: nn.Module):
     root = {"name": "root", "children": []}
     stack = [(root, module)]
 
@@ -88,4 +88,4 @@ def build_module_tree(module: nn.Module):
 
 def module_to_json(model: nn.Module, name: str):
     with open(f"./{name}.json", "w") as o:
-        dump(build_module_tree(model), o)
+        dump(build_model_tree(model), o)
