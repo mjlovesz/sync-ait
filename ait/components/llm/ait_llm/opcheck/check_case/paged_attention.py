@@ -114,7 +114,7 @@ class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
 
         if soc_version == 'Ascend310P':
             num_blocks = key_cache_nz.shape[0]
-            kv_heads = self.op_param.get('kvHeadNum', 1) 
+            kv_heads = self.op_param.get('kvHeadNum', 1)
             block_size = key_cache_nz.shape[2]
 
             key_cache = torch.permute(key_cache_nz, (0, 2, 1, 3)).reshape(num_blocks, block_size, kv_heads, -1)
