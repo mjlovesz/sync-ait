@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+echo "test"
 CURRENT_DIR=$(dirname $(readlink -f $0))
 arg_force_reinstall=
 only_compare=
