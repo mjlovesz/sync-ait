@@ -270,7 +270,8 @@ def compare_ge_with_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
     gathered_row_data = []
     graph_map_dict = {ii["op"]["name"]: ii["op"] for ii in graph_map if "op" in ii and "name" in ii["op"]}
     for op_name, my_path in ge_dump_data.items():
-        if "Cast" in my_path.split('\\')[-1] or "TransData" in my_path.split('\\')[-1]:
+        op_type = my_path.split('\\')[-1].split(".")[0]
+        if "Cast" in op_type or "TransData" in op_type:
             ge_inputs, ge_outputs = parse_torchair_bin_dump_data(my_path)
             logger.debug(f"ge_inputs length: {len(ge_inputs)}")
             logger.debug(f"ge_outputs length:, {len(ge_outputs)}")
