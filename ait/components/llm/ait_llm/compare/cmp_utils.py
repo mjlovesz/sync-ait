@@ -51,7 +51,8 @@ def fill_row_data(data_info: BasicDataInfo, loaded_my_data=None, loaded_golden_d
         row_data[CMP_FAIL_REASON] = f"my_data_path: {my_data_path} is not a file."
         return row_data
 
-    loaded_my_data, loaded_golden_data = loaded_data_verify(loaded_my_data, loaded_golden_data)
+    loaded_my_data = loaded_data_verify(loaded_my_data)
+    loaded_golden_data = loaded_data_verify(loaded_golden_data)
     golden_data = read_data(golden_data_path) if loaded_golden_data is None else torch.from_numpy(loaded_golden_data)
     my_data = read_data(my_data_path) if loaded_my_data is None else torch.from_numpy(loaded_my_data)
 
@@ -69,12 +70,12 @@ def fill_row_data(data_info: BasicDataInfo, loaded_my_data=None, loaded_golden_d
     return row_data
 
 
-def loaded_data_verify(loaded_my_data, loaded_golden_data):
-    loaded_my_data = loaded_my_data.astype("int32") if loaded_my_data == "uint16" else loaded_my_data
-    loaded_my_data = loaded_my_data.astype("int64") if loaded_my_data == "uint32" else loaded_my_data
-    loaded_golden_data = loaded_golden_data.astype("int64") if loaded_golden_data == "uint32" else loaded_golden_data
+def loaded_data_verify(loaded_data):
+    if loaded_data is not None:
+        loaded_data = loaded_data.astype("int32") if loaded_data.dtype == "uint16" else loaded_data
+        loaded_data = loaded_data.astype("int64") if loaded_data.dtype == "uint32" else loaded_data
 
-    return loaded_my_data, loaded_golden_data
+    return loaded_data
 
 
 def set_tensor_basic_info_in_row_data(golden_data, my_data):

@@ -281,7 +281,7 @@ def compare_ge_with_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
             gathered_row_data.extend(compare_ge_with_fx_multiple_ops(first_op_info, last_op_info, fx_dump_data, op_name,
                                                                      my_path, token_id))
         else:
-            op_type = my_path.split('\\')[-1].split(".")[0]
+            op_type = os.path.basename(my_path).split(".")[0]
             if "Cast" in op_type or "TransData" in op_type:
                 ge_inputs, ge_outputs = parse_torchair_bin_dump_data(my_path)
                 logger.debug(f"ge_inputs length: {len(ge_inputs)}")
