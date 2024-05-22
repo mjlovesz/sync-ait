@@ -16,6 +16,7 @@ import os
 import sys
 import re
 
+import numpy as np
 from ait_llm.common.log import logger
 from ait_llm.common.utils import safe_string
 from ait_llm.compare.cmp_utils import BasicDataInfo, fill_row_data, save_compare_reault_to_csv
@@ -259,7 +260,7 @@ def get_all_ops_from_fusion_op(op_name, graph_map_dict, ge_dump_data):
     while len(op_name) > 0:
         cur_op_name = find_longest_name(op_name, graph_map_dict, ge_dump_data, ge_dump_data)
         if cur_op_name is None or cur_op_name not in graph_map_dict:
-            logger.warning(f"Failed parsing ge op name: {cur_op_name}.Compare manully if required.")
+            logger.warning(f"Failed parsing ge op name: {cur_op_name}.Compare manually if required.")
             break
         all_ops.append(cur_op_name)
         op_name = op_name[len(cur_op_name):]
@@ -270,33 +271,27 @@ def compare_ge_with_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
     gathered_row_data = []
     graph_map_dict = {ii["op"]["name"]: ii["op"] for ii in graph_map if "op" in ii and "name" in ii["op"]}
     for op_name, my_path in ge_dump_data.items():
-        op_type = my_path.split('\\')[-1].split(".")[0]
-        if "Cast" in op_type or "TransData" in op_type:
-            ge_inputs, ge_outputs = parse_torchair_bin_dump_data(my_path)
-            logger.debug(f"ge_inputs length: {len(ge_inputs)}")
-            logger.debug(f"ge_outputs length:, {len(ge_outputs)}")
-            compare_specials_private_ops(ge_inputs, ge_outputs, token_id, my_path)
-            continue
         all_ops = get_all_ops_from_fusion_op(op_name, graph_map_dict, ge_dump_data)
-        for cur_op_name in all_ops:
-            op_info = graph_map_dict[cur_op_name]
-            gathered_row_data = compare_ge_with_fx_non_private(op_info, fx_dump_data, op_name, my_path, token_id)
+        if len(all_ops) == 1:
+            op_info = graph_map_dict[all_ops[0]]
+            compare_ge_with_fx_single_op(op_info, fx_dump_data, op_name, my_path, token_id)
+        elif len(all_ops) > 1:
+            first_op_info = graph_map_dict[all_ops[0]]
+            last_op_info = graph_map_dict[all_ops[-1]]
+            gathered_row_data.extend(compare_ge_with_fx_multiple_ops(first_op_info, last_op_info, fx_dump_data, op_name,
+                                                                     my_path, token_id))
+        else:
+            op_type = my_path.split('\\')[-1].split(".")[0]
+            if "Cast" in op_type or "TransData" in op_type:
+                ge_inputs, ge_outputs = parse_torchair_bin_dump_data(my_path)
+                logger.debug(f"ge_inputs length: {len(ge_inputs)}")
+                logger.debug(f"ge_outputs length:, {len(ge_outputs)}")
+                gathered_row_data.extend(compare_specials_private_ops(ge_inputs, ge_outputs, token_id, my_path))
 
     return gathered_row_data
 
 
-def compare_specials_private_ops(ge_inputs, ge_outputs, token_id, my_path):
-    gathered_row_data = []
-    for cur_id, (ge_input, ge_output) in enumerate(zip(ge_inputs, ge_outputs)):
-        cur_ge_input_data = "{},{},{}".format(my_path, "inputs", cur_id)
-        cur_ge_output_data = "{},{},{}".format(my_path, "outputs", cur_id)
-        row_data = compare_single_data(ge_input, cur_ge_input_data, token_id, ge_output, cur_ge_output_data)
-        gathered_row_data.append(row_data)
-
-    return gathered_row_data
-
-
-def compare_ge_with_fx_non_private(op_info, fx_dump_data, op_name, my_path, token_id=0):
+def compare_ge_with_fx_single_op(op_info, fx_dump_data, op_name, my_path, token_id=0):
     gathered_row_data = []
     for kk, vv in op_info.items():
         if not (kk == "output_desc" or kk.startswith("output_desc#")) or not isinstance(vv, dict):
@@ -317,6 +312,63 @@ def compare_ge_with_fx_non_private(op_info, fx_dump_data, op_name, my_path, toke
             logger.debug(f"ge_inputs length: {len(ge_inputs)}, fx_inputs length:, {len(fx_inputs)}")
             logger.debug(f"ge_outputs length: {len(ge_outputs)}, fx_outputs length:, {len(fx_outputs)}")
             gathered_row_data = compare_ops(fx_inputs, fx_outputs, ge_inputs, ge_outputs, token_id, my_path)
+
+    return gathered_row_data
+
+
+def compare_ge_with_fx_multiple_ops(first_op_info, last_op_info, fx_dump_data, op_name, my_path, token_id):
+    gathered_row_data = []
+    for kk, vv in first_op_info.items():
+        if not (kk == "output_desc" or kk.startswith("output_desc#")) or not isinstance(vv, dict):
+            continue
+        for out_kk, out_vv in vv.items():
+            if not filter_valid_fx_desc_tensor_info(out_kk, out_vv):
+                continue
+            fx_tensor_name = out_vv.get("value", {}).get("s", None)
+            if fx_tensor_name.split(".")[-2] == "OUTPUT":
+                fx_tensor_name = ".".join(fx_tensor_name.split(".")[:-2])
+            if fx_tensor_name not in fx_dump_data:
+                logger.warning(f"FX data missing, GE tensor name: {op_name}, FX tensor name: {fx_tensor_name}")
+                continue
+
+            ge_inputs, ge_outputs = parse_torchair_bin_dump_data(my_path)
+            fx_inputs = fx_dump_data.get(fx_tensor_name, {}).get("input", [])
+            logger.debug(f"ge_inputs length: {len(ge_inputs)}, fx_inputs length:, {len(fx_inputs)}")
+            for cur_id, (fx_input, ge_input) in enumerate(zip(fx_inputs, ge_inputs)):
+                cur_ge_data = "{},{},{}".format(my_path, "inputs", cur_id)
+                row_data = compare_single_data(fx_input, cur_ge_data, token_id, my_data=ge_input)
+                gathered_row_data.append(row_data)
+    for kk, vv in last_op_info.items():
+        if not (kk == "output_desc" or kk.startswith("output_desc#")) or not isinstance(vv, dict):
+            continue
+        for out_kk, out_vv in vv.items():
+            if not filter_valid_fx_desc_tensor_info(out_kk, out_vv):
+                continue
+            fx_tensor_name = out_vv.get("value", {}).get("s", None)
+            if fx_tensor_name.split(".")[-2] == "OUTPUT":
+                fx_tensor_name = ".".join(fx_tensor_name.split(".")[:-2])
+            if fx_tensor_name not in fx_dump_data:
+                logger.warning(f"FX data missing, GE tensor name: {op_name}, FX tensor name: {fx_tensor_name}")
+                continue
+
+            ge_inputs, ge_outputs = parse_torchair_bin_dump_data(my_path)
+            fx_outputs = fx_dump_data.get(fx_tensor_name, {}).get("output", [])
+            logger.debug(f"ge_outputs length: {len(ge_outputs)}, fx_outputs length:, {len(fx_outputs)}")
+            for cur_id, (fx_output, ge_output) in enumerate(zip(fx_outputs, ge_outputs)):
+                cur_ge_data = "{},{},{}".format(my_path, "outputs", cur_id)
+                row_data = compare_single_data(fx_output, cur_ge_data, token_id, my_data=ge_output)
+                gathered_row_data.append(row_data)
+
+    return gathered_row_data
+
+
+def compare_specials_private_ops(ge_inputs, ge_outputs, token_id, my_path):
+    gathered_row_data = []
+    for cur_id, (ge_input, ge_output) in enumerate(zip(ge_inputs, ge_outputs)):
+        cur_ge_input_data = "{},{},{}".format(my_path, "inputs", cur_id)
+        cur_ge_output_data = "{},{},{}".format(my_path, "outputs", cur_id)
+        row_data = compare_single_data(cur_ge_input_data, cur_ge_output_data, token_id, ge_input, ge_output)
+        gathered_row_data.append(row_data)
 
     return gathered_row_data
 
@@ -362,7 +414,7 @@ def gather_fused_op_data(fused_op_name, op_map, fused_ge_dump_data, ge_dump_data
     while len(fused_op_name) > 0:
         cur_op_name = find_longest_name(fused_op_name, op_map, fused_ge_dump_data, ge_dump_data)
         if cur_op_name is None or cur_op_name not in op_map:
-            logger.warning(f"Failed parsing fused op name: {fused_op_name}. Compare manully if required.")
+            logger.warning(f"Failed parsing fused op name: {fused_op_name}. Compare manually if required.")
             break
         cur_input_names = get_all_op_input_names(op_map[cur_op_name])
 
