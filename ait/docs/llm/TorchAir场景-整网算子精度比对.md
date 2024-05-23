@@ -161,10 +161,15 @@
   ```
   在 dump 过程中后台执行该脚本，将 dump 数据转化为 info 数据，以减少内存占用
   ```sh
-  # 每隔 1s 执行一次，将 ait_ge_dump 下的数据转化为 info
-  watch -n 1 "python3 convert.py ait_ge_dump"
+  # 将 ait_ge_dump 下的 GE dump 数据转化为 info
+  python3 convert.py ait_ge_dump
   ```
-  同时在 FX 或关闭融合的 GE dump 时也执行该脚本，将 dump 数据转化为 info。最后执行比对
+  同时在 FX 或关闭融合的 GE dump 时也执行该脚本，将 dump 数据转化为 info。
+  ```sh
+  # 将 ait_ge_dump 下的 FX dump 数据转化为 info
+  python3 convert.py data_dump
+  ```
+  最后执行比对
   ```sh
   ait llm compare --my-path {dump_path}/dump_{time_stamp} --golden-path data_dump
   ```
