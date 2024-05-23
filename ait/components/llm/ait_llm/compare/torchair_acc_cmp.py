@@ -487,7 +487,7 @@ def compare_ge_with_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
     return gathered_row_data
 
 
-""" Main entrance: """
+""" Main entrance """
 
 
 def acc_compare(golden_path, my_path, output_path=".", ge_graph_path=None):
