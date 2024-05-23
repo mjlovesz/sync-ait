@@ -49,10 +49,11 @@ def fill_row_data(data_info: BasicDataInfo, loaded_my_data=None, loaded_golden_d
     if loaded_my_data is None and not os.path.isfile(my_data_path):
         row_data[CMP_FAIL_REASON] = f"my_data_path: {my_data_path} is not a file."
         return row_data
-    loaded_my_data = loaded_my_data.astype("int32") if loaded_my_data.dtype == "uint16" else loaded_my_data
-    loaded_my_data = loaded_my_data.astype("int64") if loaded_my_data.dtype == "uint32" else loaded_my_data
-    loaded_golden_data = loaded_golden_data.astype("int64") if loaded_golden_data.dtype == "uint32" else loaded_golden_data
-
+    loaded_my_data = loaded_my_data.astype("int32") if loaded_my_data is not None and loaded_my_data.dtype == "uint16" else loaded_my_data
+    loaded_my_data = loaded_my_data.astype("int64") if loaded_my_data is not None and loaded_my_data.dtype == "uint32" else loaded_my_data
+    loaded_golden_data = loaded_golden_data.astype("int64") if loaded_golden_data is not None and loaded_golden_data.dtype == "uint32" else loaded_golden_data
+    loaded_golden_data = loaded_golden_data.astype(
+        "int32") if loaded_golden_data is not None and loaded_golden_data.dtype == "uint16" else loaded_golden_data
     golden_data = read_data(golden_data_path) if loaded_golden_data is None else torch.from_numpy(loaded_golden_data)
     my_data = read_data(my_data_path) if loaded_my_data is None else torch.from_numpy(loaded_my_data)
 
