@@ -71,7 +71,7 @@ def load_as_torch_tensor(data_path, loaded_data=None):
     if loaded_data is not None:
         if loaded_data.dtype in BasicDataInfo.TORCH_UNSUPPORTED_D_TYPE_MAP:
             loaded_data = loaded_data.astype(BasicDataInfo.TORCH_UNSUPPORTED_D_TYPE_MAP[loaded_data.dtype])
-        return torch.from_numpy(loaded_data)
+            return torch.from_numpy(loaded_data)
     else:
         return read_data(data_path)
 
