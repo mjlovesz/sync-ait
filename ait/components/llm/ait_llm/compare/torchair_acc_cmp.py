@@ -16,6 +16,7 @@ import os
 import sys
 import re
 
+import numpy as np
 from ait_llm.common.log import logger
 from ait_llm.common.utils import safe_string
 from ait_llm.compare.cmp_utils import BasicDataInfo, fill_row_data, save_compare_reault_to_csv
@@ -60,8 +61,8 @@ def set_msaccucmp_path_from_cann():
         else:
             GLOBAL_TENSOR_CONVERTER = default_tensor_converter
             logger.warning("ConvertSingleTensorFormat not found in msaccucmp, connot convert tensor format."
-                " Try installing the latest CANN toolkit."
-            )
+                           " Try installing the latest CANN toolkit."
+                           )
 
 
 def get_torchair_ge_graph_path(my_path):
@@ -190,9 +191,9 @@ def init_ge_dump_data_from_bin_path(ge_dump_path):
                 keep_one = file_name if cur_file_size > exists_file_size else exists_file
                 cur_dump_data[cur_op_name] = keep_one
                 logger.warning(f"duplicated op name: {cur_op_name}."
-                    f" [{os.path.basename(file_name)}, {os.path.basename(exists_file)}]."
-                    f" Will keep the larger one {os.path.basename(keep_one)}."
-                )
+                               f" [{os.path.basename(file_name)}, {os.path.basename(exists_file)}]."
+                               f" Will keep the larger one {os.path.basename(keep_one)}."
+                               )
             else:
                 cur_dump_data[cur_op_name] = file_name
         dump_data_with_token_id[token_id] = cur_dump_data
@@ -254,46 +255,133 @@ def filter_valid_fx_desc_tensor_info(desc_key, desc_value):
     return True
 
 
+def get_all_ops_from_fusion_op(op_name, graph_map_dict, ge_dump_data):
+    all_ops = []
+    while len(op_name) > 0:
+        cur_op_name = find_longest_name(op_name, graph_map_dict, ge_dump_data, ge_dump_data)
+        if cur_op_name is None or cur_op_name not in graph_map_dict:
+            logger.warning(f"Failed parsing ge op name: {cur_op_name}.Compare manually if required.")
+            break
+        all_ops.append(cur_op_name)
+        op_name = op_name[len(cur_op_name):]
+    return all_ops
+
+
 def compare_ge_with_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
     gathered_row_data = []
-    for cur_op in graph_map:
-        op_info = cur_op.get("op", {})
-        # ge_tensor_name = op_info.get("type", "") + "." + op_info.get("name", "")  # Like "ConcatV2D.ConcatV2"
-        ge_tensor_name = op_info.get("name", "")
-        if ge_tensor_name not in ge_dump_data:
-            logger.warning(f"GE data missing, GE name: {ge_tensor_name}")
+    graph_map_dict = {graph["op"]["name"]: graph["op"] for graph in graph_map if "op" in graph and "name" in graph["op"]}
+    for op_name, my_path in ge_dump_data.items():
+        all_ops = get_all_ops_from_fusion_op(op_name, graph_map_dict, ge_dump_data)
+        if len(all_ops) == 1:
+            op_info = graph_map_dict.get(all_ops[0])
+            gathered_row_data.extend(compare_ge_with_fx_single_op(op_info, fx_dump_data, op_name, my_path, token_id))
+        elif len(all_ops) > 1:
+            first_op_info = graph_map_dict.get(all_ops[0])
+            last_op_info = graph_map_dict.get(all_ops[-1])
+            gathered_row_data.extend(compare_ge_with_fx_multiple_ops(first_op_info, last_op_info, fx_dump_data, op_name,
+                                                                     my_path, token_id))
+        else:
+            op_type = os.path.basename(my_path).split(".")[0]
+            if "Cast" in op_type or "TransData" in op_type:
+                ge_inputs, ge_outputs = parse_torchair_bin_dump_data(my_path)
+                logger.debug(f"ge_inputs length: {len(ge_inputs)}")
+                logger.debug(f"ge_outputs length:, {len(ge_outputs)}")
+                gathered_row_data.extend(compare_specials_private_ops(ge_inputs, ge_outputs, token_id, my_path))
+
+    return gathered_row_data
+
+
+def compare_ge_with_fx_single_op(op_info, fx_dump_data, op_name, my_path, token_id=0):
+    gathered_row_data = []
+    for op_key, op_value in op_info.items():
+        if not (op_key == "output_desc" or op_key.startswith("output_desc#")) or not isinstance(op_value, dict):
             continue
-
-        cur_ge_data = ge_dump_data[ge_tensor_name]
-        for kk, vv in op_info.items():
-            if not (kk == "output_desc" or kk.startswith("output_desc#")) or not isinstance(vv, dict):
+        for out_key, out_value in op_value.items():
+            if not filter_valid_fx_desc_tensor_info(out_key, out_value):
                 continue
-            for out_kk, out_vv in vv.items():
-                if not filter_valid_fx_desc_tensor_info(out_kk, out_vv):
-                    continue
-                fx_tensor_name = out_vv.get("value", {}).get("s", None)
-                if fx_tensor_name.split(".")[-2] == "OUTPUT":
-                    fx_tensor_name = ".".join(fx_tensor_name.split(".")[:-2])
-                if fx_tensor_name not in fx_dump_data:
-                    logger.warning(
-                        f"FX data missing, GE tensor name: {ge_tensor_name}, FX tensor name: {fx_tensor_name}"
-                    )
-                    continue
+            fx_tensor_name = out_value.get("value", {}).get("s", None)
+            if fx_tensor_name.split(".")[-2] == "OUTPUT":
+                fx_tensor_name = ".".join(fx_tensor_name.split(".")[:-2])
+            if fx_tensor_name not in fx_dump_data:
+                logger.warning(f"FX data missing, GE tensor name: {op_name}, FX tensor name: {fx_tensor_name}")
+                continue
 
-                ge_inputs, ge_outputs = parse_torchair_bin_dump_data(cur_ge_data)
-                fx_inputs = fx_dump_data.get(fx_tensor_name, {}).get("input", [])
-                fx_outputs = fx_dump_data.get(fx_tensor_name, {}).get("output", [])
-                logger.debug(f"ge_inputs length: {len(ge_inputs)}, fx_inputs length:, {len(fx_inputs)}")
-                logger.debug(f"ge_outputs length: {len(ge_outputs)}, fx_outputs length:, {len(fx_outputs)}")
+            ge_inputs, ge_outputs = parse_torchair_bin_dump_data(my_path)
+            fx_inputs = fx_dump_data.get(fx_tensor_name, {}).get("input", [])
+            fx_outputs = fx_dump_data.get(fx_tensor_name, {}).get("output", [])
+            logger.debug(f"ge_inputs length: {len(ge_inputs)}, fx_inputs length:, {len(fx_inputs)}")
+            logger.debug(f"ge_outputs length: {len(ge_outputs)}, fx_outputs length:, {len(fx_outputs)}")
+            gathered_row_data = compare_ops(fx_inputs, fx_outputs, ge_inputs, ge_outputs, token_id, my_path)
 
-                for cur_id, (fx_input, ge_input) in enumerate(zip(fx_inputs, ge_inputs)):
-                    cur_ge_data_sub = "{},{},{}".format(cur_ge_data, "inputs", cur_id)
-                    row_data = compare_single_data(fx_input, cur_ge_data_sub, token_id, my_data=ge_input)
-                    gathered_row_data.append(row_data)
-                for cur_id, (fx_output, ge_output) in enumerate(zip(fx_outputs, ge_outputs)):
-                    cur_ge_data_sub = "{},{},{}".format(cur_ge_data, "outputs", cur_id)
-                    row_data = compare_single_data(fx_output, cur_ge_data_sub, token_id, my_data=ge_output)
-                    gathered_row_data.append(row_data)
+    return gathered_row_data
+
+
+def compare_ge_with_fx_multiple_ops(first_op_info, last_op_info, fx_dump_data, op_name, my_path, token_id):
+    gathered_row_data = []
+    gathered_row_data.extend(compare_ge_with_fx_multiple_ops_details(first_op_info, fx_dump_data, op_name, my_path
+                                                                     , "input", token_id))
+    gathered_row_data.extend(compare_ge_with_fx_multiple_ops_details(last_op_info, fx_dump_data, op_name, my_path
+                                                                     , "output", token_id))
+    return gathered_row_data
+
+
+def compare_ge_with_fx_multiple_ops_details(op_info: dict, fx_dump_data, op_name, my_path, input_or_output, token_id):
+    gathered_row_data = []
+    for op_key, op_value in op_info.items():
+        if not (op_key == "output_desc" or op_key.startswith("output_desc#")) or not isinstance(op_value, dict):
+            continue
+        for out_key, out_value in op_value.items():
+            if not filter_valid_fx_desc_tensor_info(out_key, out_value):
+                continue
+            fx_tensor_name = out_value.get("value", {}).get("s", None)
+            if fx_tensor_name.split(".")[-2] == "OUTPUT":
+                fx_tensor_name = ".".join(fx_tensor_name.split(".")[:-2])
+            if fx_tensor_name not in fx_dump_data:
+                logger.warning(f"FX data missing, GE tensor name: {op_name}, FX tensor name: {fx_tensor_name}")
+                continue
+            ge_inputs, ge_outputs = parse_torchair_bin_dump_data(my_path)
+            fx_inputs_or_outputs = fx_dump_data.get(fx_tensor_name, {}).get(input_or_output, [])
+            ge_input_or_output_path = ""
+            ge_inputs_or_outputs = []
+            if input_or_output == "input":
+                logger.debug(f"ge_inputs length: {len(ge_inputs)}, fx_inputs length:, {len(fx_inputs_or_outputs)}")
+                ge_input_or_output_path = "inputs"
+                ge_inputs_or_outputs = ge_inputs
+            elif input_or_output == "output":
+                logger.debug(f"ge_outputs length: {len(ge_outputs)}, fx_outputs length:, {len(fx_inputs_or_outputs)}")
+                ge_input_or_output_path = "outputs"
+                ge_inputs_or_outputs = ge_outputs
+            for cur_id, (fx_input_or_output, ge_input_or_output) in enumerate(zip(fx_inputs_or_outputs,
+                                                                                  ge_inputs_or_outputs)):
+                cur_ge_data = "{},{},{}".format(my_path, ge_input_or_output_path, cur_id)
+                row_data = compare_single_data(fx_input_or_output, cur_ge_data, token_id, my_data=ge_input_or_output)
+                gathered_row_data.append(row_data)
+
+    return gathered_row_data
+
+
+def compare_specials_private_ops(ge_inputs, ge_outputs, token_id, my_path):
+    gathered_row_data = []
+    for cur_id, (ge_input, ge_output) in enumerate(zip(ge_inputs, ge_outputs)):
+        cur_ge_input_data = "{},{},{}".format(my_path, "inputs", cur_id)
+        cur_ge_output_data = "{},{},{}".format(my_path, "outputs", cur_id)
+        row_data = compare_single_data(cur_ge_input_data, cur_ge_output_data, token_id, ge_input, ge_output)
+        gathered_row_data.append(row_data)
+
+    return gathered_row_data
+
+
+def compare_ops(fx_inputs, fx_outputs, ge_inputs, ge_outputs, token_id, my_path):
+    gathered_row_data = []
+    for cur_id, (fx_input, ge_input) in enumerate(zip(fx_inputs, ge_inputs)):
+        cur_ge_data = "{},{},{}".format(my_path, "inputs", cur_id)
+        row_data = compare_single_data(fx_input, cur_ge_data, token_id, my_data=ge_input)
+        gathered_row_data.append(row_data)
+    for cur_id, (fx_output, ge_output) in enumerate(zip(fx_outputs, ge_outputs)):
+        cur_ge_data = "{},{},{}".format(my_path, "outputs", cur_id)
+        row_data = compare_single_data(fx_output, cur_ge_data, token_id, my_data=ge_output)
+        gathered_row_data.append(row_data)
+
     return gathered_row_data
 
 
@@ -324,7 +412,7 @@ def gather_fused_op_data(fused_op_name, op_map, fused_ge_dump_data, ge_dump_data
     while len(fused_op_name) > 0:
         cur_op_name = find_longest_name(fused_op_name, op_map, fused_ge_dump_data, ge_dump_data)
         if cur_op_name is None or cur_op_name not in op_map:
-            logger.warning(f"Failed parsing fused op name: {fused_op_name}. Compare manully if required.")
+            logger.warning(f"Failed parsing fused op name: {fused_op_name}. Compare manually if required.")
             break
         cur_input_names = get_all_op_input_names(op_map[cur_op_name])
 
@@ -380,7 +468,8 @@ def compare_ge_with_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
         logger.debug(f"golden_inputs length: {len(golden_inputs)}, my_inputs length:, {len(my_inputs)}")
         logger.debug(f"golden_outputs length: {len(golden_outputs)}, my_outputs length:, {len(my_outputs)}")
 
-        for cur_id, (golden_input, my_input, golden_input_path) in enumerate(zip(golden_inputs, my_inputs, golden_input_pathes)):
+        for cur_id, (golden_input, my_input, golden_input_path) in enumerate(
+                zip(golden_inputs, my_inputs, golden_input_pathes)):
             my_path = "{},{},{}".format(my_path, "inputs", cur_id)
             if ",inputs," not in golden_output_path:
                 golden_output_path = "{},{},{}".format(golden_output_path, "inputs", cur_id)
