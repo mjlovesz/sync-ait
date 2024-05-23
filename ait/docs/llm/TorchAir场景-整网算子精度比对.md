@@ -137,10 +137,11 @@
               if file.endswith(npy_surfix):  # already converted FX data
                   continue
 
-              cur = os.path.join(cur_path, files)
+              cur = os.path.join(cur_path, file)
               if file.endswith(".npy"):  # FX saved npy data
-                  np.save(os.path.splitext(cur)[0] + surfix, convert_data_to_info(np.load(cur)))
-                  print("Converted: {} -> {}".format(cur, cur))
+                  file_name = os.path.splitext(cur)[0]
+                  np.save(file_name + surfix, convert_data_to_info(np.load(cur)))
+                  print("Converted: {} -> {}{}".format(cur, file_name, npy_surfix))
               elif not file.endswith(npz_surfix) and not file.endswith(".txt") and not file.endswith(".swp"):
                   inputs, outputs = torchair_acc_cmp.parse_torchair_dump_data(cur)
                   inputs = [convert_data_to_info(ii) for ii in inputs]
