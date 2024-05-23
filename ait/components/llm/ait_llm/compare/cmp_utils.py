@@ -51,8 +51,6 @@ def fill_row_data(data_info: BasicDataInfo, loaded_my_data=None, loaded_golden_d
         return row_data
     loaded_my_data = loaded_my_data.astype("int32") if loaded_my_data.dtype == "uint16" else loaded_my_data
     loaded_my_data = loaded_my_data.astype("int64") if loaded_my_data.dtype == "uint32" else loaded_my_data
-    loaded_golden_data = loaded_golden_data.astype("int32") if loaded_golden_data.dtype == "uint16" \
-        else loaded_golden_data
     loaded_golden_data = loaded_golden_data.astype("int64") if loaded_golden_data.dtype == "uint32" \
         else loaded_golden_data
 
