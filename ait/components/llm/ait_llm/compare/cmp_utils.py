@@ -19,7 +19,6 @@ MIN_LAYER_NUMBER = 10
 
 class BasicDataInfo:
     count_data_id = 0  # Count data_id, increment by 1 every time creating a new instance
-    TORCH_UNSUPPORTED_D_TYPE_MAP = {"uint16": "int32", "uint32": "int64"}
     @classmethod
     def _count(cls):
         cls.count_data_id += 1
@@ -50,8 +49,15 @@ def fill_row_data(data_info: BasicDataInfo, loaded_my_data=None, loaded_golden_d
     if loaded_my_data is None and not os.path.isfile(my_data_path):
         row_data[CMP_FAIL_REASON] = f"my_data_path: {my_data_path} is not a file."
         return row_data
-    golden_data = load_as_torch_tensor(golden_data_path, loaded_golden_data)
-    my_data = load_as_torch_tensor(my_data_path, loaded_my_data)
+    loaded_my_data = loaded_my_data.astype("int32") if loaded_my_data.dtype == "uint16" else loaded_my_data
+    loaded_my_data = loaded_my_data.astype("int64") if loaded_my_data.dtype == "uint32" else loaded_my_data
+    loaded_golden_data = loaded_golden_data.astype("int32") if loaded_golden_data.dtype == "uint16" \
+        else loaded_golden_data
+    loaded_golden_data = loaded_golden_data.astype("int64") if loaded_golden_data.dtype == "uint32" \
+        else loaded_golden_data
+
+    golden_data = read_data(golden_data_path) if loaded_golden_data is None else torch.from_numpy(loaded_golden_data)
+    my_data = read_data(my_data_path) if loaded_my_data is None else torch.from_numpy(loaded_my_data)
 
     if is_broadcast_tensor:
         try:
@@ -65,15 +71,6 @@ def fill_row_data(data_info: BasicDataInfo, loaded_my_data=None, loaded_golden_d
     row_data.update(set_tensor_basic_info_in_row_data(golden_data, my_data))
 
     return row_data
-
-
-def load_as_torch_tensor(data_path, loaded_data=None):
-    if loaded_data is not None:
-        if loaded_data.dtype in BasicDataInfo.TORCH_UNSUPPORTED_D_TYPE_MAP:
-            loaded_data = loaded_data.astype(BasicDataInfo.TORCH_UNSUPPORTED_D_TYPE_MAP[loaded_data.dtype])
-            return torch.from_numpy(loaded_data)
-    else:
-        return read_data(data_path)
 
 
 def set_tensor_basic_info_in_row_data(golden_data, my_data):
