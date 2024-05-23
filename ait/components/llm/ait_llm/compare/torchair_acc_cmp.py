@@ -80,13 +80,17 @@ def get_torchair_ge_graph_path(my_path):
     return None
 
 
-def parse_torchair_bin_dump_data(bin_dump_file):
+def parse_torchair_dump_data(dump_file):
+    if dump_file.endswith(".npz"):  # Custom converted data info
+        loaded = np.load(dump_file)
+        return loaded.get("inputs", []), loaded.get("outputs", [])
+
     if not IS_MSACCUCMP_PATH_SET:
         set_msaccucmp_path_from_cann()
     from dump_parse.dump_utils import parse_dump_file  # Parser tool from CANN msaccucmp
     from cmp_utils.constant.const_manager import ConstManager
 
-    bin_dump_data = parse_dump_file(bin_dump_file, dump_version=ConstManager.OLD_DUMP_TYPE)
+    bin_dump_data = parse_dump_file(dump_file, dump_version=ConstManager.OLD_DUMP_TYPE)
     inputs = [GLOBAL_TENSOR_CONVERTER(input_data) for input_data in bin_dump_data.input_data]
     outputs = [GLOBAL_TENSOR_CONVERTER(output_data) for output_data in bin_dump_data.output_data]
     return inputs, outputs
@@ -137,13 +141,12 @@ def parse_pbtxt_to_dict(pbtxt_path):
 
 def gather_data_with_token_id(data_path):
     token_dirs, gathered_files, cur_token_id = [], {}, 0
-    # Detect where sub dirs are all digits, and regard as tokens level
+    # Detect the deepest dir level where sub dirs are all digits, and regard as tokens level.
     for cur_path, dirs, file_names in os.walk(data_path):
         if len(dirs) == 0:
             continue
         if all([len(ii) < MAX_TOKEN_LEN and str.isdigit(ii) for ii in dirs]):
-            token_dirs = [os.path.join(cur_path, dir_name) for dir_name in dirs]
-            break
+            token_dirs = [os.path.join(cur_path, dir_name) for dir_name in dirs]  # Search till deepest level
     if len(token_dirs) == 0:
         token_dirs.append(data_path)  # Just use data_path if found no token like dirs
 
@@ -283,7 +286,7 @@ def compare_ge_with_fx(graph_map, ge_dump_data, fx_dump_data, token_id=0):
         else:
             op_type = os.path.basename(my_path).split(".")[0]
             if "Cast" in op_type or "TransData" in op_type:
-                ge_inputs, ge_outputs = parse_torchair_bin_dump_data(my_path)
+                ge_inputs, ge_outputs = parse_torchair_dump_data(my_path)
                 logger.debug(f"ge_inputs length: {len(ge_inputs)}")
                 logger.debug(f"ge_outputs length:, {len(ge_outputs)}")
                 gathered_row_data.extend(compare_specials_private_ops(ge_inputs, ge_outputs, token_id, my_path))
@@ -306,7 +309,7 @@ def compare_ge_with_fx_single_op(op_info, fx_dump_data, op_name, my_path, token_
                 logger.warning(f"FX data missing, GE tensor name: {op_name}, FX tensor name: {fx_tensor_name}")
                 continue
 
-            ge_inputs, ge_outputs = parse_torchair_bin_dump_data(my_path)
+            ge_inputs, ge_outputs = parse_torchair_dump_data(my_path)
             fx_inputs = fx_dump_data.get(fx_tensor_name, {}).get("input", [])
             fx_outputs = fx_dump_data.get(fx_tensor_name, {}).get("output", [])
             logger.debug(f"ge_inputs length: {len(ge_inputs)}, fx_inputs length:, {len(fx_inputs)}")
@@ -339,7 +342,7 @@ def compare_ge_with_fx_multiple_ops_details(op_info: dict, fx_dump_data, op_name
             if fx_tensor_name not in fx_dump_data:
                 logger.warning(f"FX data missing, GE tensor name: {op_name}, FX tensor name: {fx_tensor_name}")
                 continue
-            ge_inputs, ge_outputs = parse_torchair_bin_dump_data(my_path)
+            ge_inputs, ge_outputs = parse_torchair_dump_data(my_path)
             fx_inputs_or_outputs = fx_dump_data.get(fx_tensor_name, {}).get(input_or_output, [])
             ge_input_or_output_path = ""
             ge_inputs_or_outputs = []
@@ -418,7 +421,7 @@ def gather_fused_op_data(fused_op_name, op_map, fused_ge_dump_data, ge_dump_data
 
         if cur_op_name in ge_dump_data:
             cur_path = ge_dump_data[cur_op_name]
-            op_inputs, op_outputs = parse_torchair_bin_dump_data(cur_path)
+            op_inputs, op_outputs = parse_torchair_dump_data(cur_path)
             min_inputs_len = min(len(cur_input_names), len(op_inputs))
             cur_input_names, op_inputs = cur_input_names[:min_inputs_len], op_inputs[:min_inputs_len]
             input_pathes = [",".join([cur_path, "inputs", str(idx)]) for idx in range(min_inputs_len)]
@@ -457,14 +460,14 @@ def compare_ge_with_ge(graph_map, fused_ge_dump_data, ge_dump_data, token_id=0):
             )
         elif op_name in ge_dump_data:
             golden_path = ge_dump_data[op_name]
-            golden_inputs, golden_outputs = parse_torchair_bin_dump_data(golden_path)
+            golden_inputs, golden_outputs = parse_torchair_dump_data(golden_path)
             golden_input_pathes = [golden_path] * len(golden_inputs)
             golden_output_path = golden_path
         else:
             logger.warning(f"Golden data missing, My tensor name: {op_name}")
             continue
 
-        my_inputs, my_outputs = parse_torchair_bin_dump_data(my_path)
+        my_inputs, my_outputs = parse_torchair_dump_data(my_path)
         logger.debug(f"golden_inputs length: {len(golden_inputs)}, my_inputs length:, {len(my_inputs)}")
         logger.debug(f"golden_outputs length: {len(golden_outputs)}, my_outputs length:, {len(my_outputs)}")
 

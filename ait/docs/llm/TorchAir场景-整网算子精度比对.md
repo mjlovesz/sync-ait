@@ -110,3 +110,55 @@
 ## 结果查看
 
 参考[精度比对结果参数说明](/ait/docs/llm/精度比对结果参数说明.md)
+
+***
+
+## 2.3 将 dump 数据转化为指定信息以压缩数据量
+- dump 过程中生成的数据量可能占用大量磁盘空间，可以在 dump 过程中启用后台进程，将完整的数据提取为指定的信息。以下参考脚本将数据转化为最大最小值，并删除原数据
+  ```py
+  #!/bin/env python3
+  import os
+  import argparse
+
+  surfix = "_min_max"  # Converted data save surfix
+
+  # Define how single data is converted
+  def convert_data_to_info(data):
+      return [data.min(), data.max()]
+
+  def convert(data_path):
+      import numpy as np
+      from ait_llm.compare import torchair_acc_cmp
+
+      npz_surfix = "{}.npz".format(surfix)
+      for cur_path, dirs, files in os.walk(data_path):
+          for file in files:
+              if file.endswith(".npy"):  # FX saved npy data
+                  np.save(os.path.splitext(cur)[0] + curfix, convert_data_to_info(np.load(cur)))
+                  print("Converted: {} -> {}".format(cur, cur))
+              elif not file.endswith(npz_surfix) and not file.endswith(".txt") and not file.endswith(".swp"):
+                  cur = os.path.join(cur_path, files)
+                  inputs, outputs = torchair_acc_cmp.parse_torchair_bin_dump_data(cur)
+                  inputs = [convert_data_to_info(ii) for ii in inputs]
+                  outputs = [convert_data_to_info(ii) for ii in outputs]
+
+                  print("Converted: {} -> {}{}".format(cur, cur, npz_surfix))
+                  np.savez(zur + npz_surfix, inputs=inputs, outputs=outputs)
+                  os.remove(cur)
+  
+  if __name__ == "__main__":
+      parser = argparse.ArgumentParser()
+      parser.add-argument("data_path", help="GE or FX data dump path")
+      args = parser.parse_args()
+      convert(args.data_path)
+  ```
+  在 dump 过程中后台执行该脚本，将 dump 数据转化为 info 数据，以减少内存占用
+  ```sh
+  # 每隔 1s 执行一次，将 ait_ge_dump 下的数据转化为 info
+  watch -n 1 "python3 convert.py ait_ge_dump"
+  ```
+  同时在 FX 或关闭融合的 GE dump 时也执行该脚本，将 dump 数据转化为 info。最后执行比对
+  ```sh
+  ait llm compare --my-path {dump_path}/dump_{time_stamp} --golden-path data_dump
+  ```
+  
