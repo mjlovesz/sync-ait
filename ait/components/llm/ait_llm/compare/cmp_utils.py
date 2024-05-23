@@ -70,7 +70,7 @@ def fill_row_data(data_info: BasicDataInfo, loaded_my_data=None, loaded_golden_d
 def load_as_torch_tensor(data_path, loaded_data=None):
     if loaded_data is not None:
         if str(loaded_data.dtype) in BasicDataInfo.TORCH_UNSUPPORTED_D_TYPE_MAP:
-            loaded_data = loaded_data.astype(BasicDataInfo.TORCH_UNSUPPORTED_D_TYPE_MAP[loaded_data.dtype])
+            loaded_data = loaded_data.astype(BasicDataInfo.TORCH_UNSUPPORTED_D_TYPE_MAP.get(loaded_data.dtype))
         return torch.from_numpy(loaded_data)
     else:
         return read_data(data_path)
