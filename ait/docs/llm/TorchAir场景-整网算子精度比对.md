@@ -141,15 +141,16 @@
               if file.endswith(".npy"):  # FX saved npy data
                   file_name = os.path.splitext(cur)[0]
                   np.save(file_name + surfix, convert_data_to_info(np.load(cur)))
+                  os.remove(cur)
                   print("Converted: {} -> {}{}".format(cur, file_name, npy_surfix))
               elif not file.endswith(npz_surfix) and not file.endswith(".txt") and not file.endswith(".swp"):
                   inputs, outputs = torchair_acc_cmp.parse_torchair_dump_data(cur)
                   inputs = [convert_data_to_info(ii) for ii in inputs]
                   outputs = [convert_data_to_info(ii) for ii in outputs]
 
-                  print("Converted: {} -> {}{}".format(cur, cur, npz_surfix))
                   np.savez(cur + npz_surfix, inputs=inputs, outputs=outputs)
-              os.remove(cur)
+                  os.remove(cur)
+                  print("Converted: {} -> {}{}".format(cur, cur, npz_surfix))
   
   if __name__ == "__main__":
       parser = argparse.ArgumentParser()
