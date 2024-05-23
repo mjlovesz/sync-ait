@@ -146,7 +146,8 @@ def gather_data_with_token_id(data_path):
         if len(dirs) == 0:
             continue
         if all([len(ii) < MAX_TOKEN_LEN and str.isdigit(ii) for ii in dirs]):
-            token_dirs = [os.path.join(cur_path, dir_name) for dir_name in sorted(dirs)]  # Search till deepest level
+            dirs = sorted(dirs, key=lambda xx: int(xx))c
+            token_dirs = [os.path.join(cur_path, dir_name) for dir_name in dirs]  # Search till deepest level
     if len(token_dirs) == 0:
         token_dirs.append(data_path)  # Just use data_path if found no token like dirs
 

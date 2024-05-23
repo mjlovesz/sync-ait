@@ -118,6 +118,7 @@
   ```py
   #!/bin/env python3
   import os
+  import time
   import argparse
 
   surfix = "_min_max"  # Converted data save surfix
@@ -130,27 +131,33 @@
       import numpy as np
       from ait_llm.compare import torchair_acc_cmp
 
-      npz_surfix = "{}.npz".format(surfix)
+      npz_surfix, npy_surfix = "{}.npz".format(surfix), "{}.npy".format(surfix)
       for cur_path, dirs, files in os.walk(data_path):
           for file in files:
+              if file.endswith(npy_surfix):  # already converted FX data
+                  continue
+
+              cur = os.path.join(cur_path, files)
               if file.endswith(".npy"):  # FX saved npy data
-                  np.save(os.path.splitext(cur)[0] + curfix, convert_data_to_info(np.load(cur)))
+                  np.save(os.path.splitext(cur)[0] + surfix, convert_data_to_info(np.load(cur)))
                   print("Converted: {} -> {}".format(cur, cur))
               elif not file.endswith(npz_surfix) and not file.endswith(".txt") and not file.endswith(".swp"):
-                  cur = os.path.join(cur_path, files)
-                  inputs, outputs = torchair_acc_cmp.parse_torchair_bin_dump_data(cur)
+                  inputs, outputs = torchair_acc_cmp.parse_torchair_dump_data(cur)
                   inputs = [convert_data_to_info(ii) for ii in inputs]
                   outputs = [convert_data_to_info(ii) for ii in outputs]
 
                   print("Converted: {} -> {}{}".format(cur, cur, npz_surfix))
-                  np.savez(zur + npz_surfix, inputs=inputs, outputs=outputs)
-                  os.remove(cur)
+                  np.savez(cur + npz_surfix, inputs=inputs, outputs=outputs)
+              os.remove(cur)
   
   if __name__ == "__main__":
       parser = argparse.ArgumentParser()
-      parser.add-argument("data_path", help="GE or FX data dump path")
+      parser.add_argument("data_path", help="GE or FX data dump path")
       args = parser.parse_args()
-      convert(args.data_path)
+      while True:
+          convert(args.data_path)
+          time.sleep(0.5)
+          print("Waiting...")
   ```
   在 dump 过程中后台执行该脚本，将 dump 数据转化为 info 数据，以减少内存占用
   ```sh
